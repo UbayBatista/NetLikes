@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { NgClass, CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators} from '@angular/forms';
 
@@ -17,7 +17,8 @@ function samePasswords(group: FormGroup) {
 })
 
 export class Step2 {
-  @Output() toNext = new EventEmitter<void>();
+  @Input() initialData: any;
+  @Output() toNext = new EventEmitter<{ password: string; securityQuestion: string; answer: string }>();
   @Output() toPrev = new EventEmitter<void>();
 
   questions = [
@@ -40,12 +41,24 @@ export class Step2 {
     }, { validators: samePasswords });
   }
 
+  ngOnInit() {
+    if (this.initialData) {
+      this.form.patchValue({
+        password: this.initialData.password,
+        confirmPassword: this.initialData.password,
+        question: this.initialData.securityQuestion,
+        answer: this.initialData.answer
+      });
+    }
+  }
+
   togglePassword() { this.showPassword = !this.showPassword; }
   toggleConfirm() { this.showConfirmation = !this.showConfirmation; }
 
   notifyNext() {
     if (this.form.valid) {
-      this.toNext.emit();
+      const val = this.form.value;
+      this.toNext.emit({ password: val.password, securityQuestion: val.question, answer: val.answer });
     } else {
       this.form.markAllAsTouched();
     }

@@ -88,6 +88,13 @@ public class UserService {
         newUser.setSecurityQuestion(request.getSecurityQuestion());
         newUser.setAnswer(request.getAnswer());
         newUser.setBirthdate(request.getBirthdate());
+        if (request.getFavoriteGenres() != null) {
+            List<Integer> ids = request.getFavoriteGenres().stream()
+                                    .map(g -> (int) g.getId())
+                                    .toList();
+            List<Genre> genres = genreRepository.findAllById(ids);
+            newUser.setFavoriteGenres(genres);
+        }
 
         User saved = userRepository.save(newUser);
         return toDTO(saved);

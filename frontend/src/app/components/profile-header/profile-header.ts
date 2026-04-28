@@ -1,5 +1,4 @@
 import { Component, Input, Output, EventEmitter} from "@angular/core";
-import { Router } from "@angular/router";
 
 @Component({
     selector: "app-profile-header",
@@ -9,10 +8,12 @@ import { Router } from "@angular/router";
     styleUrl: "./profile-header.css"
 })
 export class ProfileHeader{
-    @Input() userName: string = "Cristiano";
+    @Input() userName: string = '';
+    @Input() userPicture: string = 'Error';
     @Input() type: string = "Editar Perfil";
     @Input() option: string = "Ajustes";
     @Input() otherUser: string = 'No';
+    @Output() logOut = new EventEmitter<void>();
     openMenu: boolean = false;
 
     @Output() openSocialModal = new EventEmitter<'Seguidores' | 'Seguidos'>();
@@ -21,11 +22,8 @@ export class ProfileHeader{
         this.openMenu = !this.openMenu;
     }
 
-    constructor(private router: Router) {}
-
-    logOut() {
-        console.log('Ir al login');
-        this.router.navigate(['/login']);
+    logout() {
+        this.logOut.emit()
     }
 
     @Output() editClick = new EventEmitter<void>();

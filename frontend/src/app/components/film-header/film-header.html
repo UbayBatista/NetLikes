@@ -48,13 +48,13 @@
           <span>{{ film.releaseDate | date:'dd/MM/yyyy' }} (ES)</span>
         }
         
-        @if (film.genres?.length) {
+        @if (film.genres.length) {
           @if (film.releaseDate) { <span>•</span> }
           <span>{{ formatGenres() }}</span>
         }
         
         @if (film.runtime) {
-          @if (film.releaseDate || film.genres?.length) { <span>•</span> }
+          @if (film.releaseDate || film.genres.length) { <span>•</span> }
           <span>{{ formatRuntime(film.runtime) }}</span>
         }
       </div>
@@ -69,7 +69,7 @@
         <p>{{ film.overView }}</p>
       }
 
-      @if (film.watchProviders?.length) {
+      @if (film.watchProviders.length) {
         <div class="mt-4">
           <h5 class="fw-bold">Dónde ver</h5>
           <div class="d-flex justify-content-center justify-content-md-start gap-3 flex-wrap mt-3">

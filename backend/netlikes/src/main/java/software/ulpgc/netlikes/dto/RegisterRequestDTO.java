@@ -16,5 +16,5 @@ public class RegisterRequestDTO {
     private String password;
     private String securityQuestion;
     private String answer;
-    private List<Genre> genres;
+    private List<Genre> favoriteGenres;
 }

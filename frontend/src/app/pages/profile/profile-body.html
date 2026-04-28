@@ -2,7 +2,7 @@
     
     @if(!itsMe){
         
-        <app-profile-header userName={{profileName}} [type]="isEditing ? 'Siguiendo' : 'Seguir'" 
+        <app-profile-header [userName]="profileName" [userPicture]="profilePicture" [type]="isEditing ? 'Siguiendo' : 'Seguir'" 
             (editClick)="Edit()"
             option="Bloquear" otherUser="Yes"></app-profile-header>
 
@@ -56,13 +56,17 @@
         </app-profile-components>
     }
     @else{
+        @if (currentUser$ | async; as user) {
+            <app-profile-header 
+                [userName]="user.userName"
+                [userPicture]="user.profilePicture"
+                [type]="isEditing ? 'Continuar' : 'Editar Perfil'" 
+                (editClick)="Edit()"
+                (openSocialModal)="showSocial($event)"
+                (logOut)="logout()">
+            </app-profile-header>
+        }
         
-        <app-profile-header 
-            userName="Cristiano Ronaldo" 
-            [type]="isEditing ? 'Continuar' : 'Editar Perfil'" 
-            (editClick)="Edit()"
-            (openSocialModal)="showSocial($event)">
-        </app-profile-header>
         <app-profile-components title="Bio" [isEditing]="isEditing">
             <p>{{textBio}}</p>
         </app-profile-components>

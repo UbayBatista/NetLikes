@@ -4,7 +4,7 @@ export interface Credentials {
 }
 
 export interface User {
-    name: string;
+    userName: string;
     email: string;
     profilePicture: string;
 }

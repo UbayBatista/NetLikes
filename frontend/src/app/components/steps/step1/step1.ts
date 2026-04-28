@@ -1,7 +1,9 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import { Router } from '@angular/router';
+import as from '@angular/common/locales/extra/as';
+import { AuthService } from '../../../services/auth.service';
 
 function validateAge(group: FormGroup) {
   const day = group.get('day')?.value;
@@ -27,10 +29,12 @@ function validateAge(group: FormGroup) {
   styleUrls: ['../steps.css', './step1.css']
 })
 export class Step1 {
-  @Output() toNext = new EventEmitter<void>();
+  @Input() initialData: any;
+  @Output() toNext = new EventEmitter<{ userName: string; email: string; birthdate: string }>();
   @Output() toPrev = new EventEmitter<void>();
 
   form: FormGroup;
+  emailExists: boolean = false;
 
   days = Array.from({ length: 31 }, (_, i) => i + 1);
   months = [
@@ -43,20 +47,60 @@ export class Step1 {
   ];
   years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
 
-  constructor(private router: Router, private fb: FormBuilder) {
-  this.form = this.fb.group({
-    user_name: ['', [Validators.required, Validators.minLength(3)]],
-    email: ['', [Validators.required, Validators.email]],
-    day: ['', Validators.required],
-    month: ['', Validators.required],
-    year: ['', Validators.required]
-  }, { validators: validateAge });
-}
+  constructor(private router: Router, private fb: FormBuilder, private authService: AuthService) {
+    this.form = this.fb.group({
+      userName: ['', [Validators.required, Validators.minLength(3)]],
+      email: ['', [Validators.required, Validators.email]],
+      day: ['', Validators.required],
+      month: ['', Validators.required],
+      year: ['', Validators.required]
+    }, { validators: validateAge });
+  }
+
+  ngOnInit() {
+    if (this.initialData && this.initialData.birthdate) {
+      const dateParts = this.initialData.birthdate.split('-');
+
+      if (dateParts.length === 3) {
+        this.form.patchValue({
+          userName: this.initialData.userName,
+          email: this.initialData.email,
+          year: parseInt(dateParts[0], 10),
+          month: parseInt(dateParts[1], 10),
+          day: parseInt(dateParts[2], 10)
+        });
+      }
+      this.form.get('email')?.valueChanges.subscribe(() => {
+        this.emailExists = false;
+      });
+    } else if (this.initialData) {
+      this.form.patchValue({
+        userName: this.initialData.userName,
+        email: this.initialData.email
+      });
+      this.form.get('email')?.valueChanges.subscribe(() => {
+        this.emailExists = false;
+      });
+    }
+  }
 
   notifyNext() {
     if (this.form.valid) {
-      console.log('Datos del paso 1:', this.form.value);
-      this.toNext.emit();
+      const email = this.form.get('email')?.value;
+      this.authService.checkEmailExists(email).subscribe({
+        next: (exists) => {
+          if (exists) {
+            this.emailExists = true;
+            this.form.get('email')?.setErrors({ alreadyExists: true });
+          } else {
+            this.emailExists = false;
+            const val = this.form.value;
+            const birthdate = `${val.year}-${String(val.month).padStart(2, '0')}-${String(val.day).padStart(2, '0')}`;
+            this.toNext.emit({ userName: val.userName, email: val.email, birthdate });
+          }
+        },
+        error: (err) => console.error('Error al comprobar el email', err)
+      });
     } else {
       this.form.markAllAsTouched();
     }

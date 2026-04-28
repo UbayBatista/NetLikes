@@ -3,17 +3,17 @@
   <div class="form-floating mb-3">
     <input
       type="text"
-      id="user_name"
+      id="userName"
       placeholder=""
-      formControlName="user_name"
+      formControlName="userName"
       class="form-control border-0"
-      [ngClass]="{'is-invalid': form.get('user_name')?.invalid && form.get('user_name')?.touched}"
+      [ngClass]="{'is-invalid': form.get('userName')?.invalid && form.get('userName')?.touched}"
     />
-    <label for="user_name">Nombre de usuario</label>
-    @if (form.get('user_name')?.hasError('required') && form.get('user_name')?.touched) {
+    <label for="userName">Nombre de usuario</label>
+    @if (form.get('userName')?.hasError('required') && form.get('userName')?.touched) {
       <div class="invalid-feedback">El nombre de usuario es obligatorio.</div>
     }
-    @if (form.get('user_name')?.hasError('minlength') && form.get('user_name')?.touched) {
+    @if (form.get('userName')?.hasError('minlength') && form.get('userName')?.touched) {
       <div class="invalid-feedback">Mínimo 3 caracteres.</div>
     }
   </div>
@@ -33,6 +33,9 @@
     }
     @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
       <div class="invalid-feedback">Introduce un correo válido.</div>
+    }
+    @if (emailExists) {
+      <div class="invalid-feedback">Este correo ya está registrado.</div>
     }
   </div>
 

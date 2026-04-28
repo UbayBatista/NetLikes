@@ -22,11 +22,14 @@
     </div>
 
     <div (click)="goToProfile()">
-      <img
-        [src]="avatarUrl"
+      @if (currentUser$ | async; as user) {
+        <img
+        [src]="user.profilePicture" 
         alt="Perfil"
         class="rounded-circle avatar"
-      />
+        />
+      }
+      
     </div>
   </div>
 </nav>

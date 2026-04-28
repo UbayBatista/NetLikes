@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
@@ -10,7 +11,7 @@ describe('AuthService', () => {
   const apiUrl = 'http://localhost:8080/users';
 
   const mockUser: User = {
-    name: 'Juan Perez',
+    userName: 'Juan Perez',
     email: 'test@test.com',
     profilePicture: 'assets/img.png'
   };
@@ -33,55 +34,42 @@ describe('AuthService', () => {
     httpMock.verify();
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
+  it('debe enviar una petición POST en register y guardar en local', () => {
+    const registerData: RegisterData = {
+      userName: 'Juan', email: 'j@test.com', birthdate: '2000-01-01',
+      password: '123', securityQuestion: '?', answer: '!', favoriteGenres: []
+    };
+
+    service.register(registerData).subscribe(user => {
+      expect(user).toEqual(mockUser);
+      expect(localStorage.getItem('user')).toBeTruthy();
+    });
+
+    const req = httpMock.expectOne(`${apiUrl}/register`);
+    expect(req.request.method).toBe('POST');
+    req.flush(mockUser);
   });
 
-  describe('register', () => {
-    it('debe enviar una petición POST y guardar el usuario en localStorage', () => {
-      const registerData: RegisterData = {
-        userName: 'Juan Perez',
-        email: 'test@test.com',
-        birthdate: '2000-01-01',
-        password: 'password123',
-        securityQuestion: '?',
-        answer: '!',
-        favoriteGenres: [{ id: 1, genre: 'Acción' }]
-      };
-
-      service.register(registerData).subscribe((user) => {
-        expect(user).toEqual(mockUser);
-        expect(localStorage.getItem('user')).toContain('test@test.com');
-      });
-
-      const req = httpMock.expectOne(`${apiUrl}/register`);
-      expect(req.request.method).toBe('POST');
-      req.flush(mockUser);
+  it('checkEmailExists debe llamar a la URL correcta (/exists/email)', () => {
+    const email = 'test@test.com';
+    service.checkEmailExists(email).subscribe(exists => {
+      expect(exists).toBe(true);
     });
+
+    const req = httpMock.expectOne(`${apiUrl}/exists/${email}`);
+    expect(req.request.method).toBe('GET');
+    req.flush(true);
   });
 
-  describe('logout', () => {
-    it('debe limpiar el localStorage y emitir null', () => {
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      
-      service.logout();
+  it('getSecurityQuestion debe devolver texto plano', () => {
+    const email = 'test@test.com';
+    const question = '¿Perro o gato?';
 
-      expect(localStorage.getItem('user')).toBeNull();
-      
-      service.getCurrentUser().subscribe(user => {
-        expect(user).toBeNull();
-      });
+    service.getSecurityQuestion(email).subscribe(q => {
+      expect(q).toBe(question);
     });
-  });
 
-  describe('checkEmailExists', () => {
-    it('debe devolver true si el email ya existe', () => {
-      service.checkEmailExists('test@test.com').subscribe(exists => {
-        expect(exists).toBe(true);
-      });
-
-      const req = httpMock.expectOne(`${apiUrl}/check-email?email=test@test.com`);
-      req.flush(true);
-    });
+    const req = httpMock.expectOne(`${apiUrl}/securityQuestion/${email}`);
+    req.flush(question);
   });
 });

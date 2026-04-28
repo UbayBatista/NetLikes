@@ -1,24 +1,28 @@
 import { Component } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { NotificationPanel } from '../notification-panel/notification-panel';
+import { AuthService } from '../../services/auth.service';
+import { Observable } from 'rxjs';
+import { User } from '../../models/user.models';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, NotificationPanel],
+  imports: [RouterLink, NotificationPanel, AsyncPipe],
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
 export class Header {
+  currentUser$: Observable<User | null>;
   hasNotifications: boolean = true;
   showNotifications: boolean = false;
-  avatarUrl: string = 'https://media.gettyimages.com/id/962792726/es/foto/kiev-ukraine-cristiano-ronaldo-of-real-madrid-poses-with-the-uefa-champions-league-trophy.jpg?s=612x612&w=gi&k=20&c=iGuCfZEUXyVagRfgPF765GB9CHIsyTplWQisj_AUC2U=';
+  userName = "my profile"
 
-  constructor(private router: Router) {}
-
-  userName = "Cristiano Ronaldo"
+  constructor(private router: Router, private authService: AuthService) {
+    this.currentUser$ = this.authService.getCurrentUser();
+  }
 
   goToProfile() {
-    console.log('Ir al perfil');
     this.router.navigate(['/profile', this.userName]);
   }
 

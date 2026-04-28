@@ -15,12 +15,12 @@
             <div class="dropdown-menu show position-absolute end-0 mt-1 shadow" 
                  style="min-width: 150px; right: 1rem; z-index: 1050;">
                 @if (otherUser === "Yes") {
-                    <button class="dropdown-item">{{option}}</button>
+                    <button class="dropdown-item">{{ option }}</button>
                 } 
                 @else {
-                    <button class="dropdown-item fw-bold">{{option}}</button>
+                    <button class="dropdown-item fw-bold">{{ option }}</button>
                     <div class="dropdown-divider"></div>
-                    <button class="dropdown-item text-danger fw-bold" (click)="logOut()">Cerrar sesión</button>
+                    <button class="dropdown-item text-danger fw-bold" (click)="logout()">Cerrar sesión</button>
                 }
             </div>
         }
@@ -32,12 +32,12 @@
             
             <img class="rounded-circle border border-dark border-3 shadow-sm flex-shrink-0" 
                  style="width: 120px; height: 120px; object-fit: cover;" 
-                 src="https://media.gettyimages.com/id/962792726/es/foto/kiev-ukraine-cristiano-ronaldo-of-real-madrid-poses-with-the-uefa-champions-league-trophy.jpg?s=612x612&w=gi&k=20&c=iGuCfZEUXyVagRfgPF765GB9CHIsyTplWQisj_AUC2U=" 
+                 [src]="userPicture" 
                  alt="Perfil">
 
             <div class="d-flex flex-column align-items-start gap-2">
-                <h3 class="fw-bold m-0">{{userName}}</h3>
-                <button class="btn btn-dark px-4 py-1 rounded-pill fw-bold shadow-sm" (click)="onEdit()">{{type}}</button>
+                <h3 class="fw-bold m-0">{{ userName }}</h3>
+                <button class="btn btn-dark px-4 py-1 rounded-pill fw-bold shadow-sm" (click)="onEdit()">{{ type }}</button>
             </div>
 
         </div>

@@ -54,24 +54,35 @@ class UserServiceTest {
         genre3.setId(15);
         genre3.setName("Terror");
 
-        RegisterRequestDTO request = new RegisterRequestDTO
-        ("Juan", 
-        "juan@email.com",
-        Date.valueOf("1900-05-21"),
-        "SuperMan23",
-        "Nombre de tu primera mascota",
-        "Toby",
-        List.of(genre1, genre2, genre3)
+        List<Genre> mockGenres = List.of(genre1, genre2, genre3);
+        
+        List<Integer> genreIds = mockGenres.stream().map(Genre::getId).toList();
+
+        RegisterRequestDTO request = new RegisterRequestDTO(
+            "Juan", 
+            "juan@email.com",
+            Date.valueOf("1900-05-21"),
+            "SuperMan23",
+            "Nombre de tu primera mascota",
+            "Toby",
+            mockGenres
         );
 
         when(userRepository.existsByEmail("juan@email.com")).thenReturn(false);
         when(passwordEncoder.encode("SuperMan23")).thenReturn("hashedPassword");
+        
+        when(genreRepository.findAllById(genreIds)).thenReturn(mockGenres);
+        
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
         UserResponseDTO result = userService.register(request);
 
+        assertThat(result).isNotNull();
         assertThat(result.getEmail()).isEqualTo("juan@email.com");
         assertThat(result.getUserName()).isEqualTo("Juan");
+
+        org.mockito.Mockito.verify(genreRepository).findAllById(genreIds);
+        org.mockito.Mockito.verify(userRepository).save(any(User.class));
     }
 
     @Test
@@ -201,5 +212,14 @@ class UserServiceTest {
         boolean result = userService.isValidAnswer("juan@email.com", "RespuestaErronea");
 
         assertThat(result).isFalse();
+    }
+
+    @Test
+    void login_shouldThrowException_whenUserDoesNotExist() {
+        when(userRepository.findById("noexiste@email.com")).thenReturn(Optional.empty());
+
+        LoginRequestDTO request = new LoginRequestDTO("noexiste@email.com", "1234");
+
+        assertThrows(RuntimeException.class, () -> userService.login(request));
     }
 }

@@ -34,6 +34,9 @@
     @if (form.get('password')?.hasError('required') && form.get('password')?.touched) {
         <div class="invalid-feedback">La contraseña es obligatoria.</div>
     }
+    @if (form.get('password')?.hasError('wrongCredentials') && form.get('password')?.touched) {
+        <div class="invalid-feedback">El correo o la contraseña son incorrectos.</div>
+    }
     </div>
     <button 
     type="button"
@@ -49,6 +52,6 @@
 
 <p class="text-center text-black-50 mt-3 forgot-password" (click)="forgotPassword()"> ¿Olvidaste tu contraseña? </p>
 
-<hr class="border-secondary ">
+<hr class="border-secondary">
 
 <button class="text-white btn btn-lg w-100 create-account-btn" (click)="createAccount()"> Crear cuenta </button>

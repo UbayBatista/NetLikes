@@ -68,4 +68,6 @@ public class Film{
     @JsonIgnore
     private List<Video> videos;
 
+    @OneToOne(mappedBy = "film", cascade = CascadeType.ALL)
+    private Forum forum;
 }

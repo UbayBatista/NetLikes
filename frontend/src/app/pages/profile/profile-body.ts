@@ -4,39 +4,42 @@ import { ProfileHeader } from "../../components/profile-header/profile-header";
 import { ActivatedRoute } from '@angular/router'; 
 import { Film } from "../../components/film/film";
 import { SocialModal } from "../../components/social-modal/social-modal";
+import { AuthService } from '../../services/auth.service';
+import { Observable } from 'rxjs';
+import { User } from '../../models/user.models';
+import { AsyncPipe } from '@angular/common';
+import { Router } from "@angular/router";
 
 @Component({
     selector:"app-profile-complete",
     standalone: true,
-    imports: [ProfileBody, ProfileHeader, Film, SocialModal],
+    imports: [ProfileBody, ProfileHeader, Film, SocialModal, AsyncPipe],
     templateUrl: "./profile-body.html",
     styleUrl: "./profile-body.css"
 })
 export class ProfileComplete implements OnInit{
-    profileName = ''; 
-    textBio = '';
+    currentUser$: Observable<User | null>;
+    profileName = '';
+    profilePicture = 'https://media.gettyimages.com/id/962792726/es/foto/kiev-ukraine-cristiano-ronaldo-of-real-madrid-poses-with-the-uefa-champions-league-trophy.jpg?s=612x612&w=gi&k=20&c=iGuCfZEUXyVagRfgPF765GB9CHIsyTplWQisj_AUC2U='; 
+    textBio = 'Hola soy nuevo por aquí.';
     itsMe = false;
     isEditing = false;
-
     isSocialModalOpen = false;
     socialType: 'Seguidores' | 'Seguidos' = 'Seguidores';
     socialData: any[] = [];
     
-    constructor(private route: ActivatedRoute, private cdr: ChangeDetectorRef) {}
+    constructor(private route: ActivatedRoute, private cdr: ChangeDetectorRef, private authService: AuthService, private router: Router) {
+        this.currentUser$ = this.authService.getCurrentUser();
+    }
 
     ngOnInit() {
         
         this.route.params.subscribe(params => {
             this.profileName = params['username']; 
             
-            if (this.profileName === 'Messi') {
-                this.textBio = 'Hola soy Messi, el 10.';
-                this.itsMe = false;
-            } else if (this.profileName === 'Cristiano Ronaldo') {
-                this.textBio = 'Hola soy el Bicho Oficial, Siuuuu.';
+            if (this.profileName === "my profile") {
                 this.itsMe = true;
             } else {
-                this.textBio = 'Biografía por defecto...';
                 this.itsMe = false;
             }
         });
@@ -163,5 +166,9 @@ export class ProfileComplete implements OnInit{
         this.isEditing = !this.isEditing;
     }
 
+    logout(){
+        this.authService.logout();
+        this.router.navigate(['/']);
+    }
 
 }

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -23,8 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.sql.Date;
-
-
+import org.springframework.transaction.annotation.Transactional;
 import software.ulpgc.netlikes.dto.LoginRequestDTO;
 import software.ulpgc.netlikes.dto.RegisterRequestDTO;
 import software.ulpgc.netlikes.model.User;
@@ -38,6 +38,8 @@ import software.ulpgc.netlikes.repository.GenreRepository;
         "spring.profiles.active=test"
     }
 )
+@ActiveProfiles("test")
+@Transactional
 class UserControllerTest {
 
     private MockMvc mockMvc;
@@ -64,11 +66,11 @@ class UserControllerTest {
 
     @Test
     void register_shouldReturn200_whenDataIsValid() throws Exception {
-        Genre genre = new Genre();
-        genre.setId(21);
-        genre.setName("Acción");
+        Genre g1 = new Genre(); g1.setId(21); g1.setName("Acción");
+        Genre g2 = new Genre(); g2.setId(22); g2.setName("Comedia");
+        Genre g3 = new Genre(); g3.setId(23); g3.setName("Drama");
 
-        genreRepository.save(genre);
+        genreRepository.saveAll(List.of(g1, g2, g3));
 
         RegisterRequestDTO request = new RegisterRequestDTO
         ("Juan", 
@@ -77,7 +79,7 @@ class UserControllerTest {
         "1234",
         "¿Nombre de tu primera mascota?",
         "Toby",
-        List.of(genre, genre, genre)
+        List.of(g1, g2, g3)
         );
 
         mockMvc.perform(post("/users/register")
@@ -286,5 +288,15 @@ class UserControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(content().string("false"));
+    }
+
+    @Test
+    void login_shouldReturn401_whenUserNotFound() throws Exception {
+        LoginRequestDTO request = new LoginRequestDTO("fantasma@email.com", "1234");
+
+        mockMvc.perform(post("/users/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());  
     }
 }
