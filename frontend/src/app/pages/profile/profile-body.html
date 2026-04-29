@@ -1,149 +1,88 @@
-<div class="profileComple">
+<div class="profileComplete">
+  @if (profile$ | async; as profile) {
     
-    @if(!(itsMe$ |async)){
-        @if (profile$ | async; as profile) {
-            <app-profile-header 
-                [userName]="profile.userName" 
-                [userPicture]="profile.profilePicture"
-                [followers]="profile.followers"
-                [following]="profile.following"
-                [type]="isEditing ? 'Siguiendo' : 'Seguir'" 
-                (editClick)="Edit()"
-                option="Bloquear" 
-                otherUser="Yes">
-            </app-profile-header>
+    <app-profile-header 
+      [userName]="profile.userName" 
+      [userPicture]="profile.profilePicture"
+      [followers]="profile.followers"
+      [following]="profile.following"
+      [isPrivate]="profile.isPrivate"
+      
+      [type]="(itsMe$ | async) 
+                ? (isEditing ? 'Continuar' : 'Editar Perfil') 
+                : (isEditing ? 'Siguiendo' : 'Seguir')" 
 
-            <app-profile-components title="Bio">
-                <p>{{profile.bio}}</p>
-            </app-profile-components>
-            @if(!(profile.watchedFilms === null)){
+      [otherUser]="(itsMe$ | async) ? 'No' : 'Yes'"
+      [option]="(itsMe$ | async) ? '' : 'Bloquear'"
 
-                <app-profile-components title="Películas Vistas">
-                    
-                    <div class="netflix-wrapper">
-                        @if (canScrollLeft) {
-                            <button class="nav-btn left" (click)="scrollLeft()"></button>
-                        }
+      (editClick)="toggleEdit()"
+      (followClick)="onFollowRequest(profile.userName)"
+      (logOut)="logout()"
+      (openSocialModal)="showSocial($event)"
+      (privacyChange)="onPrivacyChange($event)">
+    </app-profile-header>
 
-                        <div class="netflix-row" #scrollContainer>
-                            <div class="netflix-slider">
-                                @for(film of profile.watchedFilms; track film) {
-                                    <div class="film-item">
-                                        <app-film [posterPath]="film.posterPath" [title]="film.title" [id]="film.id"></app-film>
-                                    </div>
-                                }
-                            </div>
-                        </div>
+    <app-profile-components title="Bio" [isEditing]="isEditing">
+      <p>{{profile.bio}}</p>
+    </app-profile-components>
+    @if ((itsMe$ | async) || profile.watchedFilms !== null) {
+      
 
-                        @if (canScrollRight) {
-                            <button class="nav-btn right" (click)="scrollRight()"></button>
-                        }
-                    </div>
-
-                </app-profile-components>
-
-                <app-profile-components title="Ver más tarde">
-                    <div class="netflix-wrapper">
-                        @if (canScrollLeft) {
-                            <button class="nav-btn left" (click)="scrollLeft()"></button>
-                        }
-                        <div class="netflix-row" #scrollContainer>
-                            <div class="netflix-slider">
-                                @for(film of profile.laterFilms; track film) {
-                                    <div class="film-item">
-                                        <app-film [posterPath]="film.posterPath" [title]="film.title" [id]="film.id"></app-film>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    
-                        @if (canScrollRight) {
-                            <button class="nav-btn right" (click)="scrollRight()"></button>
-                        }
-                    </div>
-                </app-profile-components>
-            }@else {
-                <div class="d-flex flex-column align-items-center justify-content-center py-5 gap-2">
-                    <i class="bi bi-lock-fill" style="font-size: 3rem;"></i>
-                    <h5 class="fw-bold mb-0">Esta cuenta es privada</h5>
-                    <p class="text-muted mb-0">Síguele para ver sus gustos</p>
-                </div>
+      @for (section of [
+        { title: 'Películas Vistas', data: profile.watchedFilms },
+        { title: 'Ver más tarde', data: profile.laterFilms }
+      ]; track section.title) {
+        
+        <app-profile-components [title]="section.title" [isEditing]="isEditing">
+          <div class="netflix-wrapper">
+            @if (canScrollLeft) {
+              <button class="nav-btn left" (click)="scroll('left')"></button>
             }
-        }
+
+            <div class="netflix-row" #scrollContainer (scroll)="updateScrollButtons()">
+              <div class="netflix-slider">
+                @for(film of section.data; track film.id) {
+                  <div class="film-item">
+                    <app-film 
+                      [posterPath]="film.posterPath" 
+                      [title]="film.title" 
+                      [id]="film.id">
+                    </app-film>
+                  </div>
+                }
+              </div>
+            </div>
+
+            @if (canScrollRight) {
+              <button class="nav-btn right" (click)="scroll('right')"></button>
+            }
+          </div>
+        </app-profile-components>
+      }
+
+    } @else {
+      <div class="d-flex flex-column align-items-center justify-content-center py-5 gap-2">
+        <i class="bi bi-lock-fill" style="font-size: 3rem;"></i>
+        <h5 class="fw-bold mb-0">Esta cuenta es privada</h5>
+        <p class="text-muted mb-0">Síguele para ver sus gustos</p>
+      </div>
     }
-    @else{
-        @if (profile$ | async; as profile) {
-            <app-profile-header 
-                [userName]="profile.userName"
-                [userPicture]="profile.profilePicture"
-                [isPrivate]="profile.isPrivate"
-                [followers]="profile.followers"
-                [following]="profile.following"
-                [type]="isEditing ? 'Continuar' : 'Editar Perfil'" 
-                (editClick)="Edit()"
-                (openSocialModal)="showSocial($event)"
-                (logOut)="logout()"
-                (privacyChange)="onPrivacyChange($event)">
-            </app-profile-header>
-        
-        
-            <app-profile-components title="Bio" [isEditing]="isEditing">
-                <p>{{profile.bio}}</p>
-            </app-profile-components>
+  }
 
-            <app-profile-components title="Películas Vistas" [isEditing]="isEditing">
-                <div class="netflix-wrapper">
-                    @if (canScrollLeft) {
-                        <button class="nav-btn left" (click)="scrollLeft()"></button>
-                    }
+  @if (showConfirmModal) {
+    <app-confirmation-modal 
+      [title]="'Confirmar Seguimiento'"
+      [message]="confirmModalMessage"
+      (result)="handleFollowConfirmation($event)">
+    </app-confirmation-modal>
+  }
 
-                    <div class="netflix-row" #scrollContainer>
-                        <div class="netflix-slider">
-                            @for(film of profile.watchedFilms; track film) {
-                                <div class="film-item">
-                                    <app-film [posterPath]="film.posterPath" [title]="film.title" [id]="film.id"></app-film>
-                                </div>
-                            }
-                        </div>
-                    </div>
-
-                    @if (canScrollRight) {
-                        <button class="nav-btn right" (click)="scrollRight()"></button>
-                    }
-                </div>
-            </app-profile-components>
-
-            <app-profile-components title="Ver más tarde" [isEditing]="isEditing">
-                <div class="netflix-wrapper">
-                    @if (canScrollLeft) {
-                        <button class="nav-btn left" (click)="scrollLeft()"></button>
-                    }
-
-                    <div class="netflix-row" #scrollContainer>
-                        <div class="netflix-slider">
-                            @for(film of profile.laterFilms; track film) {
-                                <div class="film-item">
-                                    <app-film [posterPath]="film.posterPath" [title]="film.title" [id]="film.id"></app-film>
-                                </div>
-                            }
-                        </div>
-                    </div>
-
-                    @if (canScrollRight) {
-                        <button class="nav-btn right" (click)="scrollRight()"></button>
-                    }
-                </div>
-            </app-profile-components>
-        }
-    }
-
-    @if (isSocialModalOpen) {
-        <app-social-modal 
-            [title]="socialType" 
-            [users]="socialData" 
-            (close)="isSocialModalOpen = false"
-            (tabChange)="showSocial($event)">
-        </app-social-modal>
-    }
-
+  @if (isSocialModalOpen) {
+    <app-social-modal 
+      [title]="socialType" 
+      [users]="socialData" 
+      (close)="isSocialModalOpen = false"
+      (tabChange)="showSocial($event)">
+    </app-social-modal>
+  }
 </div>

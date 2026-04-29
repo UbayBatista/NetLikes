@@ -1,12 +1,11 @@
 <div class="position-relative p-4 border-bottom border-dark border-2 bg-light">
 
     <div class="position-absolute top-0 end-0 p-3 z-3">
-        <button class="btn btn-light border-dark shadow-sm" (click)="Menu()">
+        <button class="btn btn-light border-dark shadow-sm" (click)="toggleMenu()">
             <i class="bi bi-gear-fill"></i>
         </button>
 
         @if (openMenu) {
-
             <div class="position-fixed top-0 start-0 w-100 h-100" 
                  style="z-index: 1040; cursor: default;" 
                  (click)="openMenu = false">
@@ -14,12 +13,18 @@
 
             <div class="dropdown-menu show position-absolute end-0 mt-1 shadow" 
                  style="min-width: 150px; right: 1rem; z-index: 1050;">
+                
                 @if (otherUser === "Yes") {
-                    <button class="dropdown-item">{{ option }}</button>
+                    @if (option) {
+                        <button class="dropdown-item">{{ option }}</button>
+                    }
                 } 
                 @else {
-                    <button class="dropdown-item fw-bold">{{ option }}</button>
+                    @if (option) {
+                        <button class="dropdown-item fw-bold">{{ option }}</button>
+                    }
                     <div class="dropdown-divider"></div>
+                    
                     <div class="dropdown-item d-flex justify-content-between align-items-center">
                         <span class="me-3">Cuenta privada</span>
                         <div class="form-check form-switch mb-0">
@@ -27,10 +32,14 @@
                                 class="form-check-input" 
                                 type="checkbox" 
                                 [checked]="isPrivate"
-                                (change)="togglePrivacy()">
+                                (change)="togglePrivacy()"
+                                style="cursor: pointer;">
                         </div>
                     </div>
-                    <button class="dropdown-item text-danger fw-semibold" (click)="logout()">Cerrar sesión</button>
+                    
+                    <button class="dropdown-item text-danger fw-semibold" (click)="logout()">
+                        Cerrar sesión
+                    </button>
                 }
             </div>
         }
@@ -47,7 +56,10 @@
 
             <div class="d-flex flex-column align-items-start gap-2">
                 <h3 class="fw-bold m-0">{{ userName }}</h3>
-                <button class="btn btn-dark px-4 py-1 rounded-pill fw-bold shadow-sm" (click)="onEdit()">{{ type }}</button>
+                <button class="btn btn-dark px-4 py-1 rounded-pill fw-bold shadow-sm" 
+                        (click)="handleMainAction()">
+                    {{ type }}
+                </button>
             </div>
 
         </div>
