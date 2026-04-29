@@ -7,8 +7,12 @@ import org.springframework.stereotype.Service;
 
 import software.ulpgc.netlikes.model.Film;
 import software.ulpgc.netlikes.model.Forum;
+import software.ulpgc.netlikes.model.Subscription;
+import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.repository.FilmRepository;
 import software.ulpgc.netlikes.repository.ForumRepository;
+import software.ulpgc.netlikes.repository.SubscriptionRepository;
+import software.ulpgc.netlikes.repository.UserRepository;
 
 @Service
 public class ForumService {
@@ -16,12 +20,17 @@ public class ForumService {
     private final ForumRepository forumRepository;
     private final FilmRepository filmRepository; // Añadido para buscar la película
     private final DiscourseService discourseService; // Añadido para conectar con Discourse
+    private final UserRepository userRepository;
+    private final SubscriptionRepository subscriptionRepository;
 
     // Actualizamos el constructor para inyectar las nuevas dependencias
-    public ForumService(ForumRepository forumRepository, FilmRepository filmRepository, DiscourseService discourseService){
+    public ForumService(ForumRepository forumRepository, FilmRepository filmRepository, 
+            DiscourseService discourseService, UserRepository userRepository, SubscriptionRepository subscriptionRepository){
         this.forumRepository = forumRepository;
         this.filmRepository = filmRepository;
         this.discourseService = discourseService;
+        this.userRepository = userRepository;
+        this.subscriptionRepository = subscriptionRepository;
     }
 
     public List<Forum> getAllForums(){
@@ -43,6 +52,17 @@ public class ForumService {
         Optional<Forum> existingForum = forumRepository.findById(filmId);
 
         if (existingForum.isPresent()) {
+            // Forum forum =  existingForum.get();
+            // Integer forumId = forum.getForumId();
+            // User user = userRepository.findById(email).orElseThrow(() -> new RuntimeException("EL Usuario con ID " + email + " no existe en la BD local."));
+
+            // Subscription newSuscription = new Subscription();
+            // newSuscription.setForum(forum);
+            // newSuscription.setUser(user);
+            // this.subscriptionRepository.save(newSuscription);
+
+            // return forumId;
+
             return existingForum.get().getForumId();
         }
 
@@ -63,6 +83,12 @@ public class ForumService {
 
             System.out.println("¡Foro creado/obtenido con éxito! ID:" + filmId + " " + newTopicId);
 
+            // User user = userRepository.findById(email).orElseThrow(() -> new RuntimeException("EL Usuario con ID " + email + " no existe en la BD local."));
+
+            // Subscription newSuscription = new Subscription();
+            // newSuscription.setForum(newForum);
+            // newSuscription.setUser(user);
+            // this.subscriptionRepository.save(newSuscription);
             
             return newTopicId;
         }

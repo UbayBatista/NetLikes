@@ -6,5 +6,5 @@ import software.ulpgc.netlikes.model.Forum;
 
 @Repository
 public interface ForumRepository extends JpaRepository<Forum, Integer> {
-    // Ya no necesitamos buscar por filmId explícitamente porque el propio ID del Forum ES el de la película
+
 }

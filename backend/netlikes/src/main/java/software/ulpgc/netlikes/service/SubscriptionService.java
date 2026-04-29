@@ -1,17 +1,28 @@
 package software.ulpgc.netlikes.service;
 
 import org.springframework.stereotype.Service;
+
+import software.ulpgc.netlikes.model.Forum;
 import software.ulpgc.netlikes.model.Subscription;
 import software.ulpgc.netlikes.model.SubscriptionId;
+import software.ulpgc.netlikes.model.User;
+import software.ulpgc.netlikes.repository.ForumRepository;
 import software.ulpgc.netlikes.repository.SubscriptionRepository;
+import software.ulpgc.netlikes.repository.UserRepository;
+
 import java.util.List;
 
 @Service
 public class SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
+    private final UserRepository userRepository;
+    private final ForumRepository forumRepository;
 
-    public SubscriptionService(SubscriptionRepository subscriptionRepository){
+    public SubscriptionService(SubscriptionRepository subscriptionRepository, 
+            UserRepository userRepository, ForumRepository forumRepository){
         this.subscriptionRepository = subscriptionRepository;
+        this.userRepository = userRepository;
+        this.forumRepository = forumRepository;
     }
 
     public List<Subscription> getAllSubscriptions() {
@@ -29,4 +40,23 @@ public class SubscriptionService {
     public void deleteSubscription(SubscriptionId subscriptionId) {
         this.subscriptionRepository.deleteById(subscriptionId);
     }
+
+    public void subscribeUserToForum(String email, Integer filmId) {
+        // 1. Buscamos al usuario 
+        // (Nota: Si tu UserRepository usa otro método como findByEmail, cámbialo aquí)
+        User user = userRepository.findById(email)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + email));
+
+        // 2. Buscamos el foro
+        Forum forum = forumRepository.findById(filmId)
+            .orElseThrow(() -> new RuntimeException("Foro no encontrado para la película con ID: " + filmId));
+
+        // 3. Montamos la suscripción y usamos tu método existente para guardarla
+        Subscription subscription = new Subscription();
+        subscription.setUser(user);
+        subscription.setForum(forum);
+        
+        this.createSubscription(subscription);
+    }
+
 }
