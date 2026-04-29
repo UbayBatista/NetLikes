@@ -70,6 +70,12 @@ public class UserService {
         return toDTO(user);
     }
 
+    public boolean isPrivate(String email){
+        return userRepository.findById(email)
+        .orElseThrow(() -> new RuntimeException("User not found"))
+        .isAccountPrivacity();
+    }
+
     public UserResponseDTO createUser(UserRequestDTO dto) {
 
         User user = new User();

@@ -4,11 +4,9 @@ import software.ulpgc.netlikes.model.Follow;
 import software.ulpgc.netlikes.service.FollowService;
 
 import java.util.List;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/follows")
@@ -19,9 +17,13 @@ public class FollowController {
         this.followService = followService;
     }
     
-    @PostMapping
-    public Follow createFollow(@RequestBody Follow follow) {
-        return followService.createFollow(follow);
+    @PostMapping("/{targetId}")
+    public ResponseEntity<Follow> followUser(
+            @PathVariable String targetId, 
+            @RequestHeader("X-User-Id") String myId) {
+        
+        Follow result = followService.requestFollow(myId, targetId);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/{followerId}")

@@ -3,21 +3,35 @@ package software.ulpgc.netlikes.service;
 import software.ulpgc.netlikes.model.Follow;
 import software.ulpgc.netlikes.model.FollowId;
 import software.ulpgc.netlikes.repository.FollowRepository;
+import software.ulpgc.netlikes.repository.UserRepository;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class FollowService {
 
     private final FollowRepository followRepository;
+    private final UserService userService;
 
-    public FollowService(FollowRepository followRepository) {
+    public FollowService(FollowRepository followRepository, UserService userService) {
         this.followRepository = followRepository;
+        this.userService = userService;
     }
 
-    public Follow createFollow(Follow follow) {
-        return followRepository.save(follow);
+    @Transactional
+    public Follow requestFollow(String followerId, String followedId) {
+        if (followerId.equals(followedId)) {
+            throw new IllegalArgumentException("Un usuario no puede seguirse a sí mismo.");
+        }
+
+        boolean isPrivateAccount = userService.isPrivate(followedId); 
+        Follow.State initialState = isPrivateAccount ? Follow.State.PENDING : Follow.State.ACCEPTED;
+
+        Follow newFollow = new Follow(followerId, followedId, initialState);
+        return followRepository.save(newFollow);
     }
 
     public List<Follow> getFollowByFollowerId(String followerId) {
