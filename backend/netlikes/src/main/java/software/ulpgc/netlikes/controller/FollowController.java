@@ -1,5 +1,6 @@
 package software.ulpgc.netlikes.controller;
 
+import software.ulpgc.netlikes.dto.UserResponseDTO;
 import software.ulpgc.netlikes.model.Follow;
 import software.ulpgc.netlikes.service.FollowService;
 
@@ -38,12 +39,12 @@ public class FollowController {
     }
 
     @GetMapping("/followersOf/{followerId}")
-    public List<Follow> getFollowersOf(@PathVariable String followerId) {
+    public List<UserResponseDTO> getFollowersOf(@PathVariable String followerId) {
         return followService.getFollowersOf(followerId);
     }
 
     @GetMapping("/followsOf/{followerId}")
-    public List<Follow> getFollowsOf(@PathVariable String followerId) {
+    public List<UserResponseDTO> getFollowsOf(@PathVariable String followerId) {
         return followService.getFollowsOf(followerId);
     }
     

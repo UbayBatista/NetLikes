@@ -1,5 +1,6 @@
 package software.ulpgc.netlikes.service;
 
+import software.ulpgc.netlikes.dto.UserResponseDTO;
 import software.ulpgc.netlikes.model.Follow;
 import software.ulpgc.netlikes.model.FollowId;
 import software.ulpgc.netlikes.repository.FollowRepository;
@@ -43,12 +44,36 @@ public class FollowService {
                 .orElse("NONE");
     }
 
-    public List<Follow> getFollowersOf(String userId) {
-        return followRepository.findByFollowerId(userId);
+    public List<UserResponseDTO> getFollowersOf(String targetEmail) {
+        return followRepository.findByFollowedId(targetEmail).stream()
+                .filter(follow -> follow.getState() == Follow.State.ACCEPTED)
+                .map(follow -> {
+                    return userRepository.findById(follow.getFollowerId())
+                            .map(user -> new UserResponseDTO(
+                                    user.getEmail(), 
+                                    user.getName(), 
+                                    user.getProfilePicture()
+                            ))
+                            .orElse(null);
+                })
+                .filter(dto -> dto != null) 
+                .toList();
     }
 
-    public List<Follow> getFollowsOf(String userId) {
-        return followRepository.findByFollowedId(userId);
+    public List<UserResponseDTO> getFollowsOf(String targetEmail) {
+        return followRepository.findByFollowerId(targetEmail).stream()
+                .filter(follow -> follow.getState() == Follow.State.ACCEPTED)
+                .map(follow -> {
+                    return userRepository.findById(follow.getFollowedId())
+                            .map(user -> new UserResponseDTO(
+                                    user.getEmail(), 
+                                    user.getName(), 
+                                    user.getProfilePicture()
+                            ))
+                            .orElse(null);
+                })
+                .filter(dto -> dto != null)
+                .toList();
     }
 
     public Integer countFollowersOf(String userId) {
