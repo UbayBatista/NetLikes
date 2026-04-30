@@ -2,6 +2,7 @@ package software.ulpgc.netlikes.service;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
@@ -26,11 +27,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final GenreRepository genreRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FollowService followService;
 
-    public UserService(UserRepository userRepository, GenreRepository genreRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, GenreRepository genreRepository, PasswordEncoder passwordEncoder, FollowService followService) {
         this.userRepository = userRepository;
         this.genreRepository = genreRepository;
         this.passwordEncoder = passwordEncoder;
+        this.followService = followService;
     }
 
     public List<UserResponseDTO> getAllUsers() {
@@ -63,14 +66,14 @@ public class UserService {
         return ResponseEntity.ok(results);
     }
 
-    public UserResponseDTO getUserById(String email) {
+    public UserResponseDTO getUserById(@NonNull String email) {
         User user = userRepository.findById(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return toDTO(user);
     }
 
-    public boolean isPrivate(String email){
+    public boolean isPrivate(@NonNull String email){
         return userRepository.findById(email)
         .orElseThrow(() -> new RuntimeException("User not found"))
         .isAccountPrivacity();
@@ -85,7 +88,7 @@ public class UserService {
         return toDTO(user);
     }
 
-    public UserResponseDTO updateUser(String email, UserRequestDTO dto) {
+    public UserResponseDTO updateUser(@NonNull String email, UserRequestDTO dto) {
 
         User user = userRepository.findById(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -96,7 +99,7 @@ public class UserService {
         return toDTO(user);
     }
 
-    public void deleteUser(String email) {
+    public void deleteUser(@NonNull String email) {
         userRepository.deleteById(email);
     }
 
@@ -139,19 +142,19 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
 
-    public String getSecurityQuestion(String email) {
+    public String getSecurityQuestion(@NonNull String email) {
         User user = userRepository.findById(email)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         return user.getSecurityQuestion();
     }
 
-    public boolean isValidAnswer(String email, String answer) {
+    public boolean isValidAnswer(@NonNull String email, String answer) {
         User user = userRepository.findById(email)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         return user.getAnswer().equals(answer);
     }
 
-    public UserProfileDTO myProfile(String email){
+    public UserProfileDTO myProfile(@NonNull String email){
         User user = userRepository.findById(email)
             .orElseThrow(()-> new RuntimeException("Usuario no encontrado"));
         
@@ -172,7 +175,7 @@ public class UserService {
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         boolean isOwnProfile = target.getEmail().equals(requesterEmail);
-        boolean isFollowing = false; // TO DO: Mirar si se siguen
+        boolean isFollowing = (followService.checkStatus(requesterEmail, target.getEmail()).equals("ACCEPTED"));
 
         boolean canSeeContent = !target.isAccountPrivacity() || isOwnProfile || isFollowing;
 
@@ -188,7 +191,7 @@ public class UserService {
         );
     }
 
-    public void changePrivacy(String email, Boolean isPrivate) {
+    public void changePrivacy(@NonNull String email, Boolean isPrivate) {
         User user = userRepository.findById(email)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         user.setAccountPrivacity(isPrivate);
