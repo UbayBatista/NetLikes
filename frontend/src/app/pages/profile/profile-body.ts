@@ -63,7 +63,6 @@ export class ProfileComplete implements OnInit {
   showConfirmModal = false;
   confirmModalMessage = '';
   private userToFollow: string = '';
-  private usernameToFollow: string = '';
   private actionToConfirm: 'FOLLOW' | 'UNFOLLOW' = 'FOLLOW';
 
   ngOnInit() {
@@ -96,7 +95,6 @@ export class ProfileComplete implements OnInit {
 
   onFollowRequest(userName: string, email: string) {
     this.userToFollow = email;
-    this.usernameToFollow = userName;
 
     const currentState = this.followStateSubject.value;
 
@@ -126,7 +124,6 @@ export class ProfileComplete implements OnInit {
     } else {
       console.log('Acción cancelada');
       this.userToFollow = '';
-      this.usernameToFollow = '';
     }
   }
 
@@ -144,7 +141,6 @@ export class ProfileComplete implements OnInit {
       error: (error) => console.error('Error al intentar seguir:', error),
       complete: () => {
         this.userToFollow = ''; 
-        this.usernameToFollow = '';
       }
     });
   }
@@ -163,7 +159,6 @@ export class ProfileComplete implements OnInit {
       error: (error) => console.error('Error al dejar de seguir:', error),
       complete: () => {
         this.userToFollow = ''; 
-        this.usernameToFollow = '';
       }
     });
   }
