@@ -81,6 +81,7 @@
     <app-social-modal 
       [title]="socialType" 
       [users]="socialData" 
+      [isMyOwnProfile]="(itsMe$ | async) ?? false"
       (close)="isSocialModalOpen = false"
       (tabChange)="showSocial($event)">
     </app-social-modal>

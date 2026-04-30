@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef, inject, De
 import { CommonModule, AsyncPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router'; 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, map, Observable } from 'rxjs';
+import { BehaviorSubject, filter, map, Observable, take } from 'rxjs';
 
 import { ProfileBody } from "../../components/profile-components/profile-components";
 import { ProfileHeader } from "../../components/profile-header/profile-header";
@@ -171,7 +171,50 @@ export class ProfileComplete implements OnInit {
   showSocial(type: SocialType) {
     this.socialType = type;
     this.isSocialModalOpen = true;
-    this.socialData = type === 'Seguidores' ? this.getFollowersMock() : this.getFollowingMock();
+
+    this.socialData = []; 
+
+    this.profile$.pipe(
+      filter((profile: any) => profile !== null), 
+      take(1)
+    ).subscribe(profile => {
+      const currentProfileEmail = (profile as any)?.email;
+      
+      console.log(`[DEBUG] Buscando ${type} para el email:`, currentProfileEmail);
+      
+      if (!currentProfileEmail) {
+        console.error('El perfil actual no tiene email. Revisa la interfaz del perfil.');
+        return;
+      }
+
+      if (type === 'Seguidores') {
+        this.followService.getFollowers(currentProfileEmail).subscribe({
+          next: (users) => {
+            console.log('[DEBUG] Seguidores recibidos:', users);
+            this.socialData = users.map(u => ({
+              name: u.userName,
+              avatar: u.profilePicture || 'assets/default-avatar.png', 
+              email: u.email
+            }));
+            this.cdr.detectChanges();
+          },
+          error: (err) => console.error('Error cargando seguidores', err)
+        });
+      } else {
+        this.followService.getFollowing(currentProfileEmail).subscribe({
+          next: (users) => {
+            console.log('[DEBUG] Seguidos recibidos:', users);
+            this.socialData = users.map(u => ({
+              name: u.userName,
+              avatar: u.profilePicture || 'assets/default-avatar.png',
+              email: u.email
+            }));
+            this.cdr.detectChanges();
+          },
+          error: (err) => console.error('Error cargando seguidos', err)
+        });
+      }
+    });
   }
 
   scroll(direction: 'left' | 'right') {
@@ -204,19 +247,5 @@ export class ProfileComplete implements OnInit {
   logout() {
     this.authService.logout();
     this.router.navigate(['/']);
-  }
-
-  private getFollowersMock() {
-    return [
-      { name: 'Luis Suárez', avatar: '...', status: 'Seguir también' },
-      { name: 'Messi', avatar: '...', status: 'Seguir también' },
-    ];
-  }
-
-  private getFollowingMock() {
-    return [
-      { name: 'Cristiano Ronaldo', avatar: '...' },
-      { name: 'Zinedine Zidane', avatar: '...' },
-    ];
   }
 }

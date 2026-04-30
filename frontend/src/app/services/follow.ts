@@ -12,8 +12,8 @@ export interface Follow {
 
 export interface LoggedUser {
   email: string;
-  username: string;
-  foto: string;
+  userName: string;
+  profilePicture: string;
 }
 
 @Injectable({
@@ -72,9 +72,16 @@ export class FollowService {
     );
   }
 
-  getFollowing(userId: string): Observable<Follow[]> {
-    return this.http.get<Follow[]>(
-      `${this.apiUrl}/user/${userId}`, 
+  getFollowers(targetEmail: string): Observable<LoggedUser[]> {
+    return this.http.get<any[]>(
+      `${this.apiUrl}/followersOf/${targetEmail}`, 
+      { headers: this.getHeaders() }
+    );
+  }
+
+  getFollowing(targetEmail: string): Observable<LoggedUser[]> {
+    return this.http.get<any[]>(
+      `${this.apiUrl}/followsOf/${targetEmail}`, 
       { headers: this.getHeaders() }
     );
   }
