@@ -6,6 +6,7 @@ import software.ulpgc.netlikes.repository.FollowRepository;
 
 import java.util.List;
 
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +22,7 @@ public class FollowService {
     }
 
     @Transactional
-    public Follow requestFollow(String followerId, String followedId) {
+    public Follow requestFollow(@NonNull String followerId, @NonNull String followedId) {
         if (followerId.equals(followedId)) {
             throw new IllegalArgumentException("Un usuario no puede seguirse a sí mismo.");
         }
