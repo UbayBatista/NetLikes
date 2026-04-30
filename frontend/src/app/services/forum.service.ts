@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class ForumService {
 
-  private apiUrl = ' https://vendor-calamity-sneer.ngrok-free.dev/forum';
+  private apiUrl = 'https://api-db.duckdns.org/forum';
 
   constructor(private http: HttpClient) { }
 

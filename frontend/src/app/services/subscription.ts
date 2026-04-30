@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class SubscriptionService {
     
-  private apiUrl = ' https://vendor-calamity-sneer.ngrok-free.dev/subscribe_to';
+  private apiUrl = 'https://api-db.duckdns.org/subscribe_to';
 
   constructor(private http: HttpClient) { }
 
