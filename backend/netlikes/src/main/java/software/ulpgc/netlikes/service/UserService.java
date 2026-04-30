@@ -163,8 +163,8 @@ public class UserService {
         user.getName(),
         user.getBio(),
         user.isAccountPrivacity(),
-        0,
-        0,
+        followService.countFollowsOf(user.getName()),
+        followService.countFollowersOf(user.getName()),
         new ArrayList<>(), // TO DO: coger las películas
         new ArrayList<>()
     );
@@ -184,8 +184,8 @@ public class UserService {
             target.getName(),
             canSeeContent ? target.getBio() : null,
             target.isAccountPrivacity(),
-            0,
-            0,
+            followService.countFollowsOf(target.getEmail()),
+            followService.countFollowersOf(target.getEmail()),
             canSeeContent ? new ArrayList<>() : null, //TO DO: Mirar peliculas
             canSeeContent ? new ArrayList<>() : null
         );

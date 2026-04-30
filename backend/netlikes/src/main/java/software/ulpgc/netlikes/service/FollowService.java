@@ -3,6 +3,7 @@ package software.ulpgc.netlikes.service;
 import software.ulpgc.netlikes.model.Follow;
 import software.ulpgc.netlikes.model.FollowId;
 import software.ulpgc.netlikes.repository.FollowRepository;
+import software.ulpgc.netlikes.repository.UserRepository;
 
 import java.util.List;
 
@@ -14,11 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class FollowService {
 
     private final FollowRepository followRepository;
-    private final UserService userService;
+    private final UserRepository userRepository;
 
-    public FollowService(FollowRepository followRepository, UserService userService) {
+    public FollowService(FollowRepository followRepository, UserRepository userRepository) {
         this.followRepository = followRepository;
-        this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     @Transactional
@@ -27,7 +28,9 @@ public class FollowService {
             throw new IllegalArgumentException("Un usuario no puede seguirse a sí mismo.");
         }
 
-        boolean isPrivateAccount = userService.isPrivate(followedId); 
+        boolean isPrivateAccount = userRepository.findById(followedId)
+                                    .orElseThrow(() -> new RuntimeException("User not found"))
+                                    .isAccountPrivacity();
         Follow.State initialState = isPrivateAccount ? Follow.State.PENDING : Follow.State.ACCEPTED;
 
         Follow newFollow = new Follow(followerId, followedId, initialState);
@@ -40,8 +43,20 @@ public class FollowService {
                 .orElse("NONE");
     }
 
-    public List<Follow> getFollowByFollowerId(String followerId) {
-        return followRepository.findByFollowerId(followerId);
+    public List<Follow> getFollowersOf(String userId) {
+        return followRepository.findByFollowerId(userId);
+    }
+
+    public List<Follow> getFollowsOf(String userId) {
+        return followRepository.findByFollowedId(userId);
+    }
+
+    public Integer countFollowersOf(String userId) {
+        return (int)this.getFollowersOf(userId).stream().count();
+    }
+
+    public Integer countFollowsOf(String userId) {
+        return (int)this.getFollowsOf(userId).stream().count();
     }
 
     public Follow updateFollow(Follow follow) {

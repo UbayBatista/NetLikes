@@ -37,9 +37,14 @@ public class FollowController {
         return ResponseEntity.ok(Map.of("state", status)); 
     }
 
-    @GetMapping("/{followerId}")
-    public List<Follow> getFollowByFollowerId(@PathVariable String followerId) {
-        return followService.getFollowByFollowerId(followerId);
+    @GetMapping("/followersOf/{followerId}")
+    public List<Follow> getFollowersOf(@PathVariable String followerId) {
+        return followService.getFollowersOf(followerId);
+    }
+
+    @GetMapping("/followsOf/{followerId}")
+    public List<Follow> getFollowsOf(@PathVariable String followerId) {
+        return followService.getFollowsOf(followerId);
     }
     
     @PutMapping("/{id}")
