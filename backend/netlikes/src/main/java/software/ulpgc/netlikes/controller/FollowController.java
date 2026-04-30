@@ -47,8 +47,13 @@ public class FollowController {
         return followService.updateFollow(follow);
     }
 
-    @DeleteMapping("/{followerId}/{followedId}")
-    public void deleteParticipate(@PathVariable String followerId, @PathVariable String followedId) {
-        followService.deleteFollow(followerId, followedId);
+    @DeleteMapping("/{targetId}/unfollow")
+    public ResponseEntity<Void> unfollowUser(
+            @PathVariable String targetId, 
+            @RequestHeader("X-User-Id") String myId) {
+        
+        followService.deleteFollow(myId, targetId);
+        
+        return ResponseEntity.noContent().build();
     }
 }
