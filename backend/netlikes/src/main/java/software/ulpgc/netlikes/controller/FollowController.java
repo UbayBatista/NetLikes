@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,8 +22,8 @@ public class FollowController {
     
     @PostMapping("/{targetId}")
     public ResponseEntity<Follow> followUser(
-            @PathVariable String targetId, 
-            @RequestHeader("X-User-Id") String myId) {
+            @NonNull @PathVariable String targetId, 
+            @NonNull @RequestHeader("X-User-Id") String myId) {
         
         Follow result = followService.requestFollow(myId, targetId);
         return ResponseEntity.ok(result);

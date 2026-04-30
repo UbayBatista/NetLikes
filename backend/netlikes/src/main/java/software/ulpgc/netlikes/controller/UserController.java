@@ -10,9 +10,11 @@ import software.ulpgc.netlikes.dto.ValidAnswerRequestDTO;
 import software.ulpgc.netlikes.service.UserService;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/users")
@@ -34,7 +36,7 @@ public class UserController {
     }
 
     @GetMapping("/{email}")
-    public UserResponseDTO getUserById(@PathVariable String email) {
+    public UserResponseDTO getUserById(@NonNull @PathVariable String email) {
         return userService.getUserById(email);
     }
 
@@ -45,14 +47,14 @@ public class UserController {
 
     @PutMapping("/{email}")
     public UserResponseDTO updateUser(
-            @PathVariable String email,
+            @NonNull @PathVariable String email,
             @Valid @RequestBody UserRequestDTO dto) {
 
         return userService.updateUser(email, dto);
     }
 
     @DeleteMapping("/{email}")
-    public void deleteUser(@PathVariable String email) {
+    public void deleteUser(@NonNull @PathVariable String email) {
         userService.deleteUser(email);
     }
 
@@ -80,7 +82,7 @@ public class UserController {
     }
 
     @GetMapping("/securityQuestion/{email}")
-    public ResponseEntity<?> getSecurityQuestion(@PathVariable String email) {
+    public ResponseEntity<?> getSecurityQuestion(@NonNull @PathVariable String email) {
         try {
             return ResponseEntity.ok(userService.getSecurityQuestion(email));
         } catch (RuntimeException e) {
@@ -89,16 +91,16 @@ public class UserController {
     }
 
     @PostMapping("/isValidAnswer")
-    public ResponseEntity<?> isValidAnswer(@RequestBody ValidAnswerRequestDTO request) {
+    public ResponseEntity<?> isValidAnswer(@NonNull @RequestBody ValidAnswerRequestDTO request) {
         try {
-            return ResponseEntity.ok(userService.isValidAnswer(request.getEmail(), request.getAnswer()));
+            return ResponseEntity.ok(userService.isValidAnswer(Objects.requireNonNull(request.getEmail()), request.getAnswer()));
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         }
     }
 
     @GetMapping("/myProfile/{email}")
-    public UserProfileDTO myProfile(@PathVariable String email){
+    public UserProfileDTO myProfile(@NonNull @PathVariable String email){
         return userService.myProfile(email);
     }
 
@@ -109,7 +111,7 @@ public class UserController {
     }
 
     @PatchMapping("/myProfile/{email}/privacy")
-    public ResponseEntity<?> changePrivacy(@PathVariable String email, @RequestBody PrivacyRequestDTO request) {
+    public ResponseEntity<?> changePrivacy(@NonNull @PathVariable String email, @RequestBody PrivacyRequestDTO request) {
         userService.changePrivacy(email, request.getIsPrivate());
         return ResponseEntity.ok().build();
     }
