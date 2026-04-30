@@ -3,7 +3,6 @@ package software.ulpgc.netlikes.service;
 import software.ulpgc.netlikes.model.Follow;
 import software.ulpgc.netlikes.model.FollowId;
 import software.ulpgc.netlikes.repository.FollowRepository;
-import software.ulpgc.netlikes.repository.UserRepository;
 
 import java.util.List;
 
