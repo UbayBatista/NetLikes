@@ -182,7 +182,7 @@ public class FilmService {
         dto.setPosterPath(film.getPosterPath());
         dto.setOverView(film.getOverView());
         dto.setReleaseDate(film.getReleaseDate());
-        dto.setRuntime(film.getRuntime().toString());
+        dto.setRuntime(film.getRuntime());
         dto.setAgeRating(film.getAgeRating());
         dto.setTagLine(film.getTagLine());
         

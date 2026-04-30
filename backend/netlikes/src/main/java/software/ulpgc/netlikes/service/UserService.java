@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
+import software.ulpgc.netlikes.dto.FilmResponseDTO;
 import software.ulpgc.netlikes.dto.LoginRequestDTO;
 import software.ulpgc.netlikes.dto.UserProfileDTO;
 import software.ulpgc.netlikes.dto.RegisterRequestDTO;
@@ -16,6 +17,7 @@ import software.ulpgc.netlikes.model.Genre;
 import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.repository.GenreRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
+import software.ulpgc.netlikes.model.Mark;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,12 +30,14 @@ public class UserService {
     private final GenreRepository genreRepository;
     private final PasswordEncoder passwordEncoder;
     private final FollowService followService;
+    private final MarkService markService;
 
-    public UserService(UserRepository userRepository, GenreRepository genreRepository, PasswordEncoder passwordEncoder, FollowService followService) {
+    public UserService(UserRepository userRepository, GenreRepository genreRepository, PasswordEncoder passwordEncoder, FollowService followService, MarkService markService) {
         this.userRepository = userRepository;
         this.genreRepository = genreRepository;
         this.passwordEncoder = passwordEncoder;
-        this.followService = followService;
+        this.followService = followService; 
+        this.markService = markService;
     }
 
     public List<UserResponseDTO> getAllUsers() {
@@ -128,8 +132,9 @@ public class UserService {
         newUser.setBirthdate(request.getBirthdate());
         if (request.getFavoriteGenres() != null) {
             List<Integer> ids = request.getFavoriteGenres().stream()
-                                    .map(g -> (int) g.getId())
+                                    .map(g -> (int) g.getId()) 
                                     .toList();
+
             List<Genre> genres = genreRepository.findAllById(ids);
             newUser.setFavoriteGenres(genres);
         }
@@ -154,40 +159,58 @@ public class UserService {
         return user.getAnswer().equals(answer);
     }
 
+    
+    public void changePassword(String email, String newPassword) {
+        User user = userRepository.findById(email)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
     public UserProfileDTO myProfile(@NonNull String email){
         User user = userRepository.findById(email)
             .orElseThrow(()-> new RuntimeException("Usuario no encontrado"));
         
+        List<FilmResponseDTO> watchedFilms = markService.getFilmsByMarkType(email, Mark.Type.SEEN);
+        List<FilmResponseDTO> watchLaterFilms = markService.getFilmsByMarkType(email, Mark.Type.WATCHLATER);
+
         return new UserProfileDTO(
-        user.getEmail(),
-        user.getName(),
-        user.getBio(),
-        user.isAccountPrivacity(),
-        followService.countFollowersOf(user.getEmail()),
-        followService.countFollowsOf(user.getEmail()),
-        new ArrayList<>(), // TO DO: coger las películas
-        new ArrayList<>()
-    );
+            user.getEmail(),
+            user.getName(),
+            user.getBio(),
+            user.isAccountPrivacity(),
+            followService.countFollowersOf(user.getEmail()),
+            followService.countFollowsOf(user.getEmail()),
+            watchedFilms, 
+            watchLaterFilms
+        );
     }
 
     public UserProfileDTO userProfile(String userName, String requesterEmail) {
         User target = userRepository.findByName(userName)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         boolean isOwnProfile = target.getEmail().equals(requesterEmail);
         boolean isFollowing = (followService.checkStatus(requesterEmail, target.getEmail()).equals("ACCEPTED"));
 
         boolean canSeeContent = !target.isAccountPrivacity() || isOwnProfile || isFollowing;
 
+        List<FilmResponseDTO> watched = canSeeContent ? 
+            markService.getFilmsByMarkType(target.getEmail(), Mark.Type.SEEN) : new ArrayList<>();
+        
+        List<FilmResponseDTO> later = canSeeContent ? 
+            markService.getFilmsByMarkType(target.getEmail(), Mark.Type.WATCHLATER) : new ArrayList<>();
+
         return new UserProfileDTO(
             target.getEmail(),
             target.getName(),
-            canSeeContent ? target.getBio() : null,
+            target.getBio(),
             target.isAccountPrivacity(),
             followService.countFollowersOf(target.getEmail()),
             followService.countFollowsOf(target.getEmail()),
-            canSeeContent ? new ArrayList<>() : null, //TO DO: Mirar peliculas
-            canSeeContent ? new ArrayList<>() : null
+            canSeeContent ? watched : null,
+            canSeeContent ? later : null
         );
     }
 
@@ -224,8 +247,6 @@ public class UserService {
         dto.setProfilePicture(user.getProfilePicture());
 
         return dto;
-    }
-
-    
+    }   
 }
 

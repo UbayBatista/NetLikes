@@ -14,7 +14,7 @@ public class FilmResponseDTO {
     private String posterPath;
     private String tagLine;
     private String overView;
-    private String runtime;
+    private Integer runtime;
     private String ageRating;
     private boolean adult;
     private Date releaseDate;

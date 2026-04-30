@@ -4,11 +4,12 @@ import { NgClass } from '@angular/common';
 import { Router } from '@angular/router';
 import { Credentials } from '../../models/user.models';
 import { AuthService } from '../../services/auth.service';
+import { RecoverPassword } from '../recover-password/recover-password';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-login-form',
-  imports: [ReactiveFormsModule, NgClass],
+  imports: [ReactiveFormsModule, NgClass, RecoverPassword],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
@@ -26,6 +27,8 @@ export class LoginForm {
 
   form: FormGroup;
   showPassword: boolean = false;
+  showRecoverModal: boolean = false;
+  showRecoverError = false;
 
 
   constructor(private router: Router, private fb: FormBuilder, private authService: AuthService) {
@@ -37,6 +40,13 @@ export class LoginForm {
     this.form.get('password')?.valueChanges.subscribe(() => {
       if (this.form.get('password')?.hasError('wrongCredentials')) {
         this.form.get('password')?.setErrors(null);
+      }
+    });
+
+    this.form.get('email')?.valueChanges.subscribe(() => {
+      this.showRecoverError = false;
+      if (this.form.get('email')?.hasError('notFound')) {
+        this.form.get('email')?.setErrors(null);
       }
     });
   }
@@ -63,7 +73,21 @@ export class LoginForm {
   }
 
   forgotPassword() {
-    console.log('Redirigiendo a recuperación de contraseña');
-    // TODO: Implement navigation to forgot password page
-  }
+    if (!this.form.get('email')?.valid) {
+        this.showRecoverError = true;
+        this.form.get('email')?.markAsTouched();
+        return;
+    }
+
+    const email = this.form.get('email')!.value;
+    this.authService.checkEmailExists(email).subscribe(exists => {
+        if (!exists) {
+            this.showRecoverError = true;
+            this.form.get('email')?.setErrors({ notFound: true });
+            return;
+        }
+        this.showRecoverError = false;
+        this.showRecoverModal = true;
+    });
+}
 }

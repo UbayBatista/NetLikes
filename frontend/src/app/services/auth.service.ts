@@ -41,6 +41,24 @@ export class AuthService {
     return this.currentUser$.asObservable();
   }
 
+  checkEmailExists(email: string): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/exists/${email}`);
+  }
+
+  getSecurityQuestion(email:string): Observable<string> {
+    return this.http.get(`${this.apiUrl}/securityQuestion/${email}`, { 
+      responseType: 'text' 
+    }) as Observable<string>;
+  }
+
+  isValidAnswer(email: string, answer: string): Observable<boolean> {
+    return this.http.post<boolean>(`${this.apiUrl}/isValidAnswer`, { email, answer });
+  }
+
+  changePassword(email: string, newPassword: string): Observable<void> {
+    return this.http.patch<void>(`${this.apiUrl}/changePassword`, { email, newPassword });
+  }
+
   private saveUser(user: User): void {
     localStorage.setItem('user', JSON.stringify(user));
     this.currentUser$.next(user);
@@ -50,14 +68,8 @@ export class AuthService {
     const stored = localStorage.getItem('user');
     if (stored) this.currentUser$.next(JSON.parse(stored));
   }
-
-  checkEmailExists(email: string): Observable<boolean> {
-    return this.http.get<boolean>(`${this.apiUrl}/exists/${email}`);
-  }
-
-  getSecurityQuestion(email:string): Observable<string> {
-    return this.http.get(`${this.apiUrl}/securityQuestion/${email}`, { 
-      responseType: 'text' 
-    }) as Observable<string>;
+  
+  getCurrentUserEmail(): string | null {
+    return this.currentUser$.value?.email || null;
   }
 }
