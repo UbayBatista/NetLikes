@@ -68,4 +68,8 @@ export class AuthService {
     const stored = localStorage.getItem('user');
     if (stored) this.currentUser$.next(JSON.parse(stored));
   }
+  
+  getCurrentUserEmail(): string | null {
+    return this.currentUser$.value?.email || null;
+  }
 }

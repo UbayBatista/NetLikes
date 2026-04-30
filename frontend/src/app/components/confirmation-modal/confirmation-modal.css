@@ -1,0 +1,85 @@
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.modal-container {
+  background: #ffffff;
+  border-radius: 15px;
+  width: 100%;
+  max-width: 400px;
+  overflow: hidden;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.modal-message {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #262626;
+}
+
+.modal-actions {
+  display: flex;
+  border-top: 1px solid #dbdbdb;
+}
+
+.modal-actions button {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  background: transparent;
+  font-size: 0.9rem;
+  cursor: pointer;
+  outline: none;
+  font-weight: 400;
+}
+
+.btn-confirm {
+  color: #ed4956;
+  font-weight: 700 !important;
+}
+
+.btn-confirm {
+  border-right: 1px solid #dbdbdb;
+}
+
+.btn-cancel {
+  color: #262626;
+}
+
+.modal-actions button:active {
+  background-color: #efefef;
+}
+
+@media (max-width: 576px) {
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .btn-confirm {
+    border-right: none;
+    border-bottom: 1px solid #dbdbdb;
+  }
+
+  .modal-content {
+    padding: 40px 30px;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(1.1); }
+  to { opacity: 1; transform: scale(1); }
+}

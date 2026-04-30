@@ -1,4 +1,6 @@
 package software.ulpgc.netlikes.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,19 +12,26 @@ import lombok.*;
 public class Mark {
 
     @EmbeddedId
-    private MarkId id = new MarkId();
+    private MarkId id;
 
     @ManyToOne
     @MapsId("email")
     @JoinColumn(name = "email")
+    @JsonIgnore
     private User user;
 
     @ManyToOne
     @MapsId("filmId")
-    @JoinColumn(name = "filmId")
+    @JoinColumn(name = "film_id")
+    @JsonIgnore
     private Film film;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String type;
-    
+    private Type type;
+
+    public enum Type {
+        SEEN,
+        WATCHLATER
+    } 
 }
