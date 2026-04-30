@@ -2,6 +2,7 @@ import { Component, Output, EventEmitter, signal, OnInit, ChangeDetectorRef} fro
 import { FormsModule } from '@angular/forms';
 import { SearchBarComponent } from '../search-bar/search-bar';
 import { SubscriptionService } from '../../services/subscription';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-forum-list',
@@ -13,7 +14,9 @@ import { SubscriptionService } from '../../services/subscription';
 export class ForumList implements OnInit{
 
   @Output() clickedForum = new EventEmitter<{title: string, forumId: number}>(); 
-  constructor(private subscriptionService: SubscriptionService, private cdr: ChangeDetectorRef) {}
+  constructor(private subscriptionService: SubscriptionService, 
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService) {}
 
   search = signal('');
 
@@ -41,30 +44,38 @@ export class ForumList implements OnInit{
   }
 
   ngOnInit() {
-    const emailLoged = "jose@gmail.com";
+    this.authService.getCurrentUser().subscribe(user => { 
 
-    this.subscriptionService.getUserSubscription(emailLoged).subscribe({
-      next: (data) => {
-        // "data" es el array que nos devuelve Spring Boot con todo el árbol (Suscripcion -> Foro -> Pelicula)
-        
-        this.filmsForum = data.map((sub, index) => {
-          return {
-            title: sub.forum.film.title,      
-            active: index === 0,         
-            
-            forumTopicId: sub.forum.forumId,
-            filmId: sub.forum.film.id
-          };
-        });
-
-        this.cdr.detectChanges()
-
-        console.log('Foros cargados desde la base de datos:', this.filmsForum);
-      },
-      error: (err) => {
-        console.error('Error al obtener los foros:', err);
+      if (!user || !user.email) {
+        alert('¡Debes iniciar sesión para poder suscribirte a un foro!');
+        return; 
       }
+      console.log('Usuario detectado:', user.email, 'Enviando petición a Spring Boot...')
+
+      this.subscriptionService.getUserSubscription(user.email).subscribe({
+        next: (data) => {
+          // "data" es el array que nos devuelve Spring Boot con todo el árbol (Suscripcion -> Foro -> Pelicula)
+          
+          this.filmsForum = data.map((sub, index) => {
+            return {
+              title: sub.forum.film.title,      
+              active: index === 0,         
+              
+              forumTopicId: sub.forum.forumId,
+              filmId: sub.forum.film.id
+            };
+          });
+
+          this.cdr.detectChanges()
+
+          console.log('Foros cargados desde la base de datos:', this.filmsForum);
+        },
+        error: (err) => {
+          console.error('Error al obtener los foros:', err);
+        }
+      });
     });
   }
+
 
 }
