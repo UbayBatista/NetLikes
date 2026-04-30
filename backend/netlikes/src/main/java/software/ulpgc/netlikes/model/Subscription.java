@@ -1,5 +1,6 @@
 package software.ulpgc.netlikes.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,6 +16,7 @@ public class Subscription {
     @ManyToOne
     @MapsId("email")
     @JoinColumn(name = "email")
+    @JsonIgnore
     private User user;
 
     @ManyToOne

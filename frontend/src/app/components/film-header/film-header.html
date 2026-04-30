@@ -1,7 +1,7 @@
 <div class="main-block p-4 mb-4 text-white" 
      style="background-color: #0f172a;" 
      [style.background-image]="'radial-gradient(circle at 15% 40%, ' + dominantColor + ' 0%, transparent 70%)'">
-  
+    
   <div class="row align-items-center">
     <div class="col-md-3 text-center mb-4 mb-md-0">
       
@@ -28,6 +28,10 @@
         <i class="bi fs-4 btn-icon" [class.bi-emoji-frown]="currentRating !== 'dislike'" [class.bi-emoji-frown-fill]="currentRating === 'dislike'" [class.active]="currentRating === 'dislike'" (click)="rateFilm('dislike')"></i>
         <i class="bi fs-4 btn-icon" [class.bi-emoji-smile]="currentRating !== 'like'" [class.bi-emoji-smile-fill]="currentRating === 'like'" [class.active]="currentRating === 'like'" (click)="rateFilm('like')"></i>
         <i class="bi fs-4 btn-icon" [class.bi-emoji-heart-eyes]="currentRating !== 'love'" [class.bi-emoji-heart-eyes-fill]="currentRating === 'love'" [class.active]="currentRating === 'love'" (click)="rateFilm('love')"></i>
+        <button (click)="suscribeToForum(film.id, film.title)" class="tu-clase-css">
+          Suscribirse
+        </button>
+        
       </div>
     </div>
 

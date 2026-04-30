@@ -11,12 +11,14 @@ import { ChatWindow } from '../../components/chat-window/chat-window';
 })
 
 export class Forum { 
-  currentTitle: string = 'Los juegos del hambre';
+  currentTitle: string = '';
+  forumId: number | null = null;
   selectedForum: boolean = false;
 
-  seeChat(event: { title: string }) {
+  seeChat(event: { title: string, forumId: number }) {
     this.currentTitle = event.title;
     this.selectedForum = true;
+    this.forumId = event.forumId;
   }
   returnToList() {
     this.selectedForum = false;

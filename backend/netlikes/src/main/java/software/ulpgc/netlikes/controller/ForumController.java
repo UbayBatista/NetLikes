@@ -40,8 +40,6 @@ public class ForumController {
         this.forumService.deleteForum(id);
     }
 
-    // --- NUEVO ENDPOINT PARA ANGULAR ---
-
     @PostMapping("/film/{filmId}")
     public ResponseEntity<?> subscribeToFilmForum(@PathVariable Integer filmId, @RequestBody Map<String, String> payload) {
         String filmTitle = payload.get("title");

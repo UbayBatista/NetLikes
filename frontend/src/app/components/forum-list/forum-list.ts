@@ -1,6 +1,7 @@
-import { Component, Output, EventEmitter, signal } from '@angular/core';
+import { Component, Output, EventEmitter, signal, OnInit, ChangeDetectorRef} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SearchBarComponent } from '../search-bar/search-bar';
+import { SubscriptionService } from '../../services/subscription';
 
 @Component({
   selector: 'app-forum-list',
@@ -9,18 +10,14 @@ import { SearchBarComponent } from '../search-bar/search-bar';
   templateUrl: './forum-list.html',
   styleUrl: './forum-list.css'
 })
-export class ForumList {
-  @Output() clickedForum = new EventEmitter<{title: string}>(); 
+export class ForumList implements OnInit{
+
+  @Output() clickedForum = new EventEmitter<{title: string, forumId: number}>(); 
+  constructor(private subscriptionService: SubscriptionService, private cdr: ChangeDetectorRef) {}
 
   search = signal('');
 
-  filmsForum = [
-    { title: 'Los juegos del hambre', active: true },
-    { title: 'Vaiana', active: false },
-    { title: 'Los juegos del hambre: sinsajo - Parte 2', active: false },
-    { title: 'Harry Potter y la piedra filosofal', active: false },
-    { title: 'Avatar', active: false }
-  ];
+  filmsForum: any[] = [];
 
   searchText = '';
 
@@ -39,10 +36,35 @@ export class ForumList {
     this.filtereForums.forEach(p => p.active = false);
     this.filtereForums[index].active = true;
     
-    this.clickedForum.emit({ title: this.filtereForums[index].title });
-    console.log('Cambiando al foro de:', this.filtereForums[index].title);
+    this.clickedForum.emit({ title: this.filtereForums[index].title, forumId: this.filtereForums[index].forumTopicId});
+    console.log('Cambiando al foro de:', this.filtereForums[index].title, "con ide: ", this.filtereForums[index].forumTopicId);
   }
 
+  ngOnInit() {
+    const emailLoged = "jose@gmail.com";
 
+    this.subscriptionService.getUserSubscription(emailLoged).subscribe({
+      next: (data) => {
+        // "data" es el array que nos devuelve Spring Boot con todo el árbol (Suscripcion -> Foro -> Pelicula)
+        
+        this.filmsForum = data.map((sub, index) => {
+          return {
+            title: sub.forum.film.title,      
+            active: index === 0,         
+            
+            forumTopicId: sub.forum.forumId,
+            filmId: sub.forum.film.id
+          };
+        });
+
+        this.cdr.detectChanges()
+
+        console.log('Foros cargados desde la base de datos:', this.filmsForum);
+      },
+      error: (err) => {
+        console.error('Error al obtener los foros:', err);
+      }
+    });
+  }
 
 }

@@ -45,28 +45,12 @@ public class ForumService {
         this.forumRepository.deleteById(id);
     }
 
-    // --- NUEVA LÓGICA DE DISCOURSE ---
-
     public Integer getOrCreateForum(Integer filmId, String filmTitle) {
-        // 1. Comprobamos si el foro ya existe localmente
         Optional<Forum> existingForum = forumRepository.findById(filmId);
 
         if (existingForum.isPresent()) {
-            // Forum forum =  existingForum.get();
-            // Integer forumId = forum.getForumId();
-            // User user = userRepository.findById(email).orElseThrow(() -> new RuntimeException("EL Usuario con ID " + email + " no existe en la BD local."));
-
-            // Subscription newSuscription = new Subscription();
-            // newSuscription.setForum(forum);
-            // newSuscription.setUser(user);
-            // this.subscriptionRepository.save(newSuscription);
-
-            // return forumId;
-
             return existingForum.get().getForumId();
         }
-
-        // 2. Si no existe, lo creamos en el servidor de Discourse
         Integer newTopicId = discourseService.createMovieForum(filmTitle);
 
         if (newTopicId != null) {
@@ -81,15 +65,7 @@ public class ForumService {
             
             this.forumRepository.save(newForum);
 
-            System.out.println("¡Foro creado/obtenido con éxito! ID:" + filmId + " " + newTopicId);
-
-            // User user = userRepository.findById(email).orElseThrow(() -> new RuntimeException("EL Usuario con ID " + email + " no existe en la BD local."));
-
-            // Subscription newSuscription = new Subscription();
-            // newSuscription.setForum(newForum);
-            // newSuscription.setUser(user);
-            // this.subscriptionRepository.save(newSuscription);
-            
+            System.out.println("¡Foro creado/obtenido con éxito! ID:" + filmId + " " + newTopicId);            
             return newTopicId;
         }
 

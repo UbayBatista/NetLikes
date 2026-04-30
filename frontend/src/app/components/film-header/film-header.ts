@@ -1,6 +1,8 @@
 import { Component, Input, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Film } from '../../models/film.models';
+import { ForumService } from '../../services/forum.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-film-header',
@@ -10,6 +12,7 @@ import { Film } from '../../models/film.models';
   styleUrl: './film-header.css',
 })
 export class FilmHeader implements OnInit {
+  [x: string]: any;
   @Input() film!: Film;
 
   readonly imgBaseUrl = 'https://image.tmdb.org/t/p/w500';
@@ -82,5 +85,41 @@ export class FilmHeader implements OnInit {
       this.dominantColor = `rgba(${~~(r/count)}, ${~~(g/count)}, ${~~(b/count)}, 0.35)`;
       this.cdr.detectChanges();
     };
+  }
+
+  constructor(private forumService: ForumService, private authService: AuthService) {}
+
+  forumUrl: string | null = null;
+  
+  suscribeToForum(filmId: number, filmTitle: string) {
+    console.log('Botón pulsado. Enviando petición a Spring Boot...');
+
+    this.authService.getCurrentUser().subscribe(user => { 
+
+        if (!user || !user.email) {
+          alert('¡Debes iniciar sesión para poder suscribirte a un foro!');
+          return; 
+        }
+      
+      
+      console.log('Usuario detectado:', user.email, 'Enviando petición a Spring Boot...')
+
+      this.forumService.suscribeForum(filmId, filmTitle, user.email).subscribe({
+        next: (response) => {
+          console.log('¡Éxito! El ID del foro en Discourse es:', response.discourseTopicId);
+
+          this.forumUrl = `http://localhost/t/${response.discourseTopicId}`;
+
+          alert('¡Foro creado/obtenido con éxito! ID: ' + response.discourseTopicId);
+
+        },
+        error: (error) => {
+          console.error('Ha ocurrido un error:', error);
+          alert('Error al crear el foro. Revisa la consola.');
+        }
+      });
+    
+    });
+
   }
 }

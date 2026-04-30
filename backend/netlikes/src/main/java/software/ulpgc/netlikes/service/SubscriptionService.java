@@ -42,16 +42,12 @@ public class SubscriptionService {
     }
 
     public void subscribeUserToForum(String email, Integer filmId) {
-        // 1. Buscamos al usuario 
-        // (Nota: Si tu UserRepository usa otro método como findByEmail, cámbialo aquí)
         User user = userRepository.findById(email)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + email));
 
-        // 2. Buscamos el foro
         Forum forum = forumRepository.findById(filmId)
             .orElseThrow(() -> new RuntimeException("Foro no encontrado para la película con ID: " + filmId));
 
-        // 3. Montamos la suscripción y usamos tu método existente para guardarla
         Subscription subscription = new Subscription();
         subscription.setUser(user);
         subscription.setForum(forum);
