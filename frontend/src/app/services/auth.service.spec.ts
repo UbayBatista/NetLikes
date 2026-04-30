@@ -8,7 +8,7 @@ import { User, RegisterData } from '../models/user.models';
 describe('AuthService', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
-  const apiUrl = 'http://localhost:8080/users';
+  const apiUrl = ' https://vendor-calamity-sneer.ngrok-free.dev/users';
 
   const mockUser: User = {
     userName: 'Juan Perez',

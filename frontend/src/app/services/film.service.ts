@@ -7,7 +7,7 @@ import { Film, FilmListItem, GenreGroup } from '../models/film.models';
   providedIn: 'root',
 })
 export class FilmService {
-  readonly dbUrl = 'http://localhost:8080/films';
+  readonly dbUrl = ' https://vendor-calamity-sneer.ngrok-free.dev/films';
 
   constructor(private http: HttpClient) {}
   

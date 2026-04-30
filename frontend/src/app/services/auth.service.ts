@@ -10,7 +10,7 @@ export interface LoginResponse {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private currentUser$ = new BehaviorSubject<User | null>(null);
-  private readonly apiUrl = 'http://localhost:8080/users';
+  private readonly apiUrl = ' https://vendor-calamity-sneer.ngrok-free.dev/users';
 
   constructor(private http: HttpClient) {
     this.loadUserFromStorage();

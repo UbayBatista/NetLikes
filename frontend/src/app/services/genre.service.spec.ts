@@ -7,7 +7,7 @@ import { Genre } from '../models/genre.models';
 describe('GenreService', () => {
   let service: GenreService;
   let httpMock: HttpTestingController;
-  const apiUrl = 'http://localhost:8080/genres';
+  const apiUrl = ' https://vendor-calamity-sneer.ngrok-free.dev/genres';
 
   const mockGenres: Genre[] = [
     { id: 1, name: 'Acción' },

@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class SubscriptionService {
     
-  private apiUrl = 'http://localhost:8080/subscribe_to';
+  private apiUrl = ' https://vendor-calamity-sneer.ngrok-free.dev/subscribe_to';
 
   constructor(private http: HttpClient) { }
 
