@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef, inject, De
 import { CommonModule, AsyncPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router'; 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, map, Observable } from 'rxjs';
 
 import { ProfileBody } from "../../components/profile-components/profile-components";
 import { ProfileHeader } from "../../components/profile-header/profile-header";
@@ -26,7 +26,6 @@ type FollowStatus = 'NONE' | 'PENDING' | 'ACCEPTED';
   styleUrl: "./profile-body.css"
 })
 export class ProfileComplete implements OnInit {
-  // Inyecciones de dependencias
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -35,11 +34,9 @@ export class ProfileComplete implements OnInit {
   private readonly followService = inject(FollowService);
   private readonly destroyRef = inject(DestroyRef);
 
-  // Observables del perfil
   profile$: Observable<MyProfile | UserProfile | null> = this.profileService.getProfile();
   itsMe$: Observable<boolean> = this.profileService.isMyProfile();
 
-  // Estados de la UI
   isEditing = false;
   isSocialModalOpen = false;
   socialType: SocialType = 'Seguidores';
@@ -49,15 +46,24 @@ export class ProfileComplete implements OnInit {
 
   @ViewChild('scrollContainer') scrollContainer?: ElementRef<HTMLDivElement>;
 
-  // --- VARIABLES PARA EL SEGUIMIENTO ---
-  followState: FollowStatus = 'NONE';
+  private followStateSubject = new BehaviorSubject<FollowStatus>('NONE');
+  followState$ = this.followStateSubject.asObservable();
+
+  followButtonText$: Observable<string> = this.followState$.pipe(
+    map(state => {
+      if (state === 'PENDING') return 'Pendiente';
+      if (state === 'ACCEPTED') return 'Siguiendo';
+      return 'Seguir';
+    })
+  );
+
   showConfirmModal = false;
   confirmModalMessage = '';
-  private userToFollow: string = ''; // Guarda el email para el backend
-  private usernameToFollow: string = ''; // Guarda el @username para la UI
+  private userToFollow: string = '';
+  private usernameToFollow: string = '';
+  private actionToConfirm: 'FOLLOW' | 'UNFOLLOW' = 'FOLLOW';
 
   ngOnInit() {
-    // 1. Cargamos el perfil al detectar cambios en la URL
     this.route.params
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
@@ -65,18 +71,16 @@ export class ProfileComplete implements OnInit {
         this.profileService.loadProfile(username);
       });
 
-    // 2. Escuchamos al perfil para averiguar el estado de seguimiento inicial
     this.profile$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(profile => {
-        // Hacemos un cast a 'any' por si MyProfile/UserProfile no tienen la propiedad email explícita en la interfaz base
+
         const profileEmail = (profile as any)?.email; 
         
         if (profileEmail) {
           this.followService.checkFollowStatus(profileEmail).subscribe({
             next: (response) => {
-              this.followState = response.state;
-              this.cdr.detectChanges(); // Forzamos actualización visual
+              this.followStateSubject.next(response.state);
             },
             error: (err) => console.error('Error al obtener estado de seguimiento', err)
           });
@@ -84,36 +88,37 @@ export class ProfileComplete implements OnInit {
       });
   }
 
-  // --- GETTER PARA EL TEXTO DEL BOTÓN ---
-  get followButtonText(): string {
-    switch (this.followState) {
-      case 'PENDING': return 'Pendiente';
-      case 'ACCEPTED': return 'Siguiendo';
-      default: return 'Seguir';
-    }
-  }
-
-  // --- LÓGICA DE SEGUIMIENTO ---
   onFollowRequest(userName: string, email: string) {
-    // Evitamos pedir confirmación si ya lo seguimos o está pendiente
-    if (this.followState === 'ACCEPTED' || this.followState === 'PENDING') {
-        console.log('Ya hay una relación de seguimiento activa o pendiente.');
-        return; 
-    }
-
     this.userToFollow = email;
     this.usernameToFollow = userName;
-    this.confirmModalMessage = `¿Estás seguro de que quieres empezar a seguir a @${userName}?`;
-    this.showConfirmModal = true;
+
+    const currentState = this.followStateSubject.value;
+
+    if (currentState === 'ACCEPTED') {
+      this.actionToConfirm = 'UNFOLLOW';
+      this.confirmModalMessage = `¿Estás seguro de que quieres dejar de seguir a @${userName}?`;
+      this.showConfirmModal = true;
+    } 
+    else if (currentState === 'PENDING') {
+      this.actionToConfirm = 'UNFOLLOW';
+      this.executeUnfollow(this.userToFollow);
+    } else {
+      this.actionToConfirm = 'FOLLOW';
+      this.executeFollow(this.userToFollow);
+    }
   }
 
   handleFollowConfirmation(confirmed: boolean) {
     this.showConfirmModal = false;
 
     if (confirmed && this.userToFollow) {
-      this.executeFollow(this.userToFollow);
+      if (this.actionToConfirm === 'UNFOLLOW') {
+        this.executeUnfollow(this.userToFollow);
+      } else {
+        this.executeFollow(this.userToFollow);
+      }
     } else {
-      console.log('Seguimiento cancelado');
+      console.log('Acción cancelada');
       this.userToFollow = '';
       this.usernameToFollow = '';
     }
@@ -121,33 +126,34 @@ export class ProfileComplete implements OnInit {
 
   private executeFollow(targetEmail: string) {
     console.log(`Ejecutando lógica de seguimiento hacia ${targetEmail}...`);
-    
     this.followService.requestFollow(targetEmail).subscribe({
       next: (followResponse) => {
-        console.log('Respuesta del servidor:', followResponse);
-        
-        // Actualizamos el estado visual instantáneamente
-        if (followResponse.state === 'PENDING') {
-          this.followState = 'PENDING';
-        } else if (followResponse.state === 'ACCEPTED') {
-          this.followState = 'ACCEPTED';
-        }
-
-        // Recargamos el perfil (opcional, útil si tienes contadores de seguidores en la UI)
-        this.profileService.loadProfile(this.usernameToFollow);
+        this.followStateSubject.next(followResponse.state);
       },
-      error: (error) => {
-        console.error('Error al intentar seguir:', error);
-      },
+      error: (error) => console.error('Error al intentar seguir:', error),
       complete: () => {
-        // Limpiamos la memoria temporal
         this.userToFollow = ''; 
         this.usernameToFollow = '';
       }
     });
   }
 
-  // --- LÓGICA DE INTERFAZ Y MODALES SOCIALES ---
+  private executeUnfollow(targetEmail: string) {
+    console.log(`Ejecutando lógica para dejar de seguir a ${targetEmail}...`);
+    this.followService.unfollow(targetEmail).subscribe({
+      next: () => {
+        console.log('Se ha dejado de seguir al usuario o cancelado la solicitud.');
+        
+        this.followStateSubject.next('NONE');
+      },
+      error: (error) => console.error('Error al dejar de seguir:', error),
+      complete: () => {
+        this.userToFollow = ''; 
+        this.usernameToFollow = '';
+      }
+    });
+  }
+
   showSocial(type: SocialType) {
     this.socialType = type;
     this.isSocialModalOpen = true;
@@ -186,7 +192,6 @@ export class ProfileComplete implements OnInit {
     this.router.navigate(['/']);
   }
 
-  // --- MOCKS ---
   private getFollowersMock() {
     return [
       { name: 'Luis Suárez', avatar: '...', status: 'Seguir también' },

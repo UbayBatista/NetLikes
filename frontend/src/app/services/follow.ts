@@ -7,7 +7,7 @@ import { AuthService } from './auth.service';
 export interface Follow {
   followerId: string;
   followedId: string;
-  state: 'PENDING' | 'ACCEPTED' | 'BLOCKED';
+  state: 'PENDING' | 'ACCEPTED' | 'NONE';
 }
 
 export interface LoggedUser {
@@ -90,6 +90,23 @@ export class FollowService {
         
         return this.http.get<{ state: 'NONE' | 'PENDING' | 'ACCEPTED' }>(
           `${this.apiUrl}/${targetEmail}/status`, 
+          { headers }
+        );
+      })
+    );
+  }
+
+  unfollow(targetEmail: string): Observable<void> {
+    return this.authService.getCurrentUser().pipe(
+      take(1),
+      switchMap((currentUser) => {
+        const headers = new HttpHeaders({
+          'Content-Type': 'application/json',
+          'X-User-Id': currentUser?.email || ''
+        });
+        
+        return this.http.delete<void>(
+          `${this.apiUrl}/${targetEmail}/unfollow`, 
           { headers }
         );
       })

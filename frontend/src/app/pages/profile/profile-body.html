@@ -10,7 +10,7 @@
       
       [type]="(itsMe$ | async) 
                 ? (isEditing ? 'Continuar' : 'Editar Perfil') 
-                : followButtonText" 
+                : ((followButtonText$ | async) ?? 'Seguir')" 
 
       [otherUser]="(itsMe$ | async) ? 'No' : 'Yes'"
       [option]="(itsMe$ | async) ? '' : 'Bloquear'"
