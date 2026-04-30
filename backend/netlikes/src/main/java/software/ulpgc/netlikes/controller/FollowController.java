@@ -4,6 +4,7 @@ import software.ulpgc.netlikes.model.Follow;
 import software.ulpgc.netlikes.service.FollowService;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,16 @@ public class FollowController {
         
         Follow result = followService.requestFollow(myId, targetId);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/{targetId}/status")
+    public ResponseEntity<Map<String, String>> checkFollowStatus(
+            @PathVariable String targetId,
+            @RequestHeader("X-User-Id") String myId) {
+        
+        String status = followService.checkStatus(myId, targetId);
+
+        return ResponseEntity.ok(Map.of("state", status)); 
     }
 
     @GetMapping("/{followerId}")

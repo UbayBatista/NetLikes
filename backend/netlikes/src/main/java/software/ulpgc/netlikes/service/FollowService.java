@@ -34,6 +34,12 @@ public class FollowService {
         return followRepository.save(newFollow);
     }
 
+    public String checkStatus(String followerId, String followedId) {
+        return followRepository.findById(new FollowId(followerId, followedId))
+                .map(follow -> follow.getState().name())
+                .orElse("NONE");
+    }
+
     public List<Follow> getFollowByFollowerId(String followerId) {
         return followRepository.findByFollowerId(followerId);
     }
