@@ -163,8 +163,8 @@ public class UserService {
         user.getName(),
         user.getBio(),
         user.isAccountPrivacity(),
-        followService.countFollowersOf(user.getName()),
-        followService.countFollowsOf(user.getName()),
+        followService.countFollowersOf(user.getEmail()),
+        followService.countFollowsOf(user.getEmail()),
         new ArrayList<>(), // TO DO: coger las películas
         new ArrayList<>()
     );
