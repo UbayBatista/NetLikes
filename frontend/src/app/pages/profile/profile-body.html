@@ -4,8 +4,8 @@
     <app-profile-header 
       [userName]="profile.userName" 
       [userPicture]="profile.profilePicture"
-      [followers]="profile.followers"
-      [following]="profile.following"
+      [followers]="(followersCount$ | async) ?? 0"
+      [following]="(followingCount$ | async) ?? 0"
       [isPrivate]="profile.isPrivate"
       
       [type]="(itsMe$ | async) 

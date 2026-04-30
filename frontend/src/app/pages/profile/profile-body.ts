@@ -37,6 +37,9 @@ export class ProfileComplete implements OnInit {
   profile$: Observable<MyProfile | UserProfile | null> = this.profileService.getProfile();
   itsMe$: Observable<boolean> = this.profileService.isMyProfile();
 
+  followersCount$ = new BehaviorSubject<number>(0);
+  followingCount$ = new BehaviorSubject<number>(0);
+
   isEditing = false;
   isSocialModalOpen = false;
   socialType: SocialType = 'Seguidores';
@@ -74,6 +77,9 @@ export class ProfileComplete implements OnInit {
     this.profile$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(profile => {
+
+        this.followersCount$.next((profile as any)?.followers || 0);
+        this.followingCount$.next((profile as any)?.following || 0);
 
         const profileEmail = (profile as any)?.email; 
         
@@ -129,6 +135,11 @@ export class ProfileComplete implements OnInit {
     this.followService.requestFollow(targetEmail).subscribe({
       next: (followResponse) => {
         this.followStateSubject.next(followResponse.state);
+
+        if (followResponse.state === 'ACCEPTED') {
+          const currentFollowers = this.followersCount$.value;
+          this.followersCount$.next(currentFollowers + 1);
+        }
       },
       error: (error) => console.error('Error al intentar seguir:', error),
       complete: () => {
@@ -145,6 +156,9 @@ export class ProfileComplete implements OnInit {
         console.log('Se ha dejado de seguir al usuario o cancelado la solicitud.');
         
         this.followStateSubject.next('NONE');
+
+        const currentFollowers = this.followersCount$.value;
+        this.followersCount$.next(Math.max(0, currentFollowers - 1));
       },
       error: (error) => console.error('Error al dejar de seguir:', error),
       complete: () => {
