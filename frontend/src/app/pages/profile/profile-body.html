@@ -10,13 +10,13 @@
       
       [type]="(itsMe$ | async) 
                 ? (isEditing ? 'Continuar' : 'Editar Perfil') 
-                : (isEditing ? 'Siguiendo' : 'Seguir')" 
+                : followButtonText" 
 
       [otherUser]="(itsMe$ | async) ? 'No' : 'Yes'"
       [option]="(itsMe$ | async) ? '' : 'Bloquear'"
 
       (editClick)="toggleEdit()"
-      (followClick)="onFollowRequest(profile.userName)"
+      (followClick)="onFollowRequest(profile.userName, profile.email)"
       (logOut)="logout()"
       (openSocialModal)="showSocial($event)"
       (privacyChange)="onPrivacyChange($event)">
