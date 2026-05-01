@@ -1,6 +1,5 @@
 package software.ulpgc.netlikes.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -8,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import software.ulpgc.netlikes.model.Rate;
 import software.ulpgc.netlikes.service.RateService;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
