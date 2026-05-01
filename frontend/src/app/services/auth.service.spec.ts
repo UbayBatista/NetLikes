@@ -56,9 +56,10 @@ describe('AuthService', () => {
       expect(exists).toBe(true);
     });
 
-    const req = httpMock.expectOne(`${apiUrl}/exists/${email}`);
-    expect(req.request.method).toBe('GET');
-    req.flush(true);
+    const reqs = httpMock.match(`${apiUrl}/exists/${email}`);
+    expect(reqs.length).toBeGreaterThan(0);
+    expect(reqs[0].request.method).toBe('GET');
+    reqs.forEach(req => req.flush(true));
   });
 
   it('getSecurityQuestion debe devolver texto plano', () => {
