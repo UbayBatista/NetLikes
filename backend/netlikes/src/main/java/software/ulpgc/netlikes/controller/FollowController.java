@@ -63,4 +63,14 @@ public class FollowController {
         
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/{targetId}/remove")
+    public ResponseEntity<Void> removeFollower(
+            @PathVariable String targetId, 
+            @RequestHeader("X-User-Id") String myId) {
+        
+        followService.deleteFollow(targetId, myId);
+        
+        return ResponseEntity.noContent().build();
+    }
 }

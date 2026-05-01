@@ -26,37 +26,21 @@
       <p>{{profile.bio}}</p>
     </app-profile-components>
     @if ((itsMe$ | async) || profile.watchedFilms !== null) {
-      
-
       @for (section of [
         { title: 'Películas Vistas', data: profile.watchedFilms },
         { title: 'Ver más tarde', data: profile.laterFilms }
       ]; track section.title) {
         
         <app-profile-components [title]="section.title" [isEditing]="isEditing">
-          <div class="netflix-wrapper">
-            @if (canScrollLeft) {
-              <button class="nav-btn left" (click)="scroll('left')"></button>
-            }
-
-            <div class="netflix-row" #scrollContainer (scroll)="updateScrollButtons()">
-              <div class="netflix-slider">
-                @for(film of section.data; track film.id) {
-                  <div class="film-item">
-                    <app-film 
-                      [posterPath]="film.posterPath" 
-                      [title]="film.title" 
-                      [id]="film.id">
-                    </app-film>
-                  </div>
-                }
-              </div>
+          @for(film of section.data; track film.id) {
+            <div class="film-item">
+              <app-film 
+                [posterPath]="film.posterPath" 
+                [title]="film.title" 
+                [id]="film.id">
+              </app-film>
             </div>
-
-            @if (canScrollRight) {
-              <button class="nav-btn right" (click)="scroll('right')"></button>
-            }
-          </div>
+          }
         </app-profile-components>
       }
 
@@ -73,7 +57,7 @@
     <app-confirmation-modal 
       [title]="'Confirmar Seguimiento'"
       [message]="confirmModalMessage"
-      (result)="handleFollowConfirmation($event)">
+      (result)="handleUnfollowConfirmation($event)">
     </app-confirmation-modal>
   }
 
@@ -83,7 +67,8 @@
       [users]="socialData" 
       [isMyOwnProfile]="(itsMe$ | async) ?? false"
       (close)="isSocialModalOpen = false"
-      (tabChange)="showSocial($event)">
+      (tabChange)="showSocial($event)"
+      (actionClick)="handleSocialAction($event)">
     </app-social-modal>
   }
 </div>
