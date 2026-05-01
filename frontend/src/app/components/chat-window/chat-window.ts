@@ -44,7 +44,7 @@ export class ChatWindow {
   // }
 
   chargeForum(forumId: number) {
-      const originalUrl = `http://localhost/t/${forumId}`;
+      const originalUrl = `https://netlikes.duckdns.org/t/${forumId}`;
       console.log("Angular está intentando meter en el iframe exactamente esta URL:", originalUrl);
       this.saveUrl = this.sanitizer.bypassSecurityTrustResourceUrl(originalUrl);
   }
