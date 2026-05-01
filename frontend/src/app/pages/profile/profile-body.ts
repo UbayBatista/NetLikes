@@ -98,13 +98,12 @@ export class ProfileComplete implements OnInit {
 
     const currentState = this.followStateSubject.value;
 
+    this.actionToConfirm = 'UNFOLLOW';
     if (currentState === 'ACCEPTED') {
-      this.actionToConfirm = 'UNFOLLOW';
       this.confirmModalMessage = `¿Estás seguro de que quieres dejar de seguir a @${userName}?`;
       this.showConfirmModal = true;
     } 
     else if (currentState === 'PENDING') {
-      this.actionToConfirm = 'UNFOLLOW';
       this.executeUnfollow(this.userToFollow);
     } else {
       this.actionToConfirm = 'FOLLOW';
@@ -112,7 +111,7 @@ export class ProfileComplete implements OnInit {
     }
   }
 
-  handleFollowConfirmation(confirmed: boolean) {
+  handleUnfollowConfirmation(confirmed: boolean) {
     this.showConfirmModal = false;
 
     if (confirmed && this.userToFollow) {
@@ -122,13 +121,11 @@ export class ProfileComplete implements OnInit {
         this.executeFollow(this.userToFollow);
       }
     } else {
-      console.log('Acción cancelada');
       this.userToFollow = '';
     }
   }
 
   private executeFollow(targetEmail: string) {
-    console.log(`Ejecutando lógica de seguimiento hacia ${targetEmail}...`);
     this.followService.requestFollow(targetEmail).subscribe({
       next: (followResponse) => {
         this.followStateSubject.next(followResponse.state);
@@ -166,12 +163,11 @@ export class ProfileComplete implements OnInit {
     this.followService.unfollow(user.email).subscribe({
       next: () => {
         this.socialData = this.socialData.filter(u => u.email !== user.email);
+        const currentCount = this.followersCount$.value;
 
         if (type === 'Seguidores') {
-          const currentCount = this.followersCount$.value;
           this.followersCount$.next(Math.max(0, currentCount - 1));
         } else {
-          const currentCount = this.followingCount$.value;
           this.followingCount$.next(Math.max(0, currentCount - 1));
         }
 
@@ -192,9 +188,7 @@ export class ProfileComplete implements OnInit {
       take(1)
     ).subscribe(profile => {
       const currentProfileEmail = (profile as any)?.email;
-      
-      console.log(`[DEBUG] Buscando ${type} para el email:`, currentProfileEmail);
-      
+
       if (!currentProfileEmail) {
         console.error('El perfil actual no tiene email. Revisa la interfaz del perfil.');
         return;
@@ -203,7 +197,6 @@ export class ProfileComplete implements OnInit {
       if (type === 'Seguidores') {
         this.followService.getFollowers(currentProfileEmail).subscribe({
           next: (users) => {
-            console.log('[DEBUG] Seguidores recibidos:', users);
             this.socialData = users.map(u => ({
               name: u.userName,
               avatar: u.profilePicture || 'assets/default-avatar.png', 
@@ -216,10 +209,9 @@ export class ProfileComplete implements OnInit {
       } else {
         this.followService.getFollowing(currentProfileEmail).subscribe({
           next: (users) => {
-            console.log('[DEBUG] Seguidos recibidos:', users);
             this.socialData = users.map(u => ({
               name: u.userName,
-              avatar: u.profilePicture || 'assets/default-avatar.png',
+              avatar: u.profilePicture || 'assets/ProfilePicture.jpg',
               email: u.email
             }));
             this.cdr.detectChanges();
