@@ -146,11 +146,8 @@ export class ProfileComplete implements OnInit {
   }
 
   private executeUnfollow(targetEmail: string) {
-    console.log(`Ejecutando lógica para dejar de seguir a ${targetEmail}...`);
     this.followService.unfollow(targetEmail).subscribe({
-      next: () => {
-        console.log('Se ha dejado de seguir al usuario o cancelado la solicitud.');
-        
+      next: () => {        
         this.followStateSubject.next('NONE');
 
         const currentFollowers = this.followersCount$.value;
@@ -160,6 +157,27 @@ export class ProfileComplete implements OnInit {
       complete: () => {
         this.userToFollow = ''; 
       }
+    });
+  }
+
+  handleSocialAction(event: any) {
+    const { user, type } = event;
+
+    this.followService.unfollow(user.email).subscribe({
+      next: () => {
+        this.socialData = this.socialData.filter(u => u.email !== user.email);
+
+        if (type === 'Seguidores') {
+          const currentCount = this.followersCount$.value;
+          this.followersCount$.next(Math.max(0, currentCount - 1));
+        } else {
+          const currentCount = this.followingCount$.value;
+          this.followingCount$.next(Math.max(0, currentCount - 1));
+        }
+
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error(`Error al procesar acción de ${type}`, err)
     });
   }
 

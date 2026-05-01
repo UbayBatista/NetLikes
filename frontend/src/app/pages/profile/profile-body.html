@@ -83,7 +83,8 @@
       [users]="socialData" 
       [isMyOwnProfile]="(itsMe$ | async) ?? false"
       (close)="isSocialModalOpen = false"
-      (tabChange)="showSocial($event)">
+      (tabChange)="showSocial($event)"
+      (actionClick)="handleSocialAction($event)">
     </app-social-modal>
   }
 </div>
