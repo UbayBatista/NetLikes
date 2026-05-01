@@ -119,4 +119,18 @@ export class FollowService {
       })
     );
   }
+
+  getPendingRequests(): Observable<LoggedUser[]> {
+    return this.http.get<LoggedUser[]>(
+      `${this.apiUrl}/pending`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  rejectFollow(followerId: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/${followerId}/reject`,
+      { headers: this.getHeaders() }
+    );
+  }
 }

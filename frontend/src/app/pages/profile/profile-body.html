@@ -13,7 +13,7 @@
                 : ((followButtonText$ | async) ?? 'Seguir')" 
 
       [otherUser]="(itsMe$ | async) ? 'No' : 'Yes'"
-      [option]="(itsMe$ | async) ? '' : 'Bloquear'"
+      [option]="(itsMe$ | async) ? 'Ajustes' : 'Bloquear'"
 
       (editClick)="toggleEdit()"
       (followClick)="onFollowRequest(profile.userName, profile.email)"

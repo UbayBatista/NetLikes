@@ -11,7 +11,7 @@ import { SocialModal } from "../../components/social-modal/social-modal";
 
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
-import { FollowService } from "../../services/follow";
+import { FollowService } from "../../services/follow.service";
 import { MyProfile, UserProfile } from '../../models/user.models';
 import { ConfirmationModalComponent } from '../../components/confirmation-modal/confirmation-modal';
 
@@ -188,7 +188,7 @@ export class ProfileComplete implements OnInit {
             console.log('[DEBUG] Seguidores recibidos:', users);
             this.socialData = users.map(u => ({
               name: u.userName,
-              avatar: u.profilePicture || 'assets/default-avatar.png', 
+              avatar: u.profilePicture || 'assets/ProfilePicture.jpg', 
               email: u.email
             }));
             this.cdr.detectChanges();
@@ -201,7 +201,7 @@ export class ProfileComplete implements OnInit {
             console.log('[DEBUG] Seguidos recibidos:', users);
             this.socialData = users.map(u => ({
               name: u.userName,
-              avatar: u.profilePicture || 'assets/default-avatar.png',
+              avatar: u.profilePicture || 'assets/ProfilePicture.jpg',
               email: u.email
             }));
             this.cdr.detectChanges();

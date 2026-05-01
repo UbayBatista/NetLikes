@@ -5,6 +5,10 @@
     color: #000 !important; 
 }
 
+.header-container {
+    padding-right: 60px;
+}
+
 .dropdown-item:hover {
     background-color: #f1f1f1; 
 }
@@ -21,6 +25,11 @@
     .rounded-circle {
         width: 80px !important;
         height: 80px !important;
+    }
+
+    .btn-toggle-menu {
+        padding: 4px 4px !important;
+        font-size: 1rem !important;
     }
 
     .d-flex.align-items-center.w-100 {
