@@ -51,21 +51,32 @@ public class ForumService {
         if (existingForum.isPresent()) {
             return existingForum.get().getForumId();
         }
-        Integer newTopicId = discourseService.createMovieForum(filmTitle);
+        
+        Integer newTopicId = null;
+
+        try {
+             newTopicId = discourseService.createMovieForum(filmTitle);
+        } catch (Exception e) {
+
+            System.out.println("El foro posiblemente ya existe en Discourse. Buscando ID...");           
+            newTopicId = discourseService.getForumIdByTitle(filmTitle);
+            
+            if (newTopicId == null) {
+                throw new RuntimeException("No se pudo crear ni encontrar el foro en Discourse.", e);
+            }
+        }
 
         if (newTopicId != null) {
-            // 3. Buscamos la película en tu base de datos local
             Film film = filmRepository.findById(filmId)
                 .orElseThrow(() -> new RuntimeException("La película con ID " + filmId + " no existe en la BD local. Guárdala antes de crear el foro."));
 
-            // 4. Creamos y guardamos el nuevo Forum
             Forum newForum = new Forum();
             newForum.setFilm(film);
             newForum.setForumId(newTopicId);
             
             this.forumRepository.save(newForum);
 
-            System.out.println("¡Foro creado/obtenido con éxito! ID:" + filmId + " " + newTopicId);            
+            System.out.println("¡Foro creado/obtenido con éxito! FilmID:" + filmId + "Forum ID: " + newTopicId);            
             return newTopicId;
         }
 

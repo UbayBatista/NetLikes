@@ -108,7 +108,7 @@ export class FilmHeader implements OnInit {
         next: (response) => {
           console.log('¡Éxito! El ID del foro en Discourse es:', response.discourseTopicId);
 
-          this.forumUrl = `http://localhost/t/${response.discourseTopicId}`;
+          this.forumUrl = `https://netlikes.duckdns.org/t/${response.discourseTopicId}`;
 
           alert('¡Foro creado/obtenido con éxito! ID: ' + response.discourseTopicId);
 
