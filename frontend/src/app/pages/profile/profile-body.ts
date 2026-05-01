@@ -63,7 +63,7 @@ export class ProfileComplete implements OnInit {
   showConfirmModal = false;
   confirmModalMessage = '';
   private userToFollow: string = '';
-  private actionToConfirm: 'FOLLOW' | 'UNFOLLOW' = 'FOLLOW';
+  private actionToConfirm: 'UNFOLLOW' | 'REMOVE_FOLLOWER' = 'UNFOLLOW';
 
   ngOnInit() {
     this.route.params
@@ -98,15 +98,14 @@ export class ProfileComplete implements OnInit {
 
     const currentState = this.followStateSubject.value;
 
-    this.actionToConfirm = 'UNFOLLOW';
     if (currentState === 'ACCEPTED') {
+      this.actionToConfirm = 'UNFOLLOW';
       this.confirmModalMessage = `¿Estás seguro de que quieres dejar de seguir a @${userName}?`;
       this.showConfirmModal = true;
     } 
     else if (currentState === 'PENDING') {
       this.executeUnfollow(this.userToFollow);
     } else {
-      this.actionToConfirm = 'FOLLOW';
       this.executeFollow(this.userToFollow);
     }
   }
@@ -115,8 +114,8 @@ export class ProfileComplete implements OnInit {
     this.showConfirmModal = false;
 
     if (confirmed && this.userToFollow) {
-      if (this.actionToConfirm === 'UNFOLLOW') {
-        this.executeUnfollow(this.userToFollow);
+      if (this.actionToConfirm === 'UNFOLLOW' || this.actionToConfirm === 'REMOVE_FOLLOWER') {
+        this.executeSocialAction(this.userToFollow, this.actionToConfirm);
       } else {
         this.executeFollow(this.userToFollow);
       }
@@ -157,23 +156,50 @@ export class ProfileComplete implements OnInit {
     });
   }
 
-  handleSocialAction(event: any) {
+  handleSocialAction(event: { user: any, type: 'Seguidores' | 'Seguidos' }) {
     const { user, type } = event;
+    this.userToFollow = user.email;
 
-    this.followService.unfollow(user.email).subscribe({
+    if (type === 'Seguidores') {
+      this.actionToConfirm = 'REMOVE_FOLLOWER';
+      this.confirmModalMessage = `¿Estás seguro de que quieres eliminar a @${user.name} de tus seguidores?`;
+    } else {
+      this.actionToConfirm = 'UNFOLLOW';
+      this.confirmModalMessage = `¿Estás seguro de que quieres dejar de seguir a @${user.name}?`;
+    }
+
+    this.showConfirmModal = true;
+  }
+
+  private executeSocialAction(targetEmail: string, type: 'UNFOLLOW' | 'REMOVE_FOLLOWER') {
+    const request$ = type === 'REMOVE_FOLLOWER'
+      ? this.followService.remove(targetEmail)
+      : this.followService.unfollow(targetEmail);
+
+    request$.subscribe({
       next: () => {
-        this.socialData = this.socialData.filter(u => u.email !== user.email);
-        const currentCount = this.followersCount$.value;
+        this.socialData = this.socialData.filter(u => u.email !== targetEmail);
 
-        if (type === 'Seguidores') {
-          this.followersCount$.next(Math.max(0, currentCount - 1));
-        } else {
-          this.followingCount$.next(Math.max(0, currentCount - 1));
-        }
+        this.itsMe$.pipe(take(1)).subscribe(itsMe => {
+          if (itsMe) {
+            if (type === 'REMOVE_FOLLOWER') {
+              this.followersCount$.next(Math.max(0, this.followersCount$.value - 1));
+            } else {
+              this.followingCount$.next(Math.max(0, this.followingCount$.value - 1));
+            }
+          } else {
+            this.followersCount$.next(Math.max(0, this.followersCount$.value - 1));
+
+            this.followStateSubject.next('NONE');
+          }
+        });
 
         this.cdr.detectChanges();
       },
-      error: (err) => console.error(`Error al procesar acción de ${type}`, err)
+      error: (err) => console.error(`Error al ejecutar ${type}:`, err),
+      complete: () => {
+        this.userToFollow = '';
+      }
     });
   }
 
