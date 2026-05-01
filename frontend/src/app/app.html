@@ -1,8 +1,11 @@
-@if (showLayout()) {
-  <app-footer></app-footer>
-  <app-header></app-header>
-}
+@if (!(this.authService.isLoading() | async)) {
 
-<main [class.main-content]="showLayout()">
-    <router-outlet></router-outlet>
-</main>
+  @if (showLayout()) {
+    <app-footer></app-footer>
+    <app-header></app-header>
+  }
+
+  <main [class.main-content]="showLayout()">
+      <router-outlet></router-outlet>
+  </main>
+}
