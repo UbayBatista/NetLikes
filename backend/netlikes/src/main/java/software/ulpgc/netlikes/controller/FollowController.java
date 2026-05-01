@@ -63,4 +63,20 @@ public class FollowController {
         
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/pending")
+    public ResponseEntity<List<UserResponseDTO>> getPendingRequests(@RequestHeader("X-User-Id") String myId) {
+        return ResponseEntity.ok(followService.getPendingRequests(myId));
+    }
+
+    @PostMapping("/{followerId}/accept")
+    public ResponseEntity<Follow> acceptFollow(@PathVariable String followerId, @RequestHeader("X-User-Id") String myId) {
+        return ResponseEntity.ok(followService.acceptFollow(followerId, myId));
+    }
+
+    @DeleteMapping("/{followerId}/reject")
+    public ResponseEntity<Void> rejectFollow(@PathVariable String followerId, @RequestHeader("X-User-Id") String myId) {
+        followService.rejectFollow(followerId, myId);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -13,8 +13,10 @@ import software.ulpgc.netlikes.dto.UserProfileDTO;
 import software.ulpgc.netlikes.dto.RegisterRequestDTO;
 import software.ulpgc.netlikes.dto.UserRequestDTO;
 import software.ulpgc.netlikes.dto.UserResponseDTO;
+import software.ulpgc.netlikes.model.Follow;
 import software.ulpgc.netlikes.model.Genre;
 import software.ulpgc.netlikes.model.User;
+import software.ulpgc.netlikes.repository.FollowRepository;
 import software.ulpgc.netlikes.repository.GenreRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
 import software.ulpgc.netlikes.model.Mark;
@@ -28,13 +30,15 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final GenreRepository genreRepository;
+    private final FollowRepository followRepository;
     private final PasswordEncoder passwordEncoder;
     private final FollowService followService;
     private final MarkService markService;
 
-    public UserService(UserRepository userRepository, GenreRepository genreRepository, PasswordEncoder passwordEncoder, FollowService followService, MarkService markService) {
+    public UserService(UserRepository userRepository, GenreRepository genreRepository, FollowRepository followRepository, PasswordEncoder passwordEncoder, FollowService followService, MarkService markService) {
         this.userRepository = userRepository;
         this.genreRepository = genreRepository;
+        this.followRepository = followRepository;
         this.passwordEncoder = passwordEncoder;
         this.followService = followService; 
         this.markService = markService;
@@ -219,6 +223,15 @@ public class UserService {
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         user.setAccountPrivacity(isPrivate);
         userRepository.save(user);
+
+        if (!isPrivate) {
+        followRepository.findByFollowedId(email).stream()
+            .filter(follow -> follow.getState() == Follow.State.PENDING)
+            .forEach(follow -> {
+                follow.setState(Follow.State.ACCEPTED);
+                followRepository.save(follow);
+            });
+        }
     }
 
     private void applyDtoToEntity(UserRequestDTO dto, User user) {
