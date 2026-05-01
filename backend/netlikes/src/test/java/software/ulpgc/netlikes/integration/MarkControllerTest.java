@@ -1,25 +1,23 @@
 package software.ulpgc.netlikes.integration;
 
+import software.ulpgc.netlikes.model.*;
+import software.ulpgc.netlikes.repository.*;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import software.ulpgc.netlikes.model.*;
-import software.ulpgc.netlikes.repository.*;
-
-import org.springframework.test.context.ActiveProfiles;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {
-        "spring.profiles.active=test"
-    }
+    properties = {"spring.profiles.active=test"}
 )
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
@@ -31,35 +29,47 @@ public class MarkControllerTest {
     @Autowired private FilmRepository filmRepository;
     @Autowired private MarkRepository markRepository;
 
+    private User savedUser;
+    private Film savedFilm;
+
     @BeforeEach
     void setUp() {
-        User user = new User(); user.setEmail("test@test.com"); user.setPassword("123"); user.setUserName("test");
-        userRepository.save(user);
+        User user = new User();
+        user.setEmail("test@test.com");
+        user.setPassword("123");
+        user.setName("test");
+        savedUser = userRepository.save(user);
 
-        Film film = new Film(); film.setId(1); film.setTitle("Matrix");
-        filmRepository.save(film);
+        Film film = new Film();
+        film.setId(1);
+        film.setTitle("Matrix");
+        savedFilm = filmRepository.save(film);
+    }
+
+    private Mark createAndSaveMark(Mark.Type type) {
+        Mark mark = new Mark();
+        mark.setId(new MarkId(savedUser.getEmail(), savedFilm.getId()));
+        mark.setUser(savedUser);
+        mark.setFilm(savedFilm);
+        mark.setType(type);
+        return markRepository.save(mark);
     }
 
     @Test
     void toggleMark_AddSeenList_ReturnsAdded() throws Exception {
         mockMvc.perform(post("/marks/test@test.com/toggle/1")
-                .param("type", "SEEN"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("added"));
+            .param("type", "SEEN"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("added"));
     }
 
     @Test
     void toggleMark_AlreadySeen_ReturnsRemoved() throws Exception {
-        Mark mark = new Mark(); 
-        mark.setId(new MarkId("test@test.com", 1));
-        mark.setUser(userRepository.findById("test@test.com").get());
-        mark.setFilm(filmRepository.findById(1).get());
-        mark.setType(Mark.Type.SEEN);
-        markRepository.save(mark);
+        createAndSaveMark(Mark.Type.SEEN);
 
         mockMvc.perform(post("/marks/test@test.com/toggle/1")
-                .param("type", "SEEN"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("removed"));
+            .param("type", "SEEN"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("removed"));
     }
 }

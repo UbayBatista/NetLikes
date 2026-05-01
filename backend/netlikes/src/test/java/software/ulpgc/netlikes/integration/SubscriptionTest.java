@@ -118,6 +118,6 @@ class SubscriptionRepositoryIntegrationTest {
 
         repository.delete(subscription);
 
-        assertThat(repository.findAll().isEmpty());
+        assertThat(repository.findAll()).isEmpty();
     }   
 }

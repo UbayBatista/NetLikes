@@ -1,64 +1,67 @@
 package software.ulpgc.netlikes.behavior;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-import software.ulpgc.netlikes.service.FilmService;
-import software.ulpgc.netlikes.api.FilmSyncScheduler;
+
 import software.ulpgc.netlikes.dto.FilmResponseDTO;
-import software.ulpgc.netlikes.repository.FilmRepository;
 import software.ulpgc.netlikes.model.Film;
+import software.ulpgc.netlikes.repository.FilmRepository;
+import software.ulpgc.netlikes.service.FilmService;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@SpringBootTest
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {"spring.profiles.active=test"}
+)
+@ActiveProfiles("test")
+@Transactional
 public class FilmBehaviorTest {
 
-    @MockitoBean
-    private FilmSyncScheduler filmSyncScheduler;
+    @Autowired private FilmService filmService;
+    @Autowired private FilmRepository filmRepository;
 
-    @Autowired
-    private FilmService filmService;
-    
-    @Autowired
-    private FilmRepository filmRepository;
-
-    @Test
-    void deletingFilmShouldRemoveItFromDatabase() {
-        filmService.deleteFilm(101); 
-        
-        assertThat(filmRepository.existsById(101)).isFalse();
-    }
-
-    @Test
-    @Transactional
-    void shouldReturnEmptyVideoListWhenNoTrailersExist() {
+    private Film createAndSaveFilm(int id) {
         Film film = new Film();
-        film.setId(102);
+        film.setId(id);
         film.setTitle("Test Movie");
         film.setOverView("Sinopsis de prueba");
         film.setPosterPath("/path.jpg");
-        film.setRuntime(120); 
+        film.setReleaseDate(java.sql.Date.valueOf("2020-01-01"));
+        film.setRuntime(120);
         film.setAdult(false);
-        
         film.setGenres(new ArrayList<>());
         film.setWatchProviders(new ArrayList<>());
         film.setCast(new HashSet<>());
         film.setVideos(new ArrayList<>());
+        return filmRepository.save(film);
+    }
 
-        filmRepository.save(film);
+    @Test
+    @DisplayName("Eliminar una película debe borrarla de la base de datos")
+    void deletingFilmShouldRemoveItFromDatabase() {
+        createAndSaveFilm(101);
+
+        filmService.deleteFilm(101);
+
+        assertThat(filmRepository.existsById(101)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Debe devolver lista de vídeos vacía si la película no tiene trailers")
+    void shouldReturnEmptyVideoListWhenNoTrailersExist() {
+        createAndSaveFilm(102);
 
         FilmResponseDTO response = filmService.getFilmById(102);
-        
-        assertNotNull(response);
-        assertTrue(response.getVideos().isEmpty());
+
+        assertThat(response).isNotNull();
+        assertThat(response.getVideos()).isEmpty();
     }
 }

@@ -1,10 +1,12 @@
 package software.ulpgc.netlikes.unit;
 
+import software.ulpgc.netlikes.model.*;
+import software.ulpgc.netlikes.repository.*;
+import software.ulpgc.netlikes.service.*;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-
-import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,9 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import software.ulpgc.netlikes.model.*;
-import software.ulpgc.netlikes.repository.*;
-import software.ulpgc.netlikes.service.*;
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 public class MarkServiceTest {

@@ -9,18 +9,18 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import software.ulpgc.netlikes.model.Film;
-import software.ulpgc.netlikes.model.Rate;
-import software.ulpgc.netlikes.model.RateId;
-import software.ulpgc.netlikes.model.User;
-import software.ulpgc.netlikes.repository.FilmRepository;
-import software.ulpgc.netlikes.repository.RateRepository;
-import software.ulpgc.netlikes.repository.UserRepository;
+import software.ulpgc.netlikes.model.*;
+import software.ulpgc.netlikes.repository.*;
 import software.ulpgc.netlikes.service.RateService;
 
-@SpringBootTest
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {"spring.profiles.active=test"}
+)
+@ActiveProfiles("test")
 @Transactional
 public class RateBehaviorTest {
 
@@ -36,25 +36,30 @@ public class RateBehaviorTest {
     void setUp() {
         testUser = new User();
         testUser.setEmail("test_rate@test.com");
-        testUser.setUserName("UsuarioRate");
+        testUser.setName("UsuarioRate");
         testUser.setPassword("123");
+        testUser.setBirthdate(java.sql.Date.valueOf("2000-01-01"));
+        testUser.setSecurityQuestion("¿Nombre de tu mascota?");
+        testUser.setAnswer("Toby");
         userRepository.save(testUser);
 
         testFilm = new Film();
         testFilm.setId(888);
         testFilm.setTitle("Pelicula Rate");
+        testFilm.setOverView("Sinopsis de prueba");
+        testFilm.setAdult(false);
+        testFilm.setPosterPath("/poster.jpg");
+        testFilm.setReleaseDate(java.sql.Date.valueOf("2020-01-01"));
+        testFilm.setRuntime(120);
         filmRepository.save(testFilm);
     }
 
     @Test
     @DisplayName("HU 9.1: Valorar película vista")
     void shouldApplyNewRate() {
-        String email = testUser.getEmail();
-        Integer filmId = testFilm.getId();
+        rateService.toggleRate(testUser.getEmail(), testFilm.getId(), Rate.Score.LIKE);
 
-        rateService.toggleRate(email, filmId, Rate.Score.LIKE);
-
-        Optional<Rate> savedRate = rateRepository.findById(new RateId(email, filmId));
+        Optional<Rate> savedRate = rateRepository.findById(new RateId(testUser.getEmail(), testFilm.getId()));
         assertThat(savedRate).isPresent();
         assertThat(savedRate.get().getScore()).isEqualTo(Rate.Score.LIKE);
     }
@@ -62,26 +67,21 @@ public class RateBehaviorTest {
     @Test
     @DisplayName("HU 9.1: Modificar valoración existente")
     void shouldModifyExistingRate() {
-        String email = testUser.getEmail();
-        Integer filmId = testFilm.getId();
-        rateService.toggleRate(email, filmId, Rate.Score.LIKE);
+        rateService.toggleRate(testUser.getEmail(), testFilm.getId(), Rate.Score.LIKE);
+        rateService.toggleRate(testUser.getEmail(), testFilm.getId(), Rate.Score.LOVE);
 
-        rateService.toggleRate(email, filmId, Rate.Score.LOVE);
-
-        Rate updatedRate = rateRepository.findById(new RateId(email, filmId)).get();
+        Rate updatedRate = rateRepository.findById(new RateId(testUser.getEmail(), testFilm.getId())).get();
         assertThat(updatedRate.getScore()).isEqualTo(Rate.Score.LOVE);
     }
 
     @Test
     @DisplayName("HU 9.1: Eliminar valoración pulsando la misma")
     void shouldRemoveRateIfSameButtonClicked() {
-        String email = testUser.getEmail();
-        Integer filmId = testFilm.getId();
-        rateService.toggleRate(email, filmId, Rate.Score.DISLIKE);
+        rateService.toggleRate(testUser.getEmail(), testFilm.getId(), Rate.Score.DISLIKE);
 
-        Rate result = rateService.toggleRate(email, filmId, Rate.Score.DISLIKE);
+        Rate result = rateService.toggleRate(testUser.getEmail(), testFilm.getId(), Rate.Score.DISLIKE);
 
         assertThat(result).isNull();
-        assertThat(rateRepository.existsById(new RateId(email, filmId))).isFalse();
+        assertThat(rateRepository.existsById(new RateId(testUser.getEmail(), testFilm.getId()))).isFalse();
     }
 }

@@ -9,8 +9,6 @@ import software.ulpgc.netlikes.repository.MarkRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
 import software.ulpgc.netlikes.dto.FilmResponseDTO;
 
-
-import java.util.stream.Collectors;
 import java.util.List;
 import java.util.Optional;
 

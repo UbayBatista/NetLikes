@@ -1,5 +1,19 @@
 package software.ulpgc.netlikes.unit;
 
+import software.ulpgc.netlikes.dto.LoginRequestDTO;
+import software.ulpgc.netlikes.dto.RegisterRequestDTO;
+import software.ulpgc.netlikes.dto.UserResponseDTO;
+import software.ulpgc.netlikes.model.User;
+import software.ulpgc.netlikes.model.Genre;
+import software.ulpgc.netlikes.repository.GenreRepository;
+import software.ulpgc.netlikes.repository.UserRepository;
+import software.ulpgc.netlikes.service.UserService;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -10,20 +24,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
-import software.ulpgc.netlikes.dto.LoginRequestDTO;
-import software.ulpgc.netlikes.dto.RegisterRequestDTO;
-import software.ulpgc.netlikes.dto.UserResponseDTO;
-import software.ulpgc.netlikes.model.User;
-import software.ulpgc.netlikes.model.Genre;
-import software.ulpgc.netlikes.repository.GenreRepository;
-import software.ulpgc.netlikes.repository.UserRepository;
-import software.ulpgc.netlikes.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {

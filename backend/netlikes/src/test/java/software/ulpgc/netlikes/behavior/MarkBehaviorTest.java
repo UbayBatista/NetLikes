@@ -1,26 +1,28 @@
 package software.ulpgc.netlikes.behavior;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import software.ulpgc.netlikes.model.*;
+import software.ulpgc.netlikes.repository.*;
+import software.ulpgc.netlikes.service.MarkService;
 
-import java.util.Optional;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import software.ulpgc.netlikes.model.Film;
-import software.ulpgc.netlikes.model.Mark;
-import software.ulpgc.netlikes.model.MarkId;
-import software.ulpgc.netlikes.model.User;
-import software.ulpgc.netlikes.repository.FilmRepository;
-import software.ulpgc.netlikes.repository.MarkRepository;
-import software.ulpgc.netlikes.repository.UserRepository;
-import software.ulpgc.netlikes.service.MarkService;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 
-@SpringBootTest
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {"spring.profiles.active=test"}
+)
+@ActiveProfiles("test")
 @Transactional
 public class MarkBehaviorTest {
 
@@ -36,26 +38,39 @@ public class MarkBehaviorTest {
     void setUp() {
         testUser = new User();
         testUser.setEmail("test_mark@test.com");
-        testUser.setUserName("UsuarioTest");
+        testUser.setName("UsuarioTest");
         testUser.setPassword("123");
+        testUser.setBirthdate(java.sql.Date.valueOf("2000-01-01"));
+        testUser.setSecurityQuestion("¿Nombre de tu mascota?");
+        testUser.setAnswer("Toby");
+        testUser.setAccountPrivacity(false);
+        testUser.setShowWatchedFilms(false);
+        testUser.setShowFilmsToWatchLater(false);
+        testUser.setShowRecommendedFilms(false);
         userRepository.save(testUser);
 
         testFilm = new Film();
         testFilm.setId(999);
         testFilm.setTitle("Pelicula de Prueba");
+        testFilm.setOverView("Sinopsis de prueba");
+        testFilm.setAdult(false);
+        testFilm.setPosterPath("/poster.jpg");
+        testFilm.setReleaseDate(java.sql.Date.valueOf("2020-01-01"));
+        testFilm.setRuntime(120);
+        testFilm.setGenres(List.of());
+        testFilm.setCast(new HashSet<>());
+        testFilm.setVideos(List.of());
         filmRepository.save(testFilm);
     }
 
     @Test
     @DisplayName("HU 4.1: Añadir a Vistas")
     void shouldAddFilmToSeenList() {
-        String email = testUser.getEmail();
-        Integer filmId = testFilm.getId();
-        assertThat(markRepository.existsById(new MarkId(email, filmId))).isFalse();
+        assertThat(markRepository.existsById(new MarkId(testUser.getEmail(), testFilm.getId()))).isFalse();
 
-        markService.typeFilm(email, filmId, Mark.Type.SEEN);
+        markService.typeFilm(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN);
 
-        Optional<Mark> savedMark = markRepository.findById(new MarkId(email, filmId));
+        Optional<Mark> savedMark = markRepository.findById(new MarkId(testUser.getEmail(), testFilm.getId()));
         assertThat(savedMark).isPresent();
         assertThat(savedMark.get().getType()).isEqualTo(Mark.Type.SEEN);
     }
@@ -63,25 +78,19 @@ public class MarkBehaviorTest {
     @Test
     @DisplayName("HU 4.1: Cambiar de Ver más tarde a Vistas")
     void shouldChangeFromWatchLaterToSeen() {
-        String email = testUser.getEmail();
-        Integer filmId = testFilm.getId();
-        markService.typeFilm(email, filmId, Mark.Type.WATCHLATER);
+        markService.typeFilm(testUser.getEmail(), testFilm.getId(), Mark.Type.WATCHLATER);
+        markService.typeFilm(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN);
 
-        markService.typeFilm(email, filmId, Mark.Type.SEEN);
-
-        Mark updatedMark = markRepository.findById(new MarkId(email, filmId)).get();
+        Mark updatedMark = markRepository.findById(new MarkId(testUser.getEmail(), testFilm.getId())).get();
         assertThat(updatedMark.getType()).isEqualTo(Mark.Type.SEEN);
     }
 
     @Test
     @DisplayName("HU 4.1: Retirar de Vistas")
     void shouldRemoveFromSeenList() {
-        String email = testUser.getEmail();
-        Integer filmId = testFilm.getId();
-        markService.typeFilm(email, filmId, Mark.Type.SEEN);
+        markService.typeFilm(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN);
+        markService.deletetype(testUser.getEmail(), testFilm.getId());
 
-        markService.deletetype(email, filmId);
-
-        assertThat(markRepository.existsById(new MarkId(email, filmId))).isFalse();
+        assertThat(markRepository.existsById(new MarkId(testUser.getEmail(), testFilm.getId()))).isFalse();
     }
 }
