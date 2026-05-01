@@ -11,12 +11,19 @@ import org.springframework.transaction.annotation.Transactional;
 import software.ulpgc.netlikes.model.*;
 import software.ulpgc.netlikes.repository.*;
 
+import org.springframework.test.context.ActiveProfiles;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {
+        "spring.profiles.active=test"
+    }
+)
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
-@Transactional // <- MAGIA: Revierte cualquier inserción en H2 al acabar el test
+@Transactional
 public class MarkControllerTest {
 
     @Autowired private MockMvc mockMvc;
