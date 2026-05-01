@@ -7,6 +7,17 @@
   justify-content: center; 
 }
 
+.fila-peliculas2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.fila-peliculas2 .netflix-card:hover {
+  transform: scale(1.08);
+  transition: transform 0.2s ease ;
+}
+
 @media (max-width: 1024px) {
   .search-input {
     max-width: 400px;

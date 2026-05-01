@@ -17,6 +17,9 @@
       @if (form.get('password')?.hasError('minlength') && form.get('password')?.touched) {
         <div class="invalid-feedback">Mínimo 6 caracteres.</div>
       }
+      @else if (form.get('password')?.hasError('pattern') && form.get('password')?.touched) {
+        <div class="invalid-feedback">Debe tener al menos una mayúscula, un número y sin espacios.</div>
+      }
     </div>
     <button
       type="button"
@@ -39,8 +42,7 @@
       <label for="confirmPassword">Confirmar contraseña</label>
       @if (form.get('confirmPassword')?.hasError('required') && form.get('confirmPassword')?.touched) {
         <div class="invalid-feedback">Confirma tu contraseña.</div>
-      }
-      @if (form.hasError('notSamePasswords') && form.get('confirmPassword')?.touched) {
+      } @else if (form.hasError('notSamePasswords') && form.get('confirmPassword')?.touched) {
         <div class="invalid-feedback">Las contraseñas no coinciden.</div>
       }
     </div>

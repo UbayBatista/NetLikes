@@ -5,11 +5,29 @@
   </app-search-bar>
 </div>
 
+@if (!isSearching) {
+  @for (genre of genres; track $index) {
+    <app-genre 
+      [genre]="genre"
+      [index]="$index">
+    </app-genre>
+  }
+} 
+@else {
+  <div class="contenido px-4 py-3">
+        <h5 class="text-black mb-3">Recomendaciones de otros usuarios</h5>
+        @if (searchResults.length === 0) {
+          <div class="no-results-message">
+            <p>No hemos encontrado ninguna película con ese nombre. ¡Prueba con otra!</p>
+          </div>
+        }
+        <div class="fila-peliculas2">
+            @for (f of searchResults; track f.id) {
+                <div class="netflix-card">
+                  <app-film [posterPath]="f.posterPath" [title]="f.title" [id]="f.id"></app-film>
+                </div>
+            }
+        </div>
+    </div>
 
-
-@for (genre of filteredGenres; track $index) {
-  <app-genre 
-    [genre]="genre"
-    [index]="$index">
-  </app-genre>
 }

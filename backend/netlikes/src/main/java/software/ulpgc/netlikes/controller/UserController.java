@@ -2,15 +2,20 @@ package software.ulpgc.netlikes.controller;
 
 import software.ulpgc.netlikes.dto.UserRequestDTO;
 import software.ulpgc.netlikes.dto.UserResponseDTO;
+import software.ulpgc.netlikes.dto.ChangePasswordDTO;
 import software.ulpgc.netlikes.dto.LoginRequestDTO;
+import software.ulpgc.netlikes.dto.UserProfileDTO;
+import software.ulpgc.netlikes.dto.PrivacyRequestDTO;
 import software.ulpgc.netlikes.dto.RegisterRequestDTO;
 import software.ulpgc.netlikes.dto.ValidAnswerRequestDTO;
 import software.ulpgc.netlikes.service.UserService;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/users")
@@ -23,12 +28,16 @@ public class UserController {
     }
 
     @GetMapping
-    public List<UserResponseDTO> getAllUsers() {
-        return userService.getAllUsers();
+    public ResponseEntity<List<UserResponseDTO>> getAllUsers(
+        @RequestParam(defaultValue = "0") int page, 
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam String mail
+    ) {
+        return userService.getAllUsers(page, size, mail);
     }
 
     @GetMapping("/{email}")
-    public UserResponseDTO getUserById(@PathVariable String email) {
+    public UserResponseDTO getUserById(@NonNull @PathVariable String email) {
         return userService.getUserById(email);
     }
 
@@ -39,14 +48,14 @@ public class UserController {
 
     @PutMapping("/{email}")
     public UserResponseDTO updateUser(
-            @PathVariable String email,
+            @NonNull @PathVariable String email,
             @Valid @RequestBody UserRequestDTO dto) {
 
         return userService.updateUser(email, dto);
     }
 
     @DeleteMapping("/{email}")
-    public void deleteUser(@PathVariable String email) {
+    public void deleteUser(@NonNull @PathVariable String email) {
         userService.deleteUser(email);
     }
 
@@ -74,7 +83,7 @@ public class UserController {
     }
 
     @GetMapping("/securityQuestion/{email}")
-    public ResponseEntity<?> getSecurityQuestion(@PathVariable String email) {
+    public ResponseEntity<?> getSecurityQuestion(@NonNull @PathVariable String email) {
         try {
             return ResponseEntity.ok(userService.getSecurityQuestion(email));
         } catch (RuntimeException e) {
@@ -83,11 +92,42 @@ public class UserController {
     }
 
     @PostMapping("/isValidAnswer")
-    public ResponseEntity<?> isValidAnswer(@RequestBody ValidAnswerRequestDTO request) {
+    public ResponseEntity<?> isValidAnswer(@NonNull @RequestBody ValidAnswerRequestDTO request) {
         try {
-            return ResponseEntity.ok(userService.isValidAnswer(request.getEmail(), request.getAnswer()));
+            return ResponseEntity.ok(userService.isValidAnswer(Objects.requireNonNull(request.getEmail()), request.getAnswer()));
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         }
+    }
+
+    @PatchMapping("/changePassword")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO request) {
+        try {
+            userService.changePassword(request.getEmail(), request.getNewPassword());
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/myProfile/{email}")
+    public UserProfileDTO myProfile(@NonNull @PathVariable String email){
+        return userService.myProfile(email);
+    }
+    
+    @GetMapping("/profile/{userName}")
+    public UserProfileDTO userProfile(@PathVariable String userName, @RequestParam String requesterEmail){
+        return userService.userProfile(userName, requesterEmail);
+    }
+
+    @PatchMapping("/myProfile/{email}/privacy")
+    public ResponseEntity<?> changePrivacy(@NonNull @PathVariable String email, @RequestBody PrivacyRequestDTO request) {
+        userService.changePrivacy(email, request.getIsPrivate());
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<UserResponseDTO>> searchFilm(@RequestParam String query) {
+        return this.userService.searchBy(query);
     }
 }

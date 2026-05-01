@@ -12,11 +12,14 @@
     [ngClass]="{'is-invalid': form.get('email')?.invalid && form.get('email')?.touched}"
     />
     <label for="email">Correo electrónico</label>
-    @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
+    @if (form.get('email')?.hasError('required') && form.get('email')?.touched && showRecoverError) {
+        <div class="invalid-feedback">El correo es obligatorio para cambiar la contraseña.</div>
+    } @else if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
         <div class="invalid-feedback">El correo es obligatorio.</div>
-    }
-    @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
+    } @else if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
         <div class="invalid-feedback">Introduce un correo válido.</div>
+    } @else if (form.get('email')?.hasError('notFound') && showRecoverError) {
+        <div class="invalid-feedback">No existe ninguna cuenta con ese correo.</div>
     }
 </div>
 
@@ -46,6 +49,9 @@
     </button>
 </div>
 
+@if (showRecoverModal) {
+    <app-recover-password [email]="form.get('email')?.value" (close)="showRecoverModal = false"></app-recover-password>
+}
 <button class="text-white btn btn-lg w-100 create-account-btn" (click)="login()">  Iniciar sesión </button>
 
 </div>

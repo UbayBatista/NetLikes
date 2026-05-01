@@ -26,9 +26,11 @@
                   }
                 </div>
               </div>
-              <button class="btn btn-secondary btn-sm rounded-pill px-3" (click)="handleAction(user)">
-                {{ title === 'Seguidores' ? 'Eliminar' : 'Dejar de seguir' }}
-              </button>
+              @if (isMyOwnProfile) {
+                <button class="btn btn-secondary btn-sm rounded-pill px-3" (click)="handleAction(user)">
+                  {{ title === 'Seguidores' ? 'Eliminar' : 'Dejar de seguir' }}
+                </button>
+              }
             </div>
           }
         </div>

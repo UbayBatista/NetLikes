@@ -41,6 +41,5 @@ export class Step4 implements OnInit{
     .map(g => g.id); 
 
     this.toEnd.emit(seleccionIds);
-    console.log('Enviando IDs al registro:', seleccionIds);
   }
 }
