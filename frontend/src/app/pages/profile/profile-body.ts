@@ -47,8 +47,6 @@ export class ProfileComplete implements OnInit {
   canScrollLeft = false;
   canScrollRight = true;
 
-  @ViewChild('scrollContainer') scrollContainer?: ElementRef<HTMLDivElement>;
-
   private followStateSubject = new BehaviorSubject<FollowStatus>('NONE');
   followState$ = this.followStateSubject.asObservable();
 
@@ -246,25 +244,6 @@ export class ProfileComplete implements OnInit {
         });
       }
     });
-  }
-
-  scroll(direction: 'left' | 'right') {
-    if (!this.scrollContainer) return;
-    
-    const element = this.scrollContainer.nativeElement;
-    const scrollAmount = direction === 'left' ? -300 : 300;
-    
-    element.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    setTimeout(() => this.updateScrollButtons(), 350);
-  }
-
-  updateScrollButtons() {
-    const el = this.scrollContainer?.nativeElement;
-    if (!el) return;
-
-    this.canScrollLeft = el.scrollLeft > 5;
-    this.canScrollRight = el.scrollLeft + el.clientWidth < el.scrollWidth - 5;
-    this.cdr.detectChanges();
   }
 
   toggleEdit() {
