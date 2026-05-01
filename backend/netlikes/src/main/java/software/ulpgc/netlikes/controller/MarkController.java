@@ -4,7 +4,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import software.ulpgc.netlikes.model.Mark;
-import software.ulpgc.netlikes.model.MarkId;
 import software.ulpgc.netlikes.service.MarkService;
 import lombok.RequiredArgsConstructor;
 import software.ulpgc.netlikes.dto.FilmResponseDTO;
@@ -14,10 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import org.hibernate.annotations.Generated;
 
 
 @RestController

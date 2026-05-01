@@ -96,5 +96,29 @@ public class FollowService {
     public void deleteFollow(String followerId, String followedId) {
         followRepository.deleteById(new FollowId(followerId, followedId));
     }
-    
+
+    public List<UserResponseDTO> getPendingRequests(String followedId) {
+        return followRepository.findByFollowedId(followedId).stream()
+            .filter(follow -> follow.getState() == Follow.State.PENDING)
+            .map(follow -> userRepository.findById(follow.getFollowerId())
+                .map(user -> new UserResponseDTO(
+                    user.getEmail(),
+                    user.getName(),
+                    user.getProfilePicture()
+                ))
+                .orElse(null))
+            .filter(dto -> dto != null)
+            .toList();
+    }
+
+    public Follow acceptFollow(String followerId, String followedId) {
+        Follow follow = followRepository.findById(new FollowId(followerId, followedId))
+            .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+        follow.setState(Follow.State.ACCEPTED);
+        return followRepository.save(follow);
+    }
+
+    public void rejectFollow(String followerId, String followedId) {
+        followRepository.deleteById(new FollowId(followerId, followedId));
+    }
 }
