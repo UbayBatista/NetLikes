@@ -41,11 +41,6 @@ public class UserController {
         return userService.getUserById(email);
     }
 
-    @PostMapping
-    public UserResponseDTO createUser(@Valid @RequestBody UserRequestDTO dto) {
-        return userService.createUser(dto);
-    }
-
     @PutMapping("/{email}")
     public UserResponseDTO updateUser(
             @NonNull @PathVariable String email,

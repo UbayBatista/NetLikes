@@ -1,4 +1,4 @@
-package software.ulpgc.netlikes.api;
+package software.ulpgc.netlikes.tmdbApi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;

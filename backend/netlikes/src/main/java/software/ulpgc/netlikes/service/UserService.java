@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
+import software.ulpgc.netlikes.discourseApi.DiscourseService;
 import software.ulpgc.netlikes.dto.FilmResponseDTO;
 import software.ulpgc.netlikes.dto.LoginRequestDTO;
 import software.ulpgc.netlikes.dto.UserProfileDTO;
@@ -18,6 +19,7 @@ import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.repository.GenreRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
 import software.ulpgc.netlikes.model.Mark;
+
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,13 +33,20 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final FollowService followService;
     private final MarkService markService;
+    private final DiscourseService discourseService;
 
-    public UserService(UserRepository userRepository, GenreRepository genreRepository, PasswordEncoder passwordEncoder, FollowService followService, MarkService markService) {
+    public UserService(UserRepository userRepository, 
+                       GenreRepository genreRepository, 
+                       PasswordEncoder passwordEncoder, 
+                       FollowService followService, 
+                       MarkService markService, 
+                       DiscourseService discourseService) {
         this.userRepository = userRepository;
         this.genreRepository = genreRepository;
         this.passwordEncoder = passwordEncoder;
         this.followService = followService; 
         this.markService = markService;
+        this.discourseService = discourseService;
     }
 
     public List<UserResponseDTO> getAllUsers() {
@@ -83,15 +92,6 @@ public class UserService {
         .isAccountPrivacity();
     }
 
-    public UserResponseDTO createUser(UserRequestDTO dto) {
-
-        User user = new User();
-        applyDtoToEntity(dto, user);
-
-        userRepository.save(user);
-        return toDTO(user);
-    }
-
     public UserResponseDTO updateUser(@NonNull String email, UserRequestDTO dto) {
 
         User user = userRepository.findById(email)
@@ -104,6 +104,11 @@ public class UserService {
     }
 
     public void deleteUser(@NonNull String email) {
+        User user = userRepository.findById(email)
+                .orElseThrow(() -> new RuntimeException("Credenciales incorrectas"));
+
+        discourseService.deleteDiscourseUserById(user.getDiscourseId());
+
         userRepository.deleteById(email);
     }
 
@@ -139,7 +144,16 @@ public class UserService {
             newUser.setFavoriteGenres(genres);
         }
 
+        String discourseId = discourseService.createDiscourseUser(newUser.getName(), newUser.getEmail(), request.getPassword());
+
+        if (discourseId == null) {
+            throw new RuntimeException("Error al crear la cuenta en el foro. No se pudo completar el registro.");
+        }
+
+        newUser.setDiscourseId(discourseId);
+        
         User saved = userRepository.save(newUser);
+
         return toDTO(saved);
     }
 
@@ -160,7 +174,7 @@ public class UserService {
     }
 
     
-    public void changePassword(String email, String newPassword) {
+    public void changePassword(@NonNull String email, String newPassword) {
         User user = userRepository.findById(email)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 

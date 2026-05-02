@@ -1,8 +1,10 @@
 package software.ulpgc.netlikes.service;
 
+import software.ulpgc.netlikes.discourseApi.DiscourseService;
 import software.ulpgc.netlikes.dto.UserResponseDTO;
 import software.ulpgc.netlikes.model.Follow;
 import software.ulpgc.netlikes.model.FollowId;
+import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.repository.FollowRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
 
@@ -17,10 +19,14 @@ public class FollowService {
 
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
+    private final DiscourseService discourseService;
 
-    public FollowService(FollowRepository followRepository, UserRepository userRepository) {
+    public FollowService(FollowRepository followRepository, 
+                         UserRepository userRepository, 
+                         DiscourseService discourseService) {
         this.followRepository = followRepository;
         this.userRepository = userRepository;
+        this.discourseService = discourseService;
     }
 
     @Transactional
@@ -95,6 +101,45 @@ public class FollowService {
 
     public void deleteFollow(String followerId, String followedId) {
         followRepository.deleteById(new FollowId(followerId, followedId));
+    }
+
+    @Transactional
+    public void blockUser(@NonNull String blockerEmail, @NonNull String blockedEmail) {
+        if (blockerEmail.equals(blockedEmail)) {
+            throw new IllegalArgumentException("Un usuario no puede bloquearse a sí mismo.");
+        }
+
+        User blocker = userRepository.findById(blockerEmail)
+                .orElseThrow(() -> new RuntimeException("Usuario que bloquea no encontrado"));
+        User blocked = userRepository.findById(blockedEmail)
+                .orElseThrow(() -> new RuntimeException("Usuario a bloquear no encontrado"));
+
+        String blockerUsername = blocker.getName().replaceAll("\\s+", "").toLowerCase();
+        String blockedUsername = blocked.getName().replaceAll("\\s+", "").toLowerCase();
+
+        discourseService.ignoreDiscourseUser(blockerUsername, blockedUsername);
+
+        followRepository.findById(new FollowId(blockerEmail, blockedEmail))
+                .ifPresent(followRepository::delete);
+                
+        followRepository.findById(new FollowId(blockedEmail, blockerEmail))
+                .ifPresent(followRepository::delete);
+
+    }
+
+    @Transactional
+    public void unblockUser(@NonNull String blockerEmail, @NonNull String unblockedEmail) {
+        User blocker = userRepository.findById(blockerEmail)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        User unblocked = userRepository.findById(unblockedEmail)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        String blockerUsername = blocker.getName().replaceAll("\\s+", "").toLowerCase();
+        String unblockedUsername = unblocked.getName().replaceAll("\\s+", "").toLowerCase();
+
+        discourseService.unignoreDiscourseUser(blockerUsername, unblockedUsername);
+
+        followRepository.deleteById(new FollowId(blockerEmail, unblockedEmail));
     }
     
 }

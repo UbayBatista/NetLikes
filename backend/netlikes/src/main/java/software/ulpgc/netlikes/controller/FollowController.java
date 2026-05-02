@@ -63,4 +63,32 @@ public class FollowController {
         
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/{targetId}/remove")
+    public ResponseEntity<Void> removeFollower(
+            @PathVariable String targetId, 
+            @RequestHeader("X-User-Id") String myId) {
+        
+        followService.deleteFollow(targetId, myId);
+        
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{targetId}/block")
+    public ResponseEntity<Void> blockUser(
+            @NonNull @PathVariable String targetId,
+            @NonNull @RequestHeader("X-User-Id") String myId) {
+        
+        followService.blockUser(myId, targetId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{targetId}/unblock")
+    public ResponseEntity<Void> unblockUser(
+            @NonNull @PathVariable String targetId,
+            @NonNull @RequestHeader("X-User-Id") String myId) {
+        
+        followService.unblockUser(myId, targetId);
+        return ResponseEntity.noContent().build();
+    }
 }
