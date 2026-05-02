@@ -15,8 +15,8 @@ export class ChatWindow {
 
   ForumTitle = '';
   forumId: number | null = null;
-  //newMessage = signal('');
   saveUrl: SafeResourceUrl | null = null;
+  activeForum = false;
 
   constructor(
     private sanitizer: DomSanitizer
@@ -30,18 +30,48 @@ export class ChatWindow {
       this.forumId = value
 
       if (value !== null) {
-          this.chargeForum(value);
+          this.activateForum();
       } else {
           this.saveUrl = null; 
+          this.activeForum = false;
       }
 
   }
 
-  // ngOnChanges(changes: SimpleChanges) {
-  //   if (changes['selectedForumId'] && this.forumId) {
-  //     this.chargeForum(this.forumId);
-  //   }
-  // }
+  activateForum() {
+
+    if (this.activeForum && this.forumId !== null) {
+        this.chargeForum(this.forumId);
+        return;
+    }
+
+    if (localStorage.getItem('foro_sesion_activa') === 'true') {
+      this.activeForum = true;
+      this.chargeForum(this.forumId!);
+      return;
+    }
+
+    const ssoUrl = 'https://netlikes.duckdns.org/session/sso';
+    const width = 600;
+    const height = 600;
+    const left = (window.screen.width / 2) - (width / 2);
+    const top = (window.screen.height / 2) - (height / 2);
+
+    // Abrimos el SSO en una ventana nueva. 
+    // Al ser una ventana propia, el navegador SI DEJA guardar la cookie.
+    const popup = window.open(ssoUrl, 'ForoLogin', `width=${width},height=${height},left=${left},top=${top}`);
+
+    const timer = setInterval(() => {
+      if (popup?.closed) {
+        clearInterval(timer);
+        this.activeForum = true; // Mostramos el iframe
+        if (this.forumId !== null) {
+          this.chargeForum(this.forumId);
+        }
+      }
+      localStorage.setItem('foro_sesion_activa', 'true');
+    }, 1000);
+  }
 
   chargeForum(forumId: number) {
       const originalUrl = `https://netlikes.duckdns.org/t/${forumId}`;
@@ -54,6 +84,11 @@ export class ChatWindow {
   }
 
 
+  // ngOnChanges(changes: SimpleChanges) {
+  //   if (changes['selectedForumId'] && this.forumId) {
+  //     this.chargeForum(this.forumId);
+  //   }
+  // }
 
   // messages = signal([
   //   { text: '¡Hola a todos! ¿Cuál es vuestra escena favorita?', isMine: false, user: 'User123' },

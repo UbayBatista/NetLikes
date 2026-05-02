@@ -18,7 +18,11 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/auth/sso").permitAll()
                 .anyRequest().permitAll()
+            )
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.disable()) // 2. IMPORTANTE: Permitir que el backend se cargue en el popup/frame
             );
 
         return http.build();

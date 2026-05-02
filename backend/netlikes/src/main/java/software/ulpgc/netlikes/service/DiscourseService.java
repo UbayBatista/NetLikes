@@ -27,6 +27,12 @@ public class DiscourseService {
     @Value("${discourse.api.username}")
     private String apiUsername;
 
+    private final RestTemplate restTemplate;
+
+    public DiscourseService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
     /**
      * Crea un nuevo tema (foro) en Discourse para una película.
      * @param filmTitle El título de la película.
@@ -109,4 +115,32 @@ public class DiscourseService {
         
         return null;
     }
+
+    // public void createDiscourseUser(String email, String username, String password) {
+    //     String url = "https://netlikes.duckdns.org/admin/users.json";
+
+    //     // Preparamos el cuerpo de la petición según la API de Discourse
+    //     Map<String, Object> body = new HashMap<>();
+    //     body.put("name", username);
+    //     body.put("email", email);
+    //     body.put("password", password); // Discourse le pedirá confirmación por email
+    //     body.put("username", username.replaceAll("\\s+", "_").toLowerCase()); 
+    //     body.put("active", true); // Intentamos que se cree activo
+    //     body.put("approved", true);
+    //     body.put("skip_email_validation", true);
+
+    //     HttpHeaders headers = new HttpHeaders();
+    //     headers.setContentType(MediaType.APPLICATION_JSON);
+    //     headers.set("Api-Key", apiKey);
+    //     headers.set("Api-Username", apiUsername);
+
+    //     HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+
+    //     try {
+    //         restTemplate.postForEntity(url, entity, String.class);
+    //         System.out.println("Usuario creado con éxito en Discourse: " + username);
+    //     } catch (Exception e) {
+    //         System.err.println("Aviso: No se pudo crear el usuario en Discourse (puede que ya exista): " + e.getMessage());
+    //     }
+    // }
 }

@@ -3,10 +3,8 @@
     <button class="mobile-back-btn" (click)="goBack()"><i class="bi bi-arrow-left"></i></button>
     <h2> {{ ForumTitle }}</h2>
   </header>
-</div> 
 
-
-  @if (saveUrl) {
+  @if (saveUrl && activeForum) {
     <iframe 
       [src]="saveUrl" 
       width="100%" 
@@ -14,11 +12,17 @@
       frameborder="0"
       allowfullscreen>
     </iframe>
-  } @else {
+  }@else if(!activeForum && forumId !== null){
+    <p>Conectando con el foro oficial...</p>
+    <div class="spinner"></div>
+  }
+  @else {
     <div class="p-5 text-center">
       <h3>Selecciona una película para ver su foro de debate</h3>
     </div>
   }
+
+</div> 
 
 
   <!-- <div class="messages-viewport">
