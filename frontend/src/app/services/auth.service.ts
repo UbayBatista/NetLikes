@@ -10,12 +10,11 @@ export interface LoginResponse {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private currentUser$ = new BehaviorSubject<User | null>(null);
-<<<<<<< HEAD
+
+  
   private readonly apiUrl = 'https://api-db.duckdns.org/users';
-=======
   private isLoading$ = new BehaviorSubject<boolean>(true);
   private readonly dbUrl = 'http://localhost:8080/users';
->>>>>>> upstream/feature/forum
 
   constructor(private http: HttpClient) {
     this.loadUserFromStorage();
