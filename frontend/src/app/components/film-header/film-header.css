@@ -33,3 +33,33 @@
   cursor: pointer; transition: transform 0.2s;
 }
 .platform-img:hover { transform: scale(1.1); }
+
+.dynamic-icon-wrapper {
+  max-width: 0;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.4s ease-out; 
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  margin-right: -1rem; 
+}
+
+@media (min-width: 768px) {
+  .dynamic-icon-wrapper {
+    margin-right: -1.5rem; 
+  }
+}
+
+.dynamic-icon-wrapper.is-visible {
+  max-width: 60px; 
+  opacity: 1;
+  transform: scale(1);
+  margin-right: 0; 
+  pointer-events: auto;
+}
+
+.parent-transition {
+  transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+}
