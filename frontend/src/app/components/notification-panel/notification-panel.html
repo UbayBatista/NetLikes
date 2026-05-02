@@ -28,7 +28,7 @@
 
         @for (notification of notifications; track $index) {
           <app-notification
-            [image]="notification.image"
+            [image]="notification.senderProfilePicture || 'assets/ProfilePicture.jpg'"
             [message]="notification.message">
           </app-notification>
         }

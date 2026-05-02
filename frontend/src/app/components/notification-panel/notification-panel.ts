@@ -1,7 +1,11 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef} from '@angular/core';
-import { Notification } from '../notification/notification';
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
+
+import { Notification } from '../notification/notification';
 import { FollowService, LoggedUser } from '../../services/follow.service';
+import { NotifyResponse } from '../../models/notify.models';
+import { NotificationService } from '../../services/notification.service';
 
 type PanelView = 'notifications' | 'requests';
 
@@ -11,17 +15,42 @@ type PanelView = 'notifications' | 'requests';
   templateUrl: './notification-panel.html',
   styleUrl: './notification-panel.css',
 })
-export class NotificationPanel {
+export class NotificationPanel implements OnInit, OnDestroy, OnChanges {
   @Input() isOpen: boolean = false;
-  @Input() notifications: { image: string; message: string }[] = [];
-
+  
   @Output() closed = new EventEmitter<void>();
   
   view: PanelView = 'notifications';
   pendingRequests: LoggedUser[] = [];
   loading = false;
   
-  constructor(private followService: FollowService, private cdr: ChangeDetectorRef) {}
+  notifications: NotifyResponse[] = [];
+  private notifSub!: Subscription;
+  
+  constructor(
+    private followService: FollowService, 
+    private notificationService: NotificationService, 
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit() {
+    this.notifSub = this.notificationService.notifications$.subscribe(notifs => {
+      this.notifications = notifs;
+      this.cdr.detectChanges();
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.notifSub) {
+      this.notifSub.unsubscribe();
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['isOpen'] && changes['isOpen'].currentValue === true) {
+      this.notificationService.markAllAsRead();
+    }
+  }
 
   close() {
     this.closed.emit();
