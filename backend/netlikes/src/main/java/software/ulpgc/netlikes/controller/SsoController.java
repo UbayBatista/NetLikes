@@ -1,5 +1,5 @@
 package software.ulpgc.netlikes.controller;
-import org.springframework.http.MediaType;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,17 +12,66 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.Map;
+
+class SsoPayload {
+    public String sso;
+    public String sig;
+    public String email;
+    public String username;
+
+    public String getSso() { return sso; }
+    public void setSso(String sso) { this.sso = sso; }
+    public String getSig() { return sig; }
+    public void setSig(String sig) { this.sig = sig; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+}
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = "*")
 public class SsoController {
 
     @Value("${discourse.sso.secret}")
     private String ssoSecret;
 
+    @PostMapping("/sso/process")
+    public ResponseEntity<?> processSso(@RequestBody SsoPayload payload) {
+        
+        String calculatedSig = calculateHmacSha256(payload.getSso(), ssoSecret);
+        if (!calculatedSig.equalsIgnoreCase(payload.getSig())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Firma inválida");
+        }
+
+        // 2. Decodificar el SSO para obtener el 'nonce'
+        String decodedSso = new String(Base64.getDecoder().decode(URLDecoder.decode(payload.getSso(), StandardCharsets.UTF_8)));
+        String nonce = extractParam(decodedSso, "nonce");
+
+        // 3. Usar los datos reales que nos envió Angular
+        String email = payload.getEmail();
+        String username = payload.getUsername();
+        String externalId = email; // Usamos el email como ID único ya que es tu PK
+
+        // 4. Montar la respuesta para Discourse
+        String reply = "nonce=" + nonce + "&email=" + email + "&external_id=" + externalId + "&username=" + username;
+        String base64Reply = Base64.getEncoder().encodeToString(reply.getBytes(StandardCharsets.UTF_8));
+        String signature = calculateHmacSha256(base64Reply, ssoSecret);
+
+        // 5. Construir la URL final de login en Discourse
+        String redirectUrl = "https://netlikes.duckdns.org/session/sso_login?sso=" + base64Reply + "&sig=" + signature;
+        
+        // Devolvemos la URL en un JSON para que Angular la use
+        return ResponseEntity.ok(Map.of("redirectUrl", redirectUrl));
+    }
+
+    /**
+     * Mantenemos el GET antiguo por si acaso, pero el importante ahora es el POST
+     */
     @GetMapping("/sso")
     public ResponseEntity<Void> sso(@RequestParam String sso, @RequestParam String sig) {
-        
         String calculatedSig = calculateHmacSha256(sso, ssoSecret);
         if (!calculatedSig.equalsIgnoreCase(sig)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -31,14 +80,10 @@ public class SsoController {
         String decodedSso = new String(Base64.getDecoder().decode(URLDecoder.decode(sso, StandardCharsets.UTF_8)));
         String nonce = extractParam(decodedSso, "nonce");
 
-        // C. IDENTIFICACIÓN: Aquí es donde tú nos dices quién es el usuario.
-        // Por ahora lo dejamos con datos fijos para probar que el puente funciona.
-        // Luego lo conectaremos con tu sistema de login real.
         String email = "jose@ejemplo.com"; 
-        String externalId = "1"; // Un ID único (puede ser el ID de tu DB)
         String username = "JoseNetlikes";
 
-        String reply = "nonce=" + nonce + "&email=" + email + "&external_id=" + externalId + "&username=" + username;
+        String reply = "nonce=" + nonce + "&email=" + email + "&external_id=" + email + "&username=" + username;
         String base64Reply = Base64.getEncoder().encodeToString(reply.getBytes(StandardCharsets.UTF_8));
         String signature = calculateHmacSha256(base64Reply, ssoSecret);
 
@@ -70,5 +115,4 @@ public class SsoController {
         }
         return null;
     }
-
 }

@@ -8,6 +8,7 @@ import { Social } from './pages/social/social';
 import { FilmDetail } from './pages/film-detail/film-detail';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
+import { ForoSsoComponent } from './foro-sso/foro-sso';
 
 export const routes: Routes = [
   { path: 'login', component: Welcome, canActivate: [guestGuard] },
@@ -21,7 +22,8 @@ export const routes: Routes = [
       { path: 'forum', component: Forum },
       { path: 'profile/:username', component: ProfileComplete },
       { path: 'social', component: Social },
-      { path: 'film-details/:id', component: FilmDetail }
+      { path: 'film-details/:id', component: FilmDetail },
+      { path: 'foro-sso', component: ForoSsoComponent }
     ]
   },
   { path: '**', redirectTo: 'login'}
