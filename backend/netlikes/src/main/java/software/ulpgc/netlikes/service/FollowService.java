@@ -1,6 +1,6 @@
 package software.ulpgc.netlikes.service;
 
-import software.ulpgc.netlikes.discourseApi.DiscourseService;
+import software.ulpgc.netlikes.service.DiscourseService;
 import software.ulpgc.netlikes.dto.UserResponseDTO;
 import software.ulpgc.netlikes.model.Follow;
 import software.ulpgc.netlikes.model.FollowId;
