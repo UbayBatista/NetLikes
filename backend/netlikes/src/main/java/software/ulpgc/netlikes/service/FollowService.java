@@ -17,10 +17,12 @@ public class FollowService {
 
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
+    private final NotifyService notifyService;
 
-    public FollowService(FollowRepository followRepository, UserRepository userRepository) {
+    public FollowService(FollowRepository followRepository, UserRepository userRepository, NotifyService notifyService) {
         this.followRepository = followRepository;
         this.userRepository = userRepository;
+        this.notifyService = notifyService;
     }
 
     @Transactional
@@ -35,7 +37,15 @@ public class FollowService {
         Follow.State initialState = isPrivateAccount ? Follow.State.PENDING : Follow.State.ACCEPTED;
 
         Follow newFollow = new Follow(followerId, followedId, initialState);
-        return followRepository.save(newFollow);
+        Follow saved = followRepository.save(newFollow);
+
+        // <--- 3. ¡EL DISPARADOR! Si la cuenta es privada y el estado es PENDING,
+        // avisamos al sistema de notificaciones para que cree el registro y lo envíe por SSE.
+        if (initialState == Follow.State.PENDING) {
+            notifyService.createFollowNotification(followerId, followedId);
+        }
+
+        return saved;
     }
 
     public String checkStatus(String followerId, String followedId) {
