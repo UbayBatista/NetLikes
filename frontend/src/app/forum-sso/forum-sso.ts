@@ -6,7 +6,7 @@ import { HttpClient } from '@angular/common/http';
   selector: 'app-foro-sso',
   template: '<p style="text-align:center; padding: 20px;">Iniciando sesión en el foro de forma segura...</p>'
 })
-export class ForoSsoComponent implements OnInit {
+export class ForumSsoComponent implements OnInit {
 
   constructor(private route: ActivatedRoute, private http: HttpClient) {}
 
@@ -30,7 +30,7 @@ export class ForoSsoComponent implements OnInit {
         };
 
         // Cambia esta URL por la de tu backend real
-        this.http.post('https://api-db.duckdns.org/users/sso/process', payload)
+        this.http.post('https://api-db.duckdns.org/auth/sso/process', payload)
           .subscribe({
             next: (response: any) => {
               // 4. Spring Boot nos da la URL final, ¡redirigimos el iframe hacia allá!
