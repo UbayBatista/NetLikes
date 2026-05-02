@@ -1,5 +1,5 @@
 package software.ulpgc.netlikes.controller;
-
+import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +21,7 @@ public class SsoController {
     private String ssoSecret;
 
     @GetMapping("/sso")
-    public ResponseEntity<Void> sso(@RequestParam String sso, @RequestParam String sig) {
+    public ResponseEntity<String> sso(@RequestParam String sso, @RequestParam String sig) {
         
         String calculatedSig = calculateHmacSha256(sso, ssoSecret);
         if (!calculatedSig.equalsIgnoreCase(sig)) {
@@ -43,10 +43,16 @@ public class SsoController {
         String signature = calculateHmacSha256(base64Reply, ssoSecret);
 
         String redirectUrl = "https://netlikes.duckdns.org/session/sso_login?sso=" + base64Reply + "&sig=" + signature;
-        
-        return ResponseEntity.status(HttpStatus.FOUND)
-                .header("Location", redirectUrl)
-                .build();
+
+        String html = "<html><body style='background:#111; color:white; display:flex; justify-content:center; align-items:center; font-family:sans-serif;'>" +
+                    "<div><h2>Conectando con Netlikes...</h2></div>" +
+                    "<script>" +
+                    "  window.location.href='" + redirectUrl + "';" +
+                    "  // Esperamos a que la redirección ocurra y cerramos" +
+                    "  setTimeout(function(){ window.close(); }, 2000);" +
+                    "</script></body></html>";
+
+        return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(html);
     }
 
     private String calculateHmacSha256(String data, String secret) {
@@ -70,4 +76,5 @@ public class SsoController {
         }
         return null;
     }
+
 }

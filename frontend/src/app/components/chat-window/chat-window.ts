@@ -52,22 +52,17 @@ export class ChatWindow {
     }
 
     const ssoUrl = 'https://netlikes.duckdns.org/session/sso';
-    const width = 600;
-    const height = 600;
-    const left = (window.screen.width / 2) - (width / 2);
-    const top = (window.screen.height / 2) - (height / 2);
-
-    // Abrimos el SSO en una ventana nueva. 
-    // Al ser una ventana propia, el navegador SI DEJA guardar la cookie.
-    const popup = window.open(ssoUrl, 'ForoLogin', `width=${width},height=${height},left=${left},top=${top}`);
+    const popup = window.open(ssoUrl, 'ForoLogin', 'width=600,height=700');
 
     const timer = setInterval(() => {
       if (popup?.closed) {
         clearInterval(timer);
-        this.activeForum = true; // Mostramos el iframe
-        if (this.forumId !== null) {
-          this.chargeForum(this.forumId);
-        }
+        setTimeout(() => {
+                this.activeForum = true;
+                if (this.forumId !== null) {
+                    this.chargeForum(this.forumId);
+                }
+            }, 500);
       }
       localStorage.setItem('foro_sesion_activa', 'true');
     }, 1000);
