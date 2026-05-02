@@ -24,6 +24,9 @@ services:
       - SPRING_DATASOURCE_USERNAME=netlikes_user
       - SPRING_DATASOURCE_PASSWORD=1234
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - DISCOURSE.API.USERNAME=system
+      - DISCOURSE.API.URL=http://host.docker.internal
+      - DISCOURSE.CATEGORY.MOVIES.ID=5
     depends_on:
       - db
     networks:
@@ -38,6 +41,16 @@ services:
       - "4200:80"
     depends_on:
       - backend
+    networks:
+      - app-network
+  
+  proxy:
+    image: nginx:alpine
+    container_name: proxy_limpiador
+    ports:
+      - "80:80"
+    volumes:
+      - ./proxy.conf:/etc/nginx/nginx.conf
     networks:
       - app-network
 
