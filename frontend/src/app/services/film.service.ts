@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { catchError, Observable, throwError, map } from 'rxjs';
+import { catchError, Observable, throwError, map, of } from 'rxjs';
 import { Film, FilmListItem, GenreGroup } from '../models/film.models';
 
 @Injectable({
@@ -17,15 +17,27 @@ export class FilmService {
   }
 
   getFilmsByGenre(): Observable<GenreGroup[]> {
-  return this.http.get<any[]>(this.dbUrl).pipe(
-    map(films => this.mappingByGenre(films)),
-    catchError(this.handleError)
-  );
-}
+    return this.http.get<any[]>(this.dbUrl).pipe(
+      map(films => this.mappingByGenre(films)),
+      catchError(this.handleError)
+    );
+  }
 
   getFilmById(id: number): Observable<Film> {
     return this.http.get<Film>(`${this.dbUrl}/${id}`)
     .pipe(catchError(this.handleError));
+  }
+
+  searchBy(query: string | null): Observable<any[]> {
+    if (!query || query.trim() === '') {
+      return of([]);
+    }
+    return this.http.get<any[]>(`${this.dbUrl}/search?query=${query}`).pipe(
+      catchError(error => {
+        console.error('Error en la búsqueda', error);
+        return of([]);
+      })
+    );
   }
 
   private handleError(error: any): Observable<never> {

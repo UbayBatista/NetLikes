@@ -32,7 +32,12 @@ class SsoPayload {
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "*")
+@CrossOrigin(
+    origins = "https://net-likes.vercel.app", 
+    allowCredentials = "true", 
+    allowedHeaders = "*", 
+    methods = {RequestMethod.POST, RequestMethod.GET, RequestMethod.OPTIONS}
+)
 public class SsoController {
 
     @Value("${discourse.sso.secret}")
@@ -40,31 +45,41 @@ public class SsoController {
 
     @PostMapping("/sso/process")
     public ResponseEntity<?> processSso(@RequestBody SsoPayload payload) {
-        
-        String calculatedSig = calculateHmacSha256(payload.getSso(), ssoSecret);
-        if (!calculatedSig.equalsIgnoreCase(payload.getSig())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Firma inválida");
+        try {
+            // Log para ver qué nos llega (mira la consola de tu servidor)
+            System.out.println("SSO recibido: " + payload.getSso());
+
+            // 1. Validar firma
+            String calculatedSig = calculateHmacSha256(payload.getSso(), ssoSecret);
+            if (!calculatedSig.equalsIgnoreCase(payload.getSig())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Firma inválida");
+            }
+
+            // 2. Decodificar y extraer nonce
+            String decodedSso = new String(Base64.getDecoder().decode(URLDecoder.decode(payload.getSso(), StandardCharsets.UTF_8)));
+            String nonce = extractParam(decodedSso, "nonce");
+            
+            if (nonce == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No se encontró el nonce en el payload");
+            }
+
+            // 3. Datos reales de Angular
+            String email = payload.getEmail();
+            String username = payload.getUsername();
+            String externalId = email; 
+
+            // 4. Firmar respuesta
+            String reply = "nonce=" + nonce + "&email=" + email + "&external_id=" + externalId + "&username=" + username;
+            String base64Reply = Base64.getEncoder().encodeToString(reply.getBytes(StandardCharsets.UTF_8));
+            String signature = calculateHmacSha256(base64Reply, ssoSecret);
+
+            String redirectUrl = "https://netlikes.duckdns.org/session/sso_login?sso=" + base64Reply + "&sig=" + signature;
+            
+            return ResponseEntity.ok(Map.of("redirectUrl", redirectUrl));
+        } catch (Exception e) {
+            e.printStackTrace(); // Esto te imprimirá el error real en la consola de Spring Boot
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno: " + e.getMessage());
         }
-
-        // 2. Decodificar el SSO para obtener el 'nonce'
-        String decodedSso = new String(Base64.getDecoder().decode(URLDecoder.decode(payload.getSso(), StandardCharsets.UTF_8)));
-        String nonce = extractParam(decodedSso, "nonce");
-
-        // 3. Usar los datos reales que nos envió Angular
-        String email = payload.getEmail();
-        String username = payload.getUsername();
-        String externalId = email; // Usamos el email como ID único ya que es tu PK
-
-        // 4. Montar la respuesta para Discourse
-        String reply = "nonce=" + nonce + "&email=" + email + "&external_id=" + externalId + "&username=" + username;
-        String base64Reply = Base64.getEncoder().encodeToString(reply.getBytes(StandardCharsets.UTF_8));
-        String signature = calculateHmacSha256(base64Reply, ssoSecret);
-
-        // 5. Construir la URL final de login en Discourse
-        String redirectUrl = "https://netlikes.duckdns.org/session/sso_login?sso=" + base64Reply + "&sig=" + signature;
-        
-        // Devolvemos la URL en un JSON para que Angular la use
-        return ResponseEntity.ok(Map.of("redirectUrl", redirectUrl));
     }
 
     /**

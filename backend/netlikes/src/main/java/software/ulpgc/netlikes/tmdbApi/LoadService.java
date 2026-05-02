@@ -1,4 +1,4 @@
-package software.ulpgc.netlikes.api;
+package software.ulpgc.netlikes.tmdbApi;
 
 import org.springframework.stereotype.Service;
 

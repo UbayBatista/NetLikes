@@ -1,37 +1,59 @@
-import { Component, Input, Output, EventEmitter} from "@angular/core";
+import { Component, Input, Output, EventEmitter } from "@angular/core";
+import { CommonModule } from "@angular/common";
 
 @Component({
-    selector: "app-profile-header",
-    standalone: true,
-    imports:[],
-    templateUrl: "./profile-header.html",
-    styleUrl: "./profile-header.css"
+  selector: "app-profile-header",
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: "./profile-header.html",
+  styleUrl: "./profile-header.css"
 })
-export class ProfileHeader{
-    @Input() userName: string = '';
-    @Input() userPicture: string = 'Error';
-    @Input() type: string = "Editar Perfil";
-    @Input() option: string = "Ajustes";
-    @Input() otherUser: string = 'No';
-    @Output() logOut = new EventEmitter<void>();
-    openMenu: boolean = false;
+export class ProfileHeader {
+  @Input() userName: string = '';
+  @Input() isPrivate: boolean = false;
+  @Input() type: string = "Editar Perfil";
+  @Input() option: string = "Ajustes";
+  @Input() otherUser: 'Yes' | 'No' = 'No';
+  @Input() followers: number = 0;
+  @Input() following: number = 0;
 
-    @Output() openSocialModal = new EventEmitter<'Seguidores' | 'Seguidos'>();
+  private _userPicture: string | null = null;
+  @Input() set userPicture(value: string | null) {
+    this._userPicture = value || 'assets/ProfilePicture.jpg';
+  }
+  get userPicture(): string {
+    return this._userPicture || 'assets/ProfilePicture.jpg';
+  }
 
-    Menu(){
-        this.openMenu = !this.openMenu;
+  @Output() privacyChange = new EventEmitter<boolean>();
+  @Output() logOut = new EventEmitter<void>();
+  @Output() editClick = new EventEmitter<void>();
+  @Output() followClick = new EventEmitter<void>();
+  @Output() openSocialModal = new EventEmitter<'Seguidores' | 'Seguidos'>();
+  
+  openMenu: boolean = false;
+
+  toggleMenu() {
+    this.openMenu = !this.openMenu;
+  }
+
+  handleMainAction() {
+    if (this.otherUser === 'No') {
+      this.editClick.emit();
+    } else {
+      this.followClick.emit();
     }
+  }
 
-    logout() {
-        this.logOut.emit()
-    }
+  openSocial(type: 'Seguidores' | 'Seguidos') {
+    this.openSocialModal.emit(type);
+  }
 
-    @Output() editClick = new EventEmitter<void>();
-    onEdit() {
-        this.editClick.emit();
-    }
+  togglePrivacy() {
+    this.privacyChange.emit(!this.isPrivate);
+  }
 
-    openSocial(type: 'Seguidores' | 'Seguidos') {
-        this.openSocialModal.emit(type);
-    }
+  logout() {
+      this.logOut.emit()
+  }
 }

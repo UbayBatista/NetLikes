@@ -1,14 +1,15 @@
 package software.ulpgc.netlikes.controller;
 
+import software.ulpgc.netlikes.dto.UserResponseDTO;
 import software.ulpgc.netlikes.model.Follow;
 import software.ulpgc.netlikes.service.FollowService;
 
 import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/follows")
@@ -19,14 +20,33 @@ public class FollowController {
         this.followService = followService;
     }
     
-    @PostMapping
-    public Follow createFollow(@RequestBody Follow follow) {
-        return followService.createFollow(follow);
+    @PostMapping("/{targetId}")
+    public ResponseEntity<Follow> followUser(
+            @NonNull @PathVariable String targetId, 
+            @NonNull @RequestHeader("X-User-Id") String myId) {
+        
+        Follow result = followService.requestFollow(myId, targetId);
+        return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/{followerId}")
-    public List<Follow> getFollowByFollowerId(@PathVariable String followerId) {
-        return followService.getFollowByFollowerId(followerId);
+    @GetMapping("/{targetId}/status")
+    public ResponseEntity<Map<String, String>> checkFollowStatus(
+            @PathVariable String targetId,
+            @RequestHeader("X-User-Id") String myId) {
+        
+        String status = followService.checkStatus(myId, targetId);
+
+        return ResponseEntity.ok(Map.of("state", status)); 
+    }
+
+    @GetMapping("/followersOf/{followerId}")
+    public List<UserResponseDTO> getFollowersOf(@PathVariable String followerId) {
+        return followService.getFollowersOf(followerId);
+    }
+
+    @GetMapping("/followsOf/{followerId}")
+    public List<UserResponseDTO> getFollowsOf(@PathVariable String followerId) {
+        return followService.getFollowsOf(followerId);
     }
     
     @PutMapping("/{id}")
@@ -34,8 +54,41 @@ public class FollowController {
         return followService.updateFollow(follow);
     }
 
-    @DeleteMapping("/{followerId}/{followedId}")
-    public void deleteParticipate(@PathVariable String followerId, @PathVariable String followedId) {
-        followService.deleteFollow(followerId, followedId);
+    @DeleteMapping("/{targetId}/unfollow")
+    public ResponseEntity<Void> unfollowUser(
+            @PathVariable String targetId, 
+            @RequestHeader("X-User-Id") String myId) {
+        
+        followService.deleteFollow(myId, targetId);
+        
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{targetId}/remove")
+    public ResponseEntity<Void> removeFollower(
+            @PathVariable String targetId, 
+            @RequestHeader("X-User-Id") String myId) {
+        
+        followService.deleteFollow(targetId, myId);
+        
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{targetId}/block")
+    public ResponseEntity<Void> blockUser(
+            @NonNull @PathVariable String targetId,
+            @NonNull @RequestHeader("X-User-Id") String myId) {
+        
+        followService.blockUser(myId, targetId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{targetId}/unblock")
+    public ResponseEntity<Void> unblockUser(
+            @NonNull @PathVariable String targetId,
+            @NonNull @RequestHeader("X-User-Id") String myId) {
+        
+        followService.unblockUser(myId, targetId);
+        return ResponseEntity.noContent().build();
     }
 }

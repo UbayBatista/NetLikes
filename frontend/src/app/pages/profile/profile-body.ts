@@ -1,174 +1,246 @@
-import { Component, OnInit, Input, ChangeDetectorRef,ViewChild, ElementRef } from "@angular/core";
-import {ProfileBody} from "../../components/profile-components/profile-components";
+import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef, inject, DestroyRef } from "@angular/core";
+import { CommonModule, AsyncPipe } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router'; 
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { BehaviorSubject, filter, map, Observable, take } from 'rxjs';
+
+import { ProfileBody } from "../../components/profile-components/profile-components";
 import { ProfileHeader } from "../../components/profile-header/profile-header";
-import { ActivatedRoute } from '@angular/router'; 
 import { Film } from "../../components/film/film";
 import { SocialModal } from "../../components/social-modal/social-modal";
+
 import { AuthService } from '../../services/auth.service';
-import { Observable } from 'rxjs';
-import { User } from '../../models/user.models';
-import { AsyncPipe } from '@angular/common';
-import { Router } from "@angular/router";
+import { ProfileService } from "../../services/profile.service";
+import { FollowService } from "../../services/follow";
+import { MyProfile, UserProfile } from '../../models/user.models';
+import { ConfirmationModalComponent } from '../../components/confirmation-modal/confirmation-modal';
+
+type SocialType = 'Seguidores' | 'Seguidos';
+type FollowStatus = 'NONE' | 'PENDING' | 'ACCEPTED';
 
 @Component({
-    selector:"app-profile-complete",
-    standalone: true,
-    imports: [ProfileBody, ProfileHeader, Film, SocialModal, AsyncPipe],
-    templateUrl: "./profile-body.html",
-    styleUrl: "./profile-body.css"
+  selector: "app-profile-complete",
+  standalone: true,
+  imports: [CommonModule, ProfileBody, ProfileHeader, Film, SocialModal, AsyncPipe, ConfirmationModalComponent],
+  templateUrl: "./profile-body.html",
+  styleUrl: "./profile-body.css"
 })
-export class ProfileComplete implements OnInit{
-    currentUser$: Observable<User | null>;
-    profileName = '';
-    profilePicture = 'https://media.gettyimages.com/id/962792726/es/foto/kiev-ukraine-cristiano-ronaldo-of-real-madrid-poses-with-the-uefa-champions-league-trophy.jpg?s=612x612&w=gi&k=20&c=iGuCfZEUXyVagRfgPF765GB9CHIsyTplWQisj_AUC2U='; 
-    textBio = 'Hola soy nuevo por aquí.';
-    itsMe = false;
-    isEditing = false;
-    isSocialModalOpen = false;
-    socialType: 'Seguidores' | 'Seguidos' = 'Seguidores';
-    socialData: any[] = [];
-    
-    constructor(private route: ActivatedRoute, private cdr: ChangeDetectorRef, private authService: AuthService, private router: Router) {
-        this.currentUser$ = this.authService.getCurrentUser();
-    }
+export class ProfileComplete implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly authService = inject(AuthService);
+  private readonly profileService = inject(ProfileService);
+  private readonly followService = inject(FollowService);
+  private readonly destroyRef = inject(DestroyRef);
 
-    ngOnInit() {
+  profile$: Observable<MyProfile | UserProfile | null> = this.profileService.getProfile();
+  itsMe$: Observable<boolean> = this.profileService.isMyProfile();
+
+  followersCount$ = new BehaviorSubject<number>(0);
+  followingCount$ = new BehaviorSubject<number>(0);
+
+  isEditing = false;
+  isSocialModalOpen = false;
+  socialType: SocialType = 'Seguidores';
+  socialData: any[] = [];
+  canScrollLeft = false;
+  canScrollRight = true;
+
+  @ViewChild('scrollContainer') scrollContainer?: ElementRef<HTMLDivElement>;
+
+  private followStateSubject = new BehaviorSubject<FollowStatus>('NONE');
+  followState$ = this.followStateSubject.asObservable();
+
+  followButtonText$: Observable<string> = this.followState$.pipe(
+    map(state => {
+      if (state === 'PENDING') return 'Pendiente';
+      if (state === 'ACCEPTED') return 'Siguiendo';
+      return 'Seguir';
+    })
+  );
+
+  showConfirmModal = false;
+  confirmModalMessage = '';
+  private userToFollow: string = '';
+  private actionToConfirm: 'FOLLOW' | 'UNFOLLOW' = 'FOLLOW';
+
+  ngOnInit() {
+    this.route.params
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const username = params['username'];
+        this.profileService.loadProfile(username);
+      });
+
+    this.profile$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(profile => {
+
+        this.followersCount$.next((profile as any)?.followers || 0);
+        this.followingCount$.next((profile as any)?.following || 0);
+
+        const profileEmail = (profile as any)?.email; 
         
-        this.route.params.subscribe(params => {
-            this.profileName = params['username']; 
-            
-            if (this.profileName === "my profile") {
-                this.itsMe = true;
-            } else {
-                this.itsMe = false;
-            }
-        });
-    }
-    
-    showSocial(type: 'Seguidores' | 'Seguidos') {
-        this.socialType = type;
-        this.isSocialModalOpen = true;
-
-        if (type === 'Seguidores') {
-            this.socialData = [
-                { name: 'Luis Suárez', avatar: 'https://elasticbeanstalk-us-east-1-911267631614.s3.amazonaws.com/imagenes/jugadores/SUAREZ%20LUIS%20(2).jpg', status: 'Seguir también' },
-                { name: 'Benzema', avatar: 'https://revsportz.in/wp-content/uploads/2023/06/Benzema.jpeg', status: 'Pendiente' },
-                { name: 'La Roca', avatar: 'https://wallpaperaccess.com/full/1264961.jpg', status: 'Seguir también' },
-                { name: 'Cristiano Ronaldo', avatar: 'https://i.pinimg.com/736x/f6/28/85/f628856f2e45836d5850d959a1ed5c75.jpg', status: '' },
-                { name: 'Messi', avatar: 'https://cdn2.telediario.mx/uploads/media/2022/12/18/lionel-messi-besa-copa-recibir.jpg', status: 'Seguir también' },
-                { name: 'Zinedine Zidane', avatar: 'https://assets.realmadrid.com/is/image/realmadrid/1330186270595?$Mobile$&fit=wrap&wid=312', status: '' },
-                { name: 'Kylian Mbappé', avatar: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Picture_with_Mbapp%C3%A9_%28cropped%29_%28cropped%29.jpg/250px-Picture_with_Mbapp%C3%A9_%28cropped%29_%28cropped%29.jpg', status: 'Pendiente' },
-                { name: 'Andrés Iniesta', avatar: 'https://imageio.forbes.com/specials-images/imageserve/5ecead3f0ca011000726427e/0x0.jpg?format=jpg&crop=1669,1671,x0,y79,safe&height=416&width=416&fit=bounds', status: 'Seguir también' },
-                { name: 'Xavi Hernández', avatar: 'https://fcb-abj-pre.s3.amazonaws.com/img/jugadors/949_xavi.jpg', status: '' },
-                { name: 'Carles Puyol', avatar: 'https://fcb-abj-pre.s3.amazonaws.com/img/jugadors/704_puyol.jpg', status: 'Seguir también' }
-            ];
-        } else {
-            this.socialData = [
-                { name: 'Cristiano Ronaldo', avatar: 'https://i.pinimg.com/736x/f6/28/85/f628856f2e45836d5850d959a1ed5c75.jpg'},
-                { name: 'Zinedine Zidane', avatar: 'https://assets.realmadrid.com/is/image/realmadrid/1330186270595?$Mobile$&fit=wrap&wid=312'},
-                { name: 'Xavi Hernández', avatar: 'https://fcb-abj-pre.s3.amazonaws.com/img/jugadors/949_xavi.jpg'},
-                { name: 'Luka Modric', avatar: 'https://upload.wikimedia.org/wikipedia/commons/1/1b/Ofrenda_de_la_Liga_y_la_Champions-57-L.Mill%C3%A1n_%2852109310843%29_%28Luka_Modri%C4%87%29.jpg' },
-                { name: 'Toni Kroos', avatar: 'https://s.hs-data.com/gfx/person/l/3198.jpg?fallback=male' },
-                { name: 'Vinícius Jr', avatar: 'https://cdn.britannica.com/45/273345-050-7B263FB8/Vinicius-Junior-Real-Madrid-football-soccer-player-UEFA-league-knockout--play-off-against-Manchester-City-2024-25.jpg' },
-                { name: 'Erling Haaland', avatar: 'https://upload.wikimedia.org/wikipedia/commons/7/71/Erling_Haaland_June_2025.jpg' },
-                { name: 'Kevin De Bruyne', avatar: 'https://img.a.transfermarkt.technology/portrait/big/88755-1713391485.jpg?lm=1' },
-                { name: 'Robert Lewandowski', avatar: 'https://upload.wikimedia.org/wikipedia/commons/2/26/2019147183134_2019-05-27_Fussball_1.FC_Kaiserslautern_vs_FC_Bayern_M%C3%BCnchen_-_Sven_-_1D_X_MK_II_-_0228_-_B70I8527_%28cropped%29.jpg' }
-            ];
+        if (profileEmail) {
+          this.followService.checkFollowStatus(profileEmail).subscribe({
+            next: (response) => {
+              this.followStateSubject.next(response.state);
+            },
+            error: (err) => console.error('Error al obtener estado de seguimiento', err)
+          });
         }
+      });
+  }
+
+  onFollowRequest(userName: string, email: string) {
+    this.userToFollow = email;
+
+    const currentState = this.followStateSubject.value;
+
+    if (currentState === 'ACCEPTED') {
+      this.actionToConfirm = 'UNFOLLOW';
+      this.confirmModalMessage = `¿Estás seguro de que quieres dejar de seguir a @${userName}?`;
+      this.showConfirmModal = true;
+    } 
+    else if (currentState === 'PENDING') {
+      this.actionToConfirm = 'UNFOLLOW';
+      this.executeUnfollow(this.userToFollow);
+    } else {
+      this.actionToConfirm = 'FOLLOW';
+      this.executeFollow(this.userToFollow);
     }
+  }
 
-    @Input() filmsView: any[] = [
-        { title: 'Avengers: Endgame', image: 'https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pB3iy.jpg' },
-        { title: 'Avengers: Infinity War', image: 'https://image.tmdb.org/t/p/w500/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg' },
-        { title: 'The Avengers', image: 'https://image.tmdb.org/t/p/w500/aMETsaNNcDc6g5ZatQtVbySnSaA.jpg' },
-        { title: 'Deadpool 2', image: 'https://image.tmdb.org/t/p/w500/qjiPP4FhTV3UAGa1Dbf2qEqTvu5.jpg' },
-        { title: 'Shazam!', image: 'https://image.tmdb.org/t/p/w500/yUOJHa9XmB1H0iYodG9Kb3YCc9T.jpg' },
-        { title: 'Spectre (007)', image: 'https://image.tmdb.org/t/p/w500/mSvpKOWbyFtLro9BjfEGqUw5dXE.jpg' },
-        { title: 'Fight Club', image: 'https://image.tmdb.org/t/p/w500/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg' }
-    ];
+  handleFollowConfirmation(confirmed: boolean) {
+    this.showConfirmModal = false;
 
-    @Input() filmsLater: any[] = [
-        { title: 'Inception', image: 'https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg' },
-        { title: 'The Dark Knight', image: 'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg' },
-        { title: 'Venom', image: 'https://image.tmdb.org/t/p/w500/2uNW4WbgBXL25BAbXGLnLqX71Sw.jpg' },
-        { title: 'Mad Max: Fury Road', image: 'https://image.tmdb.org/t/p/w500/8tZYtuWezp8JbcsvHYO0O46tFbo.jpg' }
-    ];
+    if (confirmed && this.userToFollow) {
+      if (this.actionToConfirm === 'UNFOLLOW') {
+        this.executeUnfollow(this.userToFollow);
+      } else {
+        this.executeFollow(this.userToFollow);
+      }
+    } else {
+      console.log('Acción cancelada');
+      this.userToFollow = '';
+    }
+  }
 
-    @Input() filmsViewOther: any[] = [
-        { title: 'The Godfather', image: 'https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg' },
-        { title: 'The Shawshank Redemption', image: 'https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg' },
-        { title: 'Fight Club', image: 'https://image.tmdb.org/t/p/w500/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg' },
-        { title: 'Forrest Gump', image: 'https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg' },
-        { title: 'Titanic', image: 'https://image.tmdb.org/t/p/w500/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg' },
-        { title: 'Joker', image: 'https://image.tmdb.org/t/p/w500/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg' },
-        { title: 'Parasite', image: 'https://image.tmdb.org/t/p/w500/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg' },
-        { title: 'The Lord of the Rings', image: 'https://image.tmdb.org/t/p/w500/rCzpDGLbOoPwLjy3OAm5NUPOTrC.jpg' }
-    ];
+  private executeFollow(targetEmail: string) {
+    console.log(`Ejecutando lógica de seguimiento hacia ${targetEmail}...`);
+    this.followService.requestFollow(targetEmail).subscribe({
+      next: (followResponse) => {
+        this.followStateSubject.next(followResponse.state);
 
-    @Input() filmsLaterOther: any[] = [
-        { title: 'Spider-Man: Into the Spider-Verse', image: 'https://image.tmdb.org/t/p/w500/iiZZdoQBEYBv6id8su7ImL0oCbD.jpg' },
-        { title: 'Up', image: 'https://image.tmdb.org/t/p/w500/vpbaStTMt8qqXaEgnOR2EE4DNJk.jpg' },
-        { title: 'Avengers: Endgame', image: 'https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pB3iy.jpg' },
-        { title: 'Avengers: Infinity War', image: 'https://image.tmdb.org/t/p/w500/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg' },
-        { title: 'The Avengers', image: 'https://image.tmdb.org/t/p/w500/aMETsaNNcDc6g5ZatQtVbySnSaA.jpg' },
-        { title: 'Deadpool 2', image: 'https://image.tmdb.org/t/p/w500/qjiPP4FhTV3UAGa1Dbf2qEqTvu5.jpg' },
-        { title: 'Shazam!', image: 'https://image.tmdb.org/t/p/w500/yUOJHa9XmB1H0iYodG9Kb3YCc9T.jpg' }
-    ];
+        if (followResponse.state === 'ACCEPTED') {
+          const currentFollowers = this.followersCount$.value;
+          this.followersCount$.next(currentFollowers + 1);
+        }
+      },
+      error: (error) => console.error('Error al intentar seguir:', error),
+      complete: () => {
+        this.userToFollow = ''; 
+      }
+    });
+  }
 
-    canScrollLeft = false;
-    canScrollRight = true;
+  private executeUnfollow(targetEmail: string) {
+    console.log(`Ejecutando lógica para dejar de seguir a ${targetEmail}...`);
+    this.followService.unfollow(targetEmail).subscribe({
+      next: () => {
+        console.log('Se ha dejado de seguir al usuario o cancelado la solicitud.');
+        
+        this.followStateSubject.next('NONE');
 
+        const currentFollowers = this.followersCount$.value;
+        this.followersCount$.next(Math.max(0, currentFollowers - 1));
+      },
+      error: (error) => console.error('Error al dejar de seguir:', error),
+      complete: () => {
+        this.userToFollow = ''; 
+      }
+    });
+  }
 
-    @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLDivElement>;
+  showSocial(type: SocialType) {
+    this.socialType = type;
+    this.isSocialModalOpen = true;
 
-    scrollLeft() {
-        const el = this.scrollContainer.nativeElement;
+    this.socialData = []; 
 
-        el.scrollBy({
-            left: -300,
-            behavior: 'smooth'
+    this.profile$.pipe(
+      filter((profile: any) => profile !== null), 
+      take(1)
+    ).subscribe(profile => {
+      const currentProfileEmail = (profile as any)?.email;
+      
+      console.log(`[DEBUG] Buscando ${type} para el email:`, currentProfileEmail);
+      
+      if (!currentProfileEmail) {
+        console.error('El perfil actual no tiene email. Revisa la interfaz del perfil.');
+        return;
+      }
+
+      if (type === 'Seguidores') {
+        this.followService.getFollowers(currentProfileEmail).subscribe({
+          next: (users) => {
+            console.log('[DEBUG] Seguidores recibidos:', users);
+            this.socialData = users.map(u => ({
+              name: u.userName,
+              avatar: u.profilePicture || 'assets/default-avatar.png', 
+              email: u.email
+            }));
+            this.cdr.detectChanges();
+          },
+          error: (err) => console.error('Error cargando seguidores', err)
         });
-
-    setTimeout(() => this.updateScrollButtons(), 300);
-    }
-
-    scrollRight() {
-        const el = this.scrollContainer.nativeElement;
-
-        el.scrollBy({
-        left: 300,
-        behavior: 'smooth'
+      } else {
+        this.followService.getFollowing(currentProfileEmail).subscribe({
+          next: (users) => {
+            console.log('[DEBUG] Seguidos recibidos:', users);
+            this.socialData = users.map(u => ({
+              name: u.userName,
+              avatar: u.profilePicture || 'assets/default-avatar.png',
+              email: u.email
+            }));
+            this.cdr.detectChanges();
+          },
+          error: (err) => console.error('Error cargando seguidos', err)
         });
+      }
+    });
+  }
 
-        setTimeout(() => this.updateScrollButtons(), 300);
-    }
+  scroll(direction: 'left' | 'right') {
+    if (!this.scrollContainer) return;
+    
+    const element = this.scrollContainer.nativeElement;
+    const scrollAmount = direction === 'left' ? -300 : 300;
+    
+    element.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    setTimeout(() => this.updateScrollButtons(), 350);
+  }
 
-    updateScrollButtons() {
-        const el = this.scrollContainer.nativeElement;
+  updateScrollButtons() {
+    const el = this.scrollContainer?.nativeElement;
+    if (!el) return;
 
-        this.canScrollLeft = el.scrollLeft > 0;
-        this.canScrollRight = el.scrollLeft + el.clientWidth < el.scrollWidth;
+    this.canScrollLeft = el.scrollLeft > 5;
+    this.canScrollRight = el.scrollLeft + el.clientWidth < el.scrollWidth - 5;
+    this.cdr.detectChanges();
+  }
 
-        this.cdr.detectChanges();
-    }
+  toggleEdit() {
+    this.isEditing = !this.isEditing;
+  }
 
-    ngAfterViewInit() {
-        const el = this.scrollContainer.nativeElement;
+  onPrivacyChange(isPrivate: boolean): void {
+    this.profileService.updatePrivacy(isPrivate);
+  }
 
-        this.updateScrollButtons();
-
-        el.addEventListener('scroll', () => this.updateScrollButtons(), { passive: true });
-        el.addEventListener('wheel', () => this.updateScrollButtons(), { passive: true });
-        el.addEventListener('touchmove', () => this.updateScrollButtons(), { passive: true });
-    }
-
-    Edit(){
-        this.isEditing = !this.isEditing;
-    }
-
-    logout(){
-        this.authService.logout();
-        this.router.navigate(['/']);
-    }
-
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/']);
+  }
 }

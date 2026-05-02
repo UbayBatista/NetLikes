@@ -24,7 +24,7 @@
     <div (click)="goToProfile()">
       @if (currentUser$ | async; as user) {
         <img
-        [src]="user.profilePicture" 
+        [src]="user.profilePicture || 'assets/ProfilePicture.jpg'" 
         alt="Perfil"
         class="rounded-circle avatar"
         />

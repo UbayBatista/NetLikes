@@ -9,7 +9,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import software.ulpgc.netlikes.api.FilmSyncScheduler;
+import software.ulpgc.netlikes.tmdbApi.FilmSyncScheduler;
 import software.ulpgc.netlikes.model.Film;
 import software.ulpgc.netlikes.repository.FilmRepository;
 

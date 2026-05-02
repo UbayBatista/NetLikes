@@ -16,7 +16,7 @@ export class Header {
   currentUser$: Observable<User | null>;
   hasNotifications: boolean = true;
   showNotifications: boolean = false;
-  userName = "my profile"
+  userName = "my-profile"
 
   constructor(private router: Router, private authService: AuthService) {
     this.currentUser$ = this.authService.getCurrentUser();

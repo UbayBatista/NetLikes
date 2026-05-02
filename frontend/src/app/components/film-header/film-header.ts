@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { Film } from '../../models/film.models';
 import { ForumService } from '../../services/forum.service';
 import { AuthService } from '../../services/auth.service';
+import { UserInteractionService } from '../../services/user-interaction.service';
 
 @Component({
   selector: 'app-film-header',
@@ -23,11 +24,40 @@ export class FilmHeader implements OnInit {
   currentRating: string | null = null; 
 
   private cdr = inject(ChangeDetectorRef);
+  private interactionService = inject(UserInteractionService);
 
   ngOnInit(): void {
     if (this.film?.posterPath) {
       this.extractColorFromImage(this.imgBaseUrl + this.film.posterPath);
     }
+    this.loadInitialMarkStatus();
+    this.loadInitialRateStatus();
+  }
+
+  private loadInitialMarkStatus() {
+    if (!this.film?.id) return;
+    this.interactionService.getMarkStatus(this.film.id).subscribe({
+      next: (mark) => {
+        if (mark) {
+          this.isWatched = (mark.type === 'SEEN');
+          this.isWatchLater = (mark.type === 'WATCHLATER');
+        } else {
+          this.isWatched = false;
+          this.isWatchLater = false;
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error al recuperar estado', err)
+    });
+  }
+
+  private loadInitialRateStatus() {
+    this.interactionService.getRateStatus(this.film.id).subscribe({
+        next: (rate) => {
+            if (rate) this.currentRating = rate.score.toLowerCase();
+            this.cdr.detectChanges();
+        }
+    });
   }
 
   formatGenres(): string {
@@ -46,25 +76,57 @@ export class FilmHeader implements OnInit {
   }
 
   toggleWatched() { 
-    this.isWatched = !this.isWatched; 
-    if (this.isWatched) this.isWatchLater = false; 
-    else this.currentRating = null; 
+    const previousState = this.isWatched;
+    this.isWatched = !this.isWatched;
+    if (this.isWatched) {
+      this.isWatchLater = false;
+    } else {
+      this.currentRating = null;
+    }
+
+    this.interactionService.toggleMark(this.film.id, 'SEEN').subscribe({
+      error: (err) => {
+        this.isWatched = previousState;
+        this.cdr.detectChanges();
+        console.error('Error en servidor, revirtiendo cambio visual', err);
+      }
+    });
   }
 
   toggleWatchLater() { 
-    this.isWatchLater = !this.isWatchLater; 
+    const previousState = this.isWatchLater;
+    this.isWatchLater = !this.isWatchLater;
     if (this.isWatchLater) {
       this.isWatched = false;
       this.currentRating = null;
     }
+
+    this.interactionService.toggleMark(this.film.id, 'WATCHLATER').subscribe({
+      error: (err) => {
+        this.isWatchLater = previousState;
+        this.cdr.detectChanges();
+        console.error('Error', err);
+      }
+    });
   }
 
   rateFilm(rating: string) { 
     if (!this.isWatched) return; 
+
+    const oldRating = this.currentRating;
     this.currentRating = this.currentRating === rating ? null : rating;
+
+    this.interactionService.toggleRate(this.film.id, rating).subscribe({
+        error: (err) => {
+            this.currentRating = oldRating;
+            this.cdr.detectChanges();
+        }
+    });
   }
 
-  shareFilm() { console.log('Compartir película:', this.film.title); }
+  shareFilm() { 
+    //TODO: Compartir = Recomendar (en tu perfil y en chat).
+  }
 
   extractColorFromImage(imageUrl: string) {
     const img = new Image();

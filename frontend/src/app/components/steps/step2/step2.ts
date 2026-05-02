@@ -34,7 +34,7 @@ export class Step2 {
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      password: ['', [Validators.required, Validators.minLength(6), Validators.pattern(/^(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/)]],
       confirmPassword: ['', Validators.required],
       question: ['', Validators.required],
       answer: ['', Validators.required]

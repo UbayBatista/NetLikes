@@ -17,6 +17,7 @@ interface User {
 export class SocialModal {
   @Input() title: 'Seguidores' | 'Seguidos' = 'Seguidores';
   @Input() users: User[] = [];
+  @Input() isMyOwnProfile: boolean = false;
   @Output() close = new EventEmitter<void>();
   @Output() tabChange = new EventEmitter<'Seguidores' | 'Seguidos'>();
 

@@ -1,23 +1,36 @@
 package software.ulpgc.netlikes.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Table(name = "rate")
-@IdClass(RateId.class)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Rate {
-    @Id
-    @Column(name = "user_email")
-    private String email;
+    @EmbeddedId
+    private RateId id;
 
-    @Id
-    @Column(name = "film_id")
-    private Integer film;
+    @ManyToOne
+    @MapsId("email")
+    @JoinColumn(name = "user_email")
+    @JsonIgnore
+    private User user;
 
+    @ManyToOne
+    @MapsId("film")
+    @JoinColumn(name = "film_id")
+    @JsonIgnore
+    private Film film;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String score;
+    private Score score;
+
+    public enum Score {
+        DISLIKE, LIKE, LOVE
+    }
 }

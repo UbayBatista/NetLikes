@@ -7,13 +7,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import jakarta.transaction.Transactional;
-import software.ulpgc.netlikes.api.LoadService;
-import software.ulpgc.netlikes.api.TmdbApiClient;
-import software.ulpgc.netlikes.api.TmdbModels;
 import software.ulpgc.netlikes.dto.FilmResponseDTO;
 import software.ulpgc.netlikes.model.Film;
 import software.ulpgc.netlikes.repository.FilmRepository;
 import software.ulpgc.netlikes.service.FilmService;
+import software.ulpgc.netlikes.tmdbApi.LoadService;
+import software.ulpgc.netlikes.tmdbApi.TmdbApiClient;
+import software.ulpgc.netlikes.tmdbApi.TmdbModels;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;

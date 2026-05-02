@@ -1,9 +1,16 @@
 package software.ulpgc.netlikes.service;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 
+import software.ulpgc.netlikes.discourseApi.DiscourseService;
+import software.ulpgc.netlikes.dto.FilmResponseDTO;
 import software.ulpgc.netlikes.dto.LoginRequestDTO;
+import software.ulpgc.netlikes.dto.UserProfileDTO;
 import software.ulpgc.netlikes.dto.RegisterRequestDTO;
 import software.ulpgc.netlikes.dto.UserRequestDTO;
 import software.ulpgc.netlikes.dto.UserResponseDTO;
@@ -11,7 +18,11 @@ import software.ulpgc.netlikes.model.Genre;
 import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.repository.GenreRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
+import software.ulpgc.netlikes.model.Mark;
 
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -20,11 +31,22 @@ public class UserService {
     private final UserRepository userRepository;
     private final GenreRepository genreRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FollowService followService;
+    private final MarkService markService;
+    private final DiscourseService discourseService;
 
-    public UserService(UserRepository userRepository, GenreRepository genreRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, 
+                       GenreRepository genreRepository, 
+                       PasswordEncoder passwordEncoder, 
+                       FollowService followService, 
+                       MarkService markService, 
+                       DiscourseService discourseService) {
         this.userRepository = userRepository;
         this.genreRepository = genreRepository;
         this.passwordEncoder = passwordEncoder;
+        this.followService = followService; 
+        this.markService = markService;
+        this.discourseService = discourseService;
     }
 
     public List<UserResponseDTO> getAllUsers() {
@@ -34,23 +56,43 @@ public class UserService {
                 .toList();
     }
 
-    public UserResponseDTO getUserById(String email) {
+    public ResponseEntity<List<UserResponseDTO>> getAllUsers(int page, int size, String mail) {
+        PageRequest paginacion = PageRequest.of(page, size);
+
+        List<UserResponseDTO> catalogo = userRepository.findAll(paginacion).getContent()
+        .stream()
+        .filter(u -> !u.getEmail().equals(mail))
+        .map(this::toDTO)
+        .toList();
+        
+        return ResponseEntity.ok(catalogo);
+    }
+
+    public ResponseEntity<List<UserResponseDTO>> searchBy(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+        
+        Pageable topTen = PageRequest.of(0, 10);
+        List<UserResponseDTO> results = userRepository.findByNameContainingIgnoreCase(query, topTen).stream().map(this::toDTO).toList();
+        
+        return ResponseEntity.ok(results);
+    }
+
+    public UserResponseDTO getUserById(@NonNull String email) {
         User user = userRepository.findById(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return toDTO(user);
     }
 
-    public UserResponseDTO createUser(UserRequestDTO dto) {
-
-        User user = new User();
-        applyDtoToEntity(dto, user);
-
-        userRepository.save(user);
-        return toDTO(user);
+    public boolean isPrivate(@NonNull String email){
+        return userRepository.findById(email)
+        .orElseThrow(() -> new RuntimeException("User not found"))
+        .isAccountPrivacity();
     }
 
-    public UserResponseDTO updateUser(String email, UserRequestDTO dto) {
+    public UserResponseDTO updateUser(@NonNull String email, UserRequestDTO dto) {
 
         User user = userRepository.findById(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -61,7 +103,12 @@ public class UserService {
         return toDTO(user);
     }
 
-    public void deleteUser(String email) {
+    public void deleteUser(@NonNull String email) {
+        User user = userRepository.findById(email)
+                .orElseThrow(() -> new RuntimeException("Credenciales incorrectas"));
+
+        discourseService.deleteDiscourseUserById(user.getDiscourseId());
+
         userRepository.deleteById(email);
     }
 
@@ -90,13 +137,23 @@ public class UserService {
         newUser.setBirthdate(request.getBirthdate());
         if (request.getFavoriteGenres() != null) {
             List<Integer> ids = request.getFavoriteGenres().stream()
-                                    .map(g -> (int) g.getId())
+                                    .map(g -> (int) g.getId()) 
                                     .toList();
+
             List<Genre> genres = genreRepository.findAllById(ids);
             newUser.setFavoriteGenres(genres);
         }
 
+        String discourseId = discourseService.createDiscourseUser(newUser.getName(), newUser.getEmail(), request.getPassword());
+
+        if (discourseId == null) {
+            throw new RuntimeException("Error al crear la cuenta en el foro. No se pudo completar el registro.");
+        }
+
+        newUser.setDiscourseId(discourseId);
+        
         User saved = userRepository.save(newUser);
+
         return toDTO(saved);
     }
 
@@ -104,16 +161,78 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
 
-    public String getSecurityQuestion(String email) {
+    public String getSecurityQuestion(@NonNull String email) {
         User user = userRepository.findById(email)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         return user.getSecurityQuestion();
     }
 
-    public boolean isValidAnswer(String email, String answer) {
+    public boolean isValidAnswer(@NonNull String email, String answer) {
         User user = userRepository.findById(email)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         return user.getAnswer().equals(answer);
+    }
+
+    
+    public void changePassword(@NonNull String email, String newPassword) {
+        User user = userRepository.findById(email)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    public UserProfileDTO myProfile(@NonNull String email){
+        User user = userRepository.findById(email)
+            .orElseThrow(()-> new RuntimeException("Usuario no encontrado"));
+        
+        List<FilmResponseDTO> watchedFilms = markService.getFilmsByMarkType(email, Mark.Type.SEEN);
+        List<FilmResponseDTO> watchLaterFilms = markService.getFilmsByMarkType(email, Mark.Type.WATCHLATER);
+
+        return new UserProfileDTO(
+            user.getEmail(),
+            user.getName(),
+            user.getBio(),
+            user.isAccountPrivacity(),
+            followService.countFollowersOf(user.getEmail()),
+            followService.countFollowsOf(user.getEmail()),
+            watchedFilms, 
+            watchLaterFilms
+        );
+    }
+
+    public UserProfileDTO userProfile(String userName, String requesterEmail) {
+        User target = userRepository.findByName(userName)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        boolean isOwnProfile = target.getEmail().equals(requesterEmail);
+        boolean isFollowing = (followService.checkStatus(requesterEmail, target.getEmail()).equals("ACCEPTED"));
+
+        boolean canSeeContent = !target.isAccountPrivacity() || isOwnProfile || isFollowing;
+
+        List<FilmResponseDTO> watched = canSeeContent ? 
+            markService.getFilmsByMarkType(target.getEmail(), Mark.Type.SEEN) : new ArrayList<>();
+        
+        List<FilmResponseDTO> later = canSeeContent ? 
+            markService.getFilmsByMarkType(target.getEmail(), Mark.Type.WATCHLATER) : new ArrayList<>();
+
+        return new UserProfileDTO(
+            target.getEmail(),
+            target.getName(),
+            target.getBio(),
+            target.isAccountPrivacity(),
+            followService.countFollowersOf(target.getEmail()),
+            followService.countFollowsOf(target.getEmail()),
+            canSeeContent ? watched : null,
+            canSeeContent ? later : null
+        );
+    }
+
+    public void changePrivacy(@NonNull String email, Boolean isPrivate) {
+        User user = userRepository.findById(email)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        user.setAccountPrivacity(isPrivate);
+        userRepository.save(user);
     }
 
     private void applyDtoToEntity(UserRequestDTO dto, User user) {
@@ -142,5 +261,6 @@ public class UserService {
         dto.setProfilePicture(user.getProfilePicture());
 
         return dto;
-    }
+    }   
 }
+
