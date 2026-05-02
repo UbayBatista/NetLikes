@@ -14,7 +14,7 @@ export class AuthService {
   
   private readonly apiUrl = 'https://api-db.duckdns.org/users';
   private isLoading$ = new BehaviorSubject<boolean>(true);
-  private readonly dbUrl = 'http://localhost:8080/users';
+  private readonly dbUrl = 'https://api-db.duckdns.org/users';
 
   constructor(private http: HttpClient) {
     this.loadUserFromStorage();

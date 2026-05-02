@@ -21,7 +21,7 @@ export interface LoggedUser {
 })
 export class FollowService {
 
-  private readonly apiUrl = 'http://localhost:8080/follows';
+  private readonly apiUrl = 'https://api-db.duckdns.org/follows';
   private readonly authService = inject(AuthService);
 
   constructor(private http: HttpClient) {}

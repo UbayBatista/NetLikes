@@ -8,7 +8,7 @@ import { User } from '../models/user.models';
   providedIn: 'root',
 })
 export class UserService {
-  private readonly dbUrl = 'http://localhost:8080/users';
+  private readonly dbUrl = 'https://api-db.duckdns.org/users';
 
   constructor(private http: HttpClient) {}
 

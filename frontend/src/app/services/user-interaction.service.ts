@@ -8,8 +8,8 @@ export class UserInteractionService {
 
     private http = inject(HttpClient);
     private authService = inject(AuthService);
-    private readonly markUrl = 'http://localhost:8080/marks';
-    private readonly rateUrl = 'http://localhost:8080/rates';
+    private readonly markUrl = 'https://api-db.duckdns.org/marks';
+    private readonly rateUrl = 'https://api-db.duckdns.org/rates';
 
     toggleMark(filmId: number, type: 'SEEN' | 'WATCHLATER'): Observable<any> {
         const email = this.authService.getCurrentUserEmail();
