@@ -25,54 +25,49 @@
 .netflix-slider {
   display: flex;
   gap: 16px;
-  padding: 10px 0;
+  padding: 20px 0; 
   padding-left: 20px; 
 }
 
 .film-item {
   flex: 0 0 180px;
   height: 260px;
-  transition: transform 0.2s ease;
-}
-
-.film-item:hover {
-  transform: scale(1.08);
 }
 
 .nav-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+    position: absolute;
+    top: 45%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.95); 
+    border: 1px solid #dbdbdb;
+    border-radius: 50%;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
+
+.nav-btn:hover {
+    background-color: #ffffff;
+    transform: translateY(-50%) scale(1.08); 
+}
+
+.nav-btn.left { left: 10px; }
+.nav-btn.right { right: 7px; }
 
 .nav-btn::after {
     content: '';
-    border: solid white;
-    border-width: 0 3px 3px 0;
+    border: solid #262626;
+    border-width: 0 2px 2px 0;
     display: inline-block;
-    padding: 4px;
+    padding: 5px;
 }
-.nav-btn.left::after { transform: rotate(135deg); }
-.nav-btn.right::after { transform: rotate(-45deg); }
-
-.left {
-  left: 5px;
-}
-
-.right {
-  right: 5px;
-}
+.nav-btn.left::after { transform: rotate(135deg); margin-left: 5px; }
+.nav-btn.right::after { transform: rotate(-45deg); margin-right: 5px; }
 
 @media (max-width: 1024px) {
   .nav-btn {

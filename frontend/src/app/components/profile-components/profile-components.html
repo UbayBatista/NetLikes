@@ -1,11 +1,11 @@
-<div class="card mb-4 border-dark border-2 shadow-sm position-relative">
-  <div class="card-body p-4">
-    <h4 class="card-title fw-bold border-bottom border-dark border-2 pb-2 mb-3">
+<div class="custom-section mb-4 position-relative shadow-sm">
+  <div class="p-3 p-md-4">
+    <h5 class="section-title fw-bold mb-3 pb-2">
       {{ title }}
-    </h4>
+    </h5>
 
     @if (isEditing) {
-      <button class="btn btn-danger position-absolute top-0 end-0 m-3 rounded-circle shadow p-0" 
+      <button class="btn btn-delete position-absolute top-0 end-0 m-3 rounded-circle shadow-sm p-0" 
               style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; z-index: 20;">
         <i class="bi bi-dash fs-4"></i>
       </button>
@@ -13,7 +13,7 @@
 
     <div class="netflix-wrapper">
       @if (canScrollLeft) {
-        <button type="button" class="nav-btn left" (click)="scroll('left')"></button>
+        <button type="button" class="nav-btn left shadow-sm" (click)="scroll('left')"></button>
       }
 
       <div class="netflix-row" #scrollContainer (scroll)="updateScrollButtons()">
@@ -23,7 +23,7 @@
       </div>
 
       @if (canScrollRight) {
-        <button type="button" class="nav-btn right" (click)="scroll('right')"></button>
+        <button type="button" class="nav-btn right shadow-sm" (click)="scroll('right')"></button>
       }
     </div>
   </div>

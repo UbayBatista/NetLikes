@@ -123,10 +123,12 @@
     }
 
     .ig-stats {
-        justify-content: flex-start; 
+        display: flex;
+        justify-content: flex-end;
         width: 100%;
-        gap: 3rem; 
-        padding-left: 0; 
+        gap: 2.5rem; 
+        padding-right: 1rem; 
+        text-align: center;
     }
 
     .stat-label { 
