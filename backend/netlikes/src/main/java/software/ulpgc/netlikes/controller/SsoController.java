@@ -21,7 +21,7 @@ public class SsoController {
     private String ssoSecret;
 
     @GetMapping("/sso")
-    public ResponseEntity<String> sso(@RequestParam String sso, @RequestParam String sig) {
+    public ResponseEntity<Void> sso(@RequestParam String sso, @RequestParam String sig) {
         
         String calculatedSig = calculateHmacSha256(sso, ssoSecret);
         if (!calculatedSig.equalsIgnoreCase(sig)) {
@@ -43,22 +43,10 @@ public class SsoController {
         String signature = calculateHmacSha256(base64Reply, ssoSecret);
 
         String redirectUrl = "https://netlikes.duckdns.org/session/sso_login?sso=" + base64Reply + "&sig=" + signature;
-
-        String html = "<html><body style='background:#111; color:white; text-align:center; padding-top:50px;'>" +
-            "<h2>Sincronizando con Netlikes...</h2>" +
-            "<script>" +
-            "  // 1. Intentamos la redirección en un iframe invisible para forzar la cookie" +
-            "  var img = new Image();" +
-            "  img.src = '" + redirectUrl + "';" + 
-            "  " +
-            "  // 2. Después de un momento, cerramos la ventana" +
-            "  setTimeout(function() {" +
-            "    window.location.href = '" + redirectUrl + "';" + // Redirigimos la principal por si acaso
-            "    setTimeout(function() { window.close(); }, 1500);" +
-            "  }, 500);" +
-            "</script></body></html>";
-
-        return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(html);
+        
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .header("Location", redirectUrl)
+                .build();
     }
 
     private String calculateHmacSha256(String data, String secret) {
