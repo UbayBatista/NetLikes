@@ -51,6 +51,8 @@ export class ChatWindow {
       return;
     }
 
+    this.saveUrl = null;
+
     const ssoUrl = 'https://netlikes.duckdns.org/session/sso';
     const popup = window.open(ssoUrl, 'ForoLogin', 'width=600,height=700');
 
@@ -65,7 +67,7 @@ export class ChatWindow {
                 if (this.forumId !== null) {
                     this.chargeForum(this.forumId);
                 }
-            }, 500);
+            }, 2000);
       }
       localStorage.setItem('foro_sesion_activa', 'true');
     }, 1000);

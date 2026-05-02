@@ -44,13 +44,19 @@ public class SsoController {
 
         String redirectUrl = "https://netlikes.duckdns.org/session/sso_login?sso=" + base64Reply + "&sig=" + signature;
 
-        String html = "<html><body style='background:#111; color:white; display:flex; justify-content:center; align-items:center; font-family:sans-serif;'>" +
-                    "<div><h2>Conectando con Netlikes...</h2></div>" +
-                    "<script>" +
-                    "  window.location.href='" + redirectUrl + "';" +
-                    "  // Esperamos a que la redirección ocurra y cerramos" +
-                    "  setTimeout(function(){ window.close(); }, 2000);" +
-                    "</script></body></html>";
+        String html = "<html><body style='background:#111; color:white; text-align:center; padding-top:50px;'>" +
+            "<h2>Sincronizando con Netlikes...</h2>" +
+            "<script>" +
+            "  // 1. Intentamos la redirección en un iframe invisible para forzar la cookie" +
+            "  var img = new Image();" +
+            "  img.src = '" + redirectUrl + "';" + 
+            "  " +
+            "  // 2. Después de un momento, cerramos la ventana" +
+            "  setTimeout(function() {" +
+            "    window.location.href = '" + redirectUrl + "';" + // Redirigimos la principal por si acaso
+            "    setTimeout(function() { window.close(); }, 1500);" +
+            "  }, 500);" +
+            "</script></body></html>";
 
         return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(html);
     }
