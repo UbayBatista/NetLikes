@@ -53,7 +53,7 @@ export class ChatWindow {
     this.saveUrl = null;
     this.activeForum = false;
 
-    const ssoUrl = 'https://netlikes.duckdns.org/session/sso';
+    const ssoUrl = 'https://netlikes.duckdns.org/session/sso?return_path=%2Flatest%3Fis_popup%3D1';
     const popup = window.open(ssoUrl, 'ForoLogin', 'width=600,height=700');
 
     if (!popup) {
