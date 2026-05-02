@@ -1,7 +1,8 @@
-import { Component, Output, EventEmitter, signal, OnInit, ChangeDetectorRef} from '@angular/core';
+import { Component, Output, EventEmitter, signal, computed, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SearchBarComponent } from '../search-bar/search-bar';
-import { SubscriptionService } from '../../services/subscription';
+import { SubscriptionService } from '../../services/subscription.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-forum-list',
@@ -12,59 +13,79 @@ import { SubscriptionService } from '../../services/subscription';
 })
 export class ForumList implements OnInit{
 
-  @Output() clickedForum = new EventEmitter<{title: string, forumId: number}>(); 
-  constructor(private subscriptionService: SubscriptionService, private cdr: ChangeDetectorRef) {}
+  @Output() clickedForum = new EventEmitter<{title: string, topicId: number}>(); 
+  
+  private subscriptionService = inject(SubscriptionService);
+  private authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
 
-  search = signal('');
+  filmsForum = signal<any[]>([]);
+  searchText = signal('');
 
-  filmsForum: any[] = [];
-
-  searchText = '';
+  filteredForums = computed(() => {
+    const searchLow = (this.searchText() || '').toLowerCase();
+    return this.filmsForum().filter(forum => 
+      (forum.title || '').toLowerCase().includes(searchLow)
+    );
+  });
 
   handleSearch(text: string) {
-      this.searchText = text.toLowerCase();
+      this.searchText.set(text.toLowerCase());
   }
 
-  get filtereForums(){
-      const searchLow = this.searchText.toLowerCase();
-      return this.filmsForum.filter(forum => 
-          forum.title.toLowerCase().includes(searchLow)
-      );
-  } 
-
   selectForum(index: number) {
-    this.filtereForums.forEach(p => p.active = false);
-    this.filtereForums[index].active = true;
+    const currentForums = this.filmsForum();
+    currentForums.forEach(p => p.active = false);
     
-    this.clickedForum.emit({ title: this.filtereForums[index].title, forumId: this.filtereForums[index].forumTopicId});
-    console.log('Cambiando al foro de:', this.filtereForums[index].title, "con ide: ", this.filtereForums[index].forumTopicId);
+    const selected = this.filteredForums()[index];
+    if (selected) {
+      selected.active = true;
+      this.clickedForum.emit({ 
+        title: selected.title, 
+        topicId: selected.forumTopicId
+      });
+      console.log('Cambiando al foro de:', selected.title, "con ID: ", selected.forumTopicId);
+    }
+    
+    this.filmsForum.set([...currentForums]);
+    this.cdr.detectChanges(); 
   }
 
   ngOnInit() {
-    const emailLoged = "jose@gmail.com";
+    this.authService.getCurrentUser().subscribe(user => { 
+      if (!user || !user.email) return; 
 
-    this.subscriptionService.getUserSubscription(emailLoged).subscribe({
-      next: (data) => {
-        // "data" es el array que nos devuelve Spring Boot con todo el árbol (Suscripcion -> Foro -> Pelicula)
-        
-        this.filmsForum = data.map((sub, index) => {
-          return {
-            title: sub.forum.film.title,      
-            active: index === 0,         
-            
-            forumTopicId: sub.forum.forumId,
-            filmId: sub.forum.film.id
-          };
-        });
+      console.log('Usuario detectado:', user.email, 'Pidiendo foros a Spring Boot...');
 
-        this.cdr.detectChanges()
+      this.subscriptionService.getUserSubscriptions(user.email).subscribe({
+        next: (data) => {
+          console.log('Datos puros del backend:', data);
 
-        console.log('Foros cargados desde la base de datos:', this.filmsForum);
-      },
-      error: (err) => {
-        console.error('Error al obtener los foros:', err);
-      }
+          try {
+            const mappedForums = data.map((sub, index) => {
+              return {
+                title: sub.forum?.film?.title || 'Foro sin título',      
+                active: index === 0,         
+                forumTopicId: sub.forum?.discourseTopicId,
+                filmId: sub.forum?.film?.id
+              };
+            });
+
+            this.filmsForum.set(mappedForums);
+
+            if (mappedForums.length > 0) {
+              this.selectForum(0);
+            }
+            this.cdr.detectChanges();
+            console.log('Foros cargados listos para pantalla:', this.filmsForum());
+          } catch(e) {
+            console.error('Error al mapear el JSON devuelto por Spring:', e);
+          }
+        },
+        error: (err) => {
+          console.error('Error al obtener los foros:', err);
+        }
+      });
     });
   }
-
-}
+}   

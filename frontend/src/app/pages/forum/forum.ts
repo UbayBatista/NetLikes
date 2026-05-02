@@ -9,17 +9,17 @@ import { ChatWindow } from '../../components/chat-window/chat-window';
   templateUrl: './forum.html',
   styleUrl: './forum.css'
 })
-
 export class Forum { 
-  currentTitle: string = '';
-  forumId: number | null = null;
+  currentTitle: string = 'Selecciona un foro'; 
+  currentTopicId?: number; 
   selectedForum: boolean = false;
 
-  seeChat(event: { title: string, forumId: number }) {
+  seeChat(event: { title: string, topicId: number }) {
     this.currentTitle = event.title;
+    this.currentTopicId = event.topicId; 
     this.selectedForum = true;
-    this.forumId = event.forumId;
   }
+  
   returnToList() {
     this.selectedForum = false;
   }
