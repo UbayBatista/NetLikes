@@ -13,6 +13,7 @@ import software.ulpgc.netlikes.repository.NotifyRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
 
 import java.sql.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -113,5 +114,34 @@ public class NotifyService {
         dto.setRead(notify.isRead());
         dto.setType(notify.getType().name());
         return dto;
+    }
+
+    @Transactional
+    public void deleteFollowNotification(String senderEmail, String receiverEmail) {
+        // 1. Borramos de la base de datos
+        notifyRepository.deleteByUserSenderEmailAndUserReceiverEmailAndType(
+            senderEmail, 
+            receiverEmail, 
+            Notify.Type.FOLLOWREQUEST
+        );
+
+        // 2. Avisamos al frontend por SSE
+        List<SseEmitter> userEmitters = emitters.get(receiverEmail);
+        if (userEmitters != null) {
+            // Enviamos un objeto simple con los datos necesarios para identificar qué borrar
+            Map<String, String> data = new HashMap<>();
+            data.put("senderEmail", senderEmail);
+            data.put("type", Notify.Type.FOLLOWREQUEST.name());
+
+            for (SseEmitter emitter : userEmitters) {
+                try {
+                    emitter.send(SseEmitter.event()
+                        .name("DELETE_NOTIFICATION") // Nombre del evento que escuchará Angular
+                        .data(data));
+                } catch (Exception e) {
+                    removeEmitter(receiverEmail, emitter);
+                }
+            }
+        }
     }
 }

@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import jakarta.transaction.Transactional;
 
 import software.ulpgc.netlikes.model.Notify;
 import software.ulpgc.netlikes.model.NotifyId;
@@ -19,4 +20,8 @@ public interface NotifyRepository extends JpaRepository<Notify, NotifyId> {
     @Modifying
     @Query("UPDATE Notify n SET n.read = true WHERE n.userReceiver.email = :email AND n.read = false")
     void markAllAsReadForUser(@Param("email") String email);
+
+    @Modifying
+    @Transactional
+    void deleteByUserSenderEmailAndUserReceiverEmailAndType(String senderEmail, String receiverEmail, Notify.Type type);
 }

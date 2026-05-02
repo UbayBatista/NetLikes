@@ -52,6 +52,33 @@ export class NotificationService {
     this.eventSource.onerror = () => {
       this.eventSource?.close();
     };
+
+    // Dentro de connectSSE(email: string) en notification.service.ts
+
+    this.eventSource.addEventListener('DELETE_NOTIFICATION', (event: MessageEvent) => {
+    this.zone.run(() => {
+        const deletedData = JSON.parse(event.data);
+        
+        // 1. Filtramos la lista para quitar la notificación borrada
+        const currentNotifs = this.notificationsSubject.value;
+        const updatedNotifs = currentNotifs.filter(n => 
+        !(n.senderEmail === deletedData.senderEmail && n.type === deletedData.type)
+        );
+        
+        // 2. Si la notificación que borramos no estaba leída, bajamos el contador
+        const wasUnread = currentNotifs.find(n => 
+        n.senderEmail === deletedData.senderEmail && n.type === deletedData.type && !n.read
+        );
+        
+        if (wasUnread) {
+        const currentCount = this.unreadCountSubject.value;
+        this.unreadCountSubject.next(Math.max(0, currentCount - 1));
+        }
+
+        // 3. Actualizamos la lista visual
+        this.notificationsSubject.next(updatedNotifs);
+    });
+    });
   }
 
   markAllAsRead(): void {

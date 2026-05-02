@@ -105,6 +105,7 @@ public class FollowService {
 
     public void deleteFollow(String followerId, String followedId) {
         followRepository.deleteById(new FollowId(followerId, followedId));
+        notifyService.deleteFollowNotification(followerId, followedId);
     }
 
     public List<UserResponseDTO> getPendingRequests(String followedId) {
