@@ -55,9 +55,12 @@ export class ChatWindow {
     const popup = window.open(ssoUrl, 'ForoLogin', 'width=600,height=700');
 
     const timer = setInterval(() => {
-      if (popup?.closed) {
-        clearInterval(timer);
-        setTimeout(() => {
+      if (!popup || popup.closed) {
+            clearInterval(timer);
+            
+            // Esperamos medio segundo extra para asegurar que las cookies 
+            // se hayan asentado en el navegador antes de cargar el iframe
+            setTimeout(() => {
                 this.activeForum = true;
                 if (this.forumId !== null) {
                     this.chargeForum(this.forumId);
