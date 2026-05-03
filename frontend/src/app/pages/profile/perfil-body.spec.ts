@@ -159,4 +159,70 @@ describe('ProfileBody', () => {
       expect(component['userToFollow']).toBe(''); 
     });
   });
+
+  describe('Lógica de Eliminar Seguidor (BDD)', () => {
+    let followService: any;
+
+    beforeEach(() => {
+      followService = TestBed.inject(FollowService);
+      
+      followService.remove = vi.fn().mockReturnValue(of({}));
+
+      component.itsMe$ = of(true);
+
+      component.socialData = [
+        { name: 'UsuarioMolesto', email: 'molesto@test.com', avatar: '' },
+        { name: 'BuenAmigo', email: 'amigo@test.com', avatar: '' }
+      ];
+      
+      component.followersCount$.next(2);
+    });
+
+    it('Dado un usuario en Seguidores, Cuando pulse Eliminar seguidor, Entonces muestra confirmación', () => {
+      component.handleSocialAction({
+        user: { name: 'UsuarioMolesto', email: 'molesto@test.com' },
+        type: 'Seguidores'
+      });
+
+      expect(component.showConfirmModal).toBe(true);
+      expect(component['actionToConfirm']).toBe('REMOVE_FOLLOWER');
+      expect(component.confirmModalMessage).toContain('eliminar a @UsuarioMolesto de tus seguidores');
+      
+      expect(followService.remove).not.toHaveBeenCalled();
+    });
+
+    it('Dado el mensaje de confirmación, Cuando pulse Confirmar, Entonces se cierra, elimina seguidor y actualiza lista', () => {
+      component.handleSocialAction({
+        user: { name: 'UsuarioMolesto', email: 'molesto@test.com' },
+        type: 'Seguidores'
+      });
+
+
+      component.handleUnfollowConfirmation(true);
+
+      expect(component.showConfirmModal).toBe(false); 
+      expect(followService.remove).toHaveBeenCalledWith('molesto@test.com'); 
+
+      expect(component.socialData.length).toBe(1);
+      expect(component.socialData[0].email).toBe('amigo@test.com');
+
+      expect(component.followersCount$.value).toBe(1);
+    });
+
+    it('Dado el mensaje de confirmación, Cuando pulse Cancelar, Entonces se cierra y no hay cambios', () => {
+      component.handleSocialAction({
+        user: { name: 'UsuarioMolesto', email: 'molesto@test.com' },
+        type: 'Seguidores'
+      });
+
+      component.handleUnfollowConfirmation(false);
+
+      expect(component.showConfirmModal).toBe(false);
+      expect(followService.remove).not.toHaveBeenCalled(); 
+
+      expect(component.socialData.length).toBe(2);
+      expect(component.followersCount$.value).toBe(2);
+      expect(component['userToFollow']).toBe('');
+    });
+  });
 });
