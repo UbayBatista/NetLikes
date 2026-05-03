@@ -21,7 +21,7 @@ export class SubscriptionService {
       email: email,
       title: filmTitle
     };
-    return this.http.post<SubscriptionResponse>(`${this.baseUrl}/forum/film/${filmId}`, payload);
+    return this.http.post<SubscriptionResponse>(`${environment.apiUrl}/forum/film/${filmId}`, payload);
   }
 
   unsubscribeFromFilm(email: string, forumId: number): Observable<void> {
