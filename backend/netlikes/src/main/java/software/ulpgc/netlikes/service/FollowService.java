@@ -1,6 +1,5 @@
 package software.ulpgc.netlikes.service;
 
-import software.ulpgc.netlikes.discourseApi.DiscourseService;
 import software.ulpgc.netlikes.dto.UserResponseDTO;
 import software.ulpgc.netlikes.model.Follow;
 import software.ulpgc.netlikes.model.FollowId;
@@ -45,7 +44,17 @@ public class FollowService {
     }
 
     public String checkStatus(String followerId, String followedId) {
-        return followRepository.findById(new FollowId(followerId, followedId))
+        var directRelation = followRepository.findById(new FollowId(followerId, followedId));
+        if (directRelation.isPresent() && directRelation.get().getState() == Follow.State.BLOCKED) {
+            return "BLOCKED";
+        }
+
+        var reverseRelation = followRepository.findById(new FollowId(followedId, followerId));
+        if (reverseRelation.isPresent() && reverseRelation.get().getState() == Follow.State.BLOCKED) {
+            return "BLOCKED";
+        }
+
+        return directRelation
                 .map(follow -> follow.getState().name())
                 .orElse("NONE");
     }
@@ -117,13 +126,18 @@ public class FollowService {
         String blockerUsername = blocker.getName().replaceAll("\\s+", "").toLowerCase();
         String blockedUsername = blocked.getName().replaceAll("\\s+", "").toLowerCase();
 
-        discourseService.ignoreDiscourseUser(blockerUsername, blockedUsername);
 
         followRepository.findById(new FollowId(blockerEmail, blockedEmail))
                 .ifPresent(followRepository::delete);
                 
         followRepository.findById(new FollowId(blockedEmail, blockerEmail))
                 .ifPresent(followRepository::delete);
+
+        Follow follow = new Follow();
+        follow.setFollowedId(blockedEmail);
+        follow.setFollowerId(blockerEmail);
+        follow.setState(Follow.State.BLOCKED);
+        followRepository.save(follow);
 
     }
 
@@ -137,9 +151,21 @@ public class FollowService {
         String blockerUsername = blocker.getName().replaceAll("\\s+", "").toLowerCase();
         String unblockedUsername = unblocked.getName().replaceAll("\\s+", "").toLowerCase();
 
-        discourseService.unignoreDiscourseUser(blockerUsername, unblockedUsername);
-
         followRepository.deleteById(new FollowId(blockerEmail, unblockedEmail));
+    }
+
+    public List<UserResponseDTO> getBlockedUsers(String userEmail) {
+        return followRepository.findByFollowerId(userEmail).stream()
+                .filter(follow -> follow.getState() == Follow.State.BLOCKED)
+                .map(follow -> userRepository.findById(follow.getFollowedId())
+                        .map(user -> new UserResponseDTO(
+                                user.getEmail(), 
+                                user.getName(), 
+                                user.getProfilePicture()
+                        ))
+                        .orElse(null))
+                .filter(dto -> dto != null)
+                .toList();
     }
     
 }
