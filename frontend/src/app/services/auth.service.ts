@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Credentials, User, RegisterData} from '../models/user.models';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface LoginResponse {
   user: User;
@@ -11,7 +12,7 @@ export interface LoginResponse {
 export class AuthService {
   private currentUser$ = new BehaviorSubject<User | null>(null);
   private isLoading$ = new BehaviorSubject<boolean>(true);
-  private readonly dbUrl = 'http://localhost:8080/users';
+  private readonly dbUrl = `${environment.apiUrl}/users`;
 
   constructor(private http: HttpClient) {
     this.loadUserFromStorage();

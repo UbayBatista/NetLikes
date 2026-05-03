@@ -21,41 +21,87 @@ import java.util.Map;
 @Service
 public class DiscourseService {
 
+    private final RestTemplate discourseRestTemplate;
+
     @Value("${discourse.api.url}")
     private String discourseUrl;
+
+    @Value("${discourse.category.movies.id}")
+    private Integer moviesCategoryId;
 
     @Value("${discourse.api.key}")
     private String apiKey;
 
     @Value("${discourse.api.username}")
     private String apiUsername;
-    
-    private RestTemplate restTemplate = new RestTemplate();
 
-    public Integer createMovieForum(String filmTitle) {
-        String endpoint = discourseUrl + "/posts.json";
+    public DiscourseService(RestTemplate discourseRestTemplate) {
+        this.discourseRestTemplate = discourseRestTemplate;
+    }
 
+    @NonNull
+    private HttpHeaders setHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Api-Key", apiKey);
         headers.set("Api-Username", apiUsername);
-            
-        Map<String, Object> body = new HashMap<>();
-        
-        body.put("title", "Foro oficial: " + filmTitle); 
-        body.put("raw", "Bienvenidos al foro oficial de la película " + filmTitle + ". ¡Podéis comentar vuestras opiniones y usar la etiqueta de spoilers si es necesario!");
-        body.put("category", 5);
+        return headers;
+    }
 
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+    public Integer createMovieTopic(String movieTitle, Integer tmdbId) {
+        Integer existingId = getForumIdByTitle(movieTitle);
+        
+        if (existingId != null) {
+            return existingId; 
+        }
+
+        String uniqueRaw = "¡Bienvenido al foro oficial de la película **" + movieTitle + "**! \n\n¿Qué te ha parecido? Anímate a compartir tu opinión con otros usuarios suscritos. \n\n<!-- " + System.currentTimeMillis() + " -->";
+        String endpoint = discourseUrl + "/posts.json";
+        Map<String, Object> body = new HashMap<>();
+
+        body.put("title", "Foro oficial: " + movieTitle); 
+        body.put("raw", uniqueRaw);
+        body.put("category", moviesCategoryId); 
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body);
 
         try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(endpoint, request, Map.class);
-            
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+            ResponseEntity<Map> response = discourseRestTemplate.exchange(endpoint, HttpMethod.POST, request, Map.class);
+            if (response.getBody() != null && response.getBody().containsKey("topic_id")) {
                 return (Integer) response.getBody().get("topic_id");
             }
         } catch (Exception e) {
-            System.err.println("Error al comunicar con la API de Discourse: " + e.getMessage());
+            System.err.println("Error al crear foro en Discourse: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public Integer getForumIdByTitle(String filmTitle) {
+        String endpoint = discourseUrl + "/search.json?q=" + filmTitle;
+
+        try {
+            ResponseEntity<JsonNode> response = discourseRestTemplate.exchange(
+                endpoint, 
+                HttpMethod.GET, 
+                null, 
+                JsonNode.class
+            );
+
+            JsonNode root = response.getBody();
+
+            if (root != null && root.has("topics") && root.get("topics").isArray()) {
+                String targetTitle = "Foro oficial: " + filmTitle;
+
+                for (JsonNode topic : root.get("topics")) {
+                    String topicTitle = topic.get("title").asText();
+                    
+                    if (topicTitle.equalsIgnoreCase(targetTitle)) {
+                        return topic.get("id").asInt();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error al comunicar con la API de Discourse (Búsqueda): " + e.getMessage());
         }
         
         return null;
@@ -81,7 +127,7 @@ public class DiscourseService {
         
         try {
             HttpEntity<Map<String, Object>> deleteRequest = new HttpEntity<>(body, headers);
-            restTemplate.exchange(deleteUrl, HttpMethod.DELETE, deleteRequest, String.class);
+            discourseRestTemplate.exchange(deleteUrl, HttpMethod.DELETE, deleteRequest, String.class);
             
             System.out.println("Usuario eliminado de Discourse correctamente.");
         } catch (Exception e) {
@@ -98,7 +144,7 @@ public class DiscourseService {
 
         try {
 
-            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, getRequest, String.class);
+            ResponseEntity<String> response = discourseRestTemplate.exchange(url, HttpMethod.GET, getRequest, String.class);
             
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response.getBody());
@@ -121,7 +167,7 @@ public class DiscourseService {
             body.put("ignored_usernames", ignoredList); 
 
             HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
-            restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
+            discourseRestTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
             
             System.out.println("Lista de bloqueados actualizada para " + blockerUsername);
 
@@ -139,7 +185,7 @@ public class DiscourseService {
         HttpEntity<String> getRequest = new HttpEntity<>(headers);
 
         try {
-            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, getRequest, String.class);
+            ResponseEntity<String> response = discourseRestTemplate.exchange(url, HttpMethod.GET, getRequest, String.class);
             
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response.getBody());
@@ -162,7 +208,7 @@ public class DiscourseService {
             body.put("ignored_usernames", ignoredList); 
 
             HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
-            restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
+            discourseRestTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
             
             System.out.println("Usuario " + unblockedUsername + " desbloqueado en Discourse.");
 
@@ -172,12 +218,50 @@ public class DiscourseService {
         }
     }
 
-    @NonNull
-    private HttpHeaders setHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Api-Key", apiKey);
-        headers.set("Api-Username", apiUsername);
-        return headers;
+    
+
+    public Integer getTopicPostCount(Integer topicId) {
+        String endpoint = discourseUrl + "/t/" + topicId + ".json";
+
+        try {
+            ResponseEntity<JsonNode> response = discourseRestTemplate.exchange(
+                endpoint, 
+                HttpMethod.GET, 
+                null, 
+                JsonNode.class
+            );
+
+            JsonNode root = response.getBody();
+
+            if (root != null && root.has("posts_count")) {
+                return root.get("posts_count").asInt();
+            }
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("404")) {
+                return 0; 
+            }
+            System.err.println("Error al comunicar con la API de Discourse (Conteo de Posts): " + e.getMessage());
+        }
+        
+        return 2; 
     }
+
+    public void deleteTopic(Integer topicId, String originalTitle) {
+        try {
+            String renameEndpoint = discourseUrl + "/t/" + topicId + ".json";
+            Map<String, Object> body = new HashMap<>();
+            body.put("title", "Eliminado-" + System.currentTimeMillis() + "-" + originalTitle);
+            
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body);
+            discourseRestTemplate.exchange(renameEndpoint, HttpMethod.PUT, request, String.class);
+
+            String deleteEndpoint = discourseUrl + "/t/" + topicId + ".json";
+            discourseRestTemplate.delete(deleteEndpoint);
+            
+            System.out.println("Foro renombrado y eliminado correctamente. ID: " + topicId);
+        } catch (Exception e) {
+            System.err.println("Error al eliminar el foro en Discourse: " + e.getMessage());
+        }
+    }
+
 }

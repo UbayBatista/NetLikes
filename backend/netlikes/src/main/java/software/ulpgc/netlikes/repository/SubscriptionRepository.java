@@ -9,4 +9,5 @@ import software.ulpgc.netlikes.model.SubscriptionId;
 
 public interface SubscriptionRepository extends JpaRepository<Subscription, SubscriptionId> {
     List<Subscription> getByUserEmail(String email);
+    long countByIdForumId(Integer forumId);
 }

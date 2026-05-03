@@ -1,9 +1,10 @@
 import { Component, Input, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Film } from '../../models/film.models';
-import { ForumService } from '../../services/forum.service';
-import { AuthService } from '../../services/auth.service';
 import { UserInteractionService } from '../../services/user-interaction.service';
+import { SubscriptionService } from '../../services/subscription.service';
+import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-film-header',
@@ -13,18 +14,22 @@ import { UserInteractionService } from '../../services/user-interaction.service'
   styleUrl: './film-header.css',
 })
 export class FilmHeader implements OnInit {
-  [x: string]: any;
   @Input() film!: Film;
 
   readonly imgBaseUrl = 'https://image.tmdb.org/t/p/w500';
 
+  isProcessingForum = false;
   dominantColor = 'rgba(255, 255, 255, 0)'; 
   isWatched = false;
   isWatchLater = false;
   currentRating: string | null = null; 
+  isSubscribed = false;
 
   private cdr = inject(ChangeDetectorRef);
   private interactionService = inject(UserInteractionService);
+  private subscriptionService = inject(SubscriptionService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   ngOnInit(): void {
     if (this.film?.posterPath) {
@@ -32,6 +37,7 @@ export class FilmHeader implements OnInit {
     }
     this.loadInitialMarkStatus();
     this.loadInitialRateStatus();
+    this.loadInitialSubscriptionStatus();
   }
 
   private loadInitialMarkStatus() {
@@ -52,11 +58,27 @@ export class FilmHeader implements OnInit {
   }
 
   private loadInitialRateStatus() {
+    if (!this.film?.id) return;
     this.interactionService.getRateStatus(this.film.id).subscribe({
         next: (rate) => {
             if (rate) this.currentRating = rate.score.toLowerCase();
             this.cdr.detectChanges();
         }
+    });
+  }
+
+  private loadInitialSubscriptionStatus() {
+    if (!this.film?.id) return;
+    
+    this.authService.getCurrentUser().subscribe(user => {
+      if (user && user.email) {
+        this.subscriptionService.getUserSubscriptions(user.email).subscribe({
+          next: (subs) => {
+            this.isSubscribed = subs.some(s => s.forum.film.id === this.film.id);
+            this.cdr.detectChanges();
+          }
+        });
+      }
     });
   }
 
@@ -78,11 +100,17 @@ export class FilmHeader implements OnInit {
   toggleWatched() { 
     const previousState = this.isWatched;
     this.isWatched = !this.isWatched;
+    
     if (this.isWatched) {
       this.isWatchLater = false;
     } else {
       this.currentRating = null;
+      if (this.isSubscribed) {
+        this.toggleSubscription();
+      }
     }
+    
+    this.cdr.detectChanges();
 
     this.interactionService.toggleMark(this.film.id, 'SEEN').subscribe({
       error: (err) => {
@@ -96,10 +124,17 @@ export class FilmHeader implements OnInit {
   toggleWatchLater() { 
     const previousState = this.isWatchLater;
     this.isWatchLater = !this.isWatchLater;
+    
     if (this.isWatchLater) {
       this.isWatched = false;
       this.currentRating = null;
+
+      if (this.isSubscribed) {
+        this.toggleSubscription();
+      }
     }
+    
+    this.cdr.detectChanges(); 
 
     this.interactionService.toggleMark(this.film.id, 'WATCHLATER').subscribe({
       error: (err) => {
@@ -115,6 +150,8 @@ export class FilmHeader implements OnInit {
 
     const oldRating = this.currentRating;
     this.currentRating = this.currentRating === rating ? null : rating;
+    
+    this.cdr.detectChanges(); 
 
     this.interactionService.toggleRate(this.film.id, rating).subscribe({
         error: (err) => {
@@ -126,6 +163,69 @@ export class FilmHeader implements OnInit {
 
   shareFilm() { 
     //TODO: Compartir = Recomendar (en tu perfil y en chat).
+  }
+
+  toggleSubscription() {
+    if (this.isProcessingForum) return;
+    
+    if (!this.isSubscribed && !this.isWatched) {
+      alert('Debes marcar la película como "Vista" para poder suscribirte a este foro.');
+      return;
+    }
+
+    console.log('Botón de suscripción pulsado...');
+
+    this.authService.getCurrentUser().subscribe({
+      next: (user) => {
+        if (!user || !user.email) {
+          alert('¡Debes iniciar sesión para poder suscribirte a un foro!');
+          return;
+        }
+
+        const userEmail = user.email;
+        console.log('Usuario detectado:', userEmail, 'Enviando petición a Spring Boot...');
+
+        this.isProcessingForum = true;
+        this.cdr.detectChanges();
+
+        if (!this.isSubscribed) {
+          this.subscriptionService.subscribeToFilm(userEmail, this.film.id).subscribe({
+            next: () => {
+              console.log('¡Suscripción exitosa en el backend!');
+              this.isSubscribed = true; 
+              this.isProcessingForum = false; 
+              this.cdr.detectChanges();
+              this.router.navigate(['/forum'], { queryParams: { filmId: this.film.id } });
+            },
+            error: (err) => {
+              console.error('Error al suscribirse:', err);
+              const errorMsg = err.error ? (typeof err.error === 'string' ? err.error : JSON.stringify(err.error)) : err.message;
+              alert('Fallo al suscribirse: ' + errorMsg);
+              this.isProcessingForum = false; 
+              this.cdr.detectChanges();
+            }
+          });
+        } else {
+          this.subscriptionService.unsubscribeFromFilm(userEmail, this.film.id).subscribe({
+            next: () => {
+              console.log('¡Desuscripción exitosa en el backend!');
+              this.isSubscribed = false; 
+              this.isProcessingForum = false; 
+              this.cdr.detectChanges();
+            },
+            error: (err) => {
+              console.error('Error al desuscribirse:', err);
+              alert('Error al desuscribirse. Revisa la consola.');
+              this.isProcessingForum = false; 
+              this.cdr.detectChanges();
+            }
+          });
+        }
+      },
+      error: (err) => {
+        console.error('Error del AuthService:', err);
+      }
+    });
   }
 
   extractColorFromImage(imageUrl: string) {
@@ -147,41 +247,5 @@ export class FilmHeader implements OnInit {
       this.dominantColor = `rgba(${~~(r/count)}, ${~~(g/count)}, ${~~(b/count)}, 0.35)`;
       this.cdr.detectChanges();
     };
-  }
-
-  constructor(private forumService: ForumService, private authService: AuthService) {}
-
-  forumUrl: string | null = null;
-  
-  suscribeToForum(filmId: number, filmTitle: string) {
-    console.log('Botón pulsado. Enviando petición a Spring Boot...');
-
-    this.authService.getCurrentUser().subscribe(user => { 
-
-        if (!user || !user.email) {
-          alert('¡Debes iniciar sesión para poder suscribirte a un foro!');
-          return; 
-        }
-      
-      
-      console.log('Usuario detectado:', user.email, 'Enviando petición a Spring Boot...')
-
-      this.forumService.suscribeForum(filmId, filmTitle, user.email).subscribe({
-        next: (response) => {
-          console.log('¡Éxito! El ID del foro en Discourse es:', response.discourseTopicId);
-
-          this.forumUrl = `http://localhost/t/${response.discourseTopicId}`;
-
-          alert('¡Foro creado/obtenido con éxito! ID: ' + response.discourseTopicId);
-
-        },
-        error: (error) => {
-          console.error('Ha ocurrido un error:', error);
-          alert('Error al crear el foro. Revisa la consola.');
-        }
-      });
-    
-    });
-
   }
 }

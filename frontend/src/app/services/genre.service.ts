@@ -2,10 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Genre } from '../models/genre.models';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class GenreService {
-  private readonly apiUrl = 'http://localhost:8080/genres';
+  private readonly apiUrl = `${environment.apiUrl}/genres`;
 
   constructor(private http: HttpClient) {}
 

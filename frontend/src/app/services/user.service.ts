@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MyProfile, UserProfile } from '../models/user.models';
 import { catchError, Observable, throwError, of } from 'rxjs';
 import { User } from '../models/user.models';
+import { environment } from '../../environments/environment';
 
 export interface LoggedUser {
   email: string;
@@ -14,7 +15,7 @@ export interface LoggedUser {
   providedIn: 'root',
 })
 export class UserService {
-  private readonly dbUrl = 'http://localhost:8080/users';
+  private readonly dbUrl = `${environment.apiUrl}/users`;
 
   constructor(private http: HttpClient) {}
 

@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, switchMap, take } from 'rxjs';
-
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 export interface Follow {
   followerId: string;
@@ -21,7 +21,7 @@ export interface LoggedUser {
 })
 export class FollowService {
 
-  private readonly apiUrl = 'http://localhost:8080/follows';
+  private readonly apiUrl = `${environment.apiUrl}/follows`;
   private readonly authService = inject(AuthService);
 
   constructor(private http: HttpClient) {}
