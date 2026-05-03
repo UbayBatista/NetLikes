@@ -124,8 +124,8 @@ public class FollowService {
         User blocked = userRepository.findById(blockedEmail)
                 .orElseThrow(() -> new RuntimeException("Usuario a bloquear no encontrado"));
 
-        String blockerUsername = blocker.getName().replaceAll("\\s+", "").toLowerCase();
-        String blockedUsername = blocked.getName().replaceAll("\\s+", "").toLowerCase();
+        String blockerUsername = discourseService.getRealUsernameByEmail(blockerEmail);
+        String blockedUsername = discourseService.getRealUsernameByEmail(blockedEmail);
 
         try {
             discourseService.ignoreDiscourseUser(blockerUsername, blockedUsername);
@@ -155,8 +155,8 @@ public class FollowService {
         User unblocked = userRepository.findById(unblockedEmail)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        String blockerUsername = blocker.getName().replaceAll("\\s+", "").toLowerCase();
-        String unblockedUsername = unblocked.getName().replaceAll("\\s+", "").toLowerCase();
+        String blockerUsername = discourseService.getRealUsernameByEmail(blockerEmail);
+        String unblockedUsername = discourseService.getRealUsernameByEmail(unblockedEmail);
 
         try {
             discourseService.unignoreDiscourseUser(blockerUsername, unblockedUsername);
