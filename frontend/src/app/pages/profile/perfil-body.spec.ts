@@ -5,7 +5,7 @@ import { of } from 'rxjs';
 import { vi } from 'vitest';
 
 import { ProfileService } from '../../services/profile.service';
-import { FollowService } from '../../services/follow';
+import { FollowService } from '../../services/follow.service';
 import { AuthService } from '../../services/auth.service';
 
 describe('ProfileBody', () => {
