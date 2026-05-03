@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { SearchBarComponent } from '../search-bar/search-bar';
 import { SubscriptionService } from '../../services/subscription.service';
 import { AuthService } from '../../services/auth.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-forum-list',
@@ -18,6 +19,7 @@ export class ForumList implements OnInit{
   private subscriptionService = inject(SubscriptionService);
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
+  private route = inject(ActivatedRoute);
 
   filmsForum = signal<any[]>([]);
   searchText = signal('');
@@ -65,7 +67,7 @@ export class ForumList implements OnInit{
             const mappedForums = data.map((sub, index) => {
               return {
                 title: sub.forum?.film?.title || 'Foro sin título',      
-                active: index === 0,         
+                active: false, 
                 forumTopicId: sub.forum?.discourseTopicId,
                 filmId: sub.forum?.film?.id
               };
@@ -74,8 +76,22 @@ export class ForumList implements OnInit{
             this.filmsForum.set(mappedForums);
 
             if (mappedForums.length > 0) {
-              this.selectForum(0);
+              const autoSelectFilmId = this.route.snapshot.queryParamMap.get('filmId');
+              
+              if (autoSelectFilmId) {
+                const indexDestino = mappedForums.findIndex(f => f.filmId === Number(autoSelectFilmId));
+                
+                if (indexDestino !== -1) {
+                  this.selectForum(indexDestino);
+                } else {
+                  this.selectForum(0);
+                }
+              } else {
+
+                this.selectForum(0); 
+              }
             }
+            
             this.cdr.detectChanges();
             console.log('Foros cargados listos para pantalla:', this.filmsForum());
           } catch(e) {
@@ -88,4 +104,4 @@ export class ForumList implements OnInit{
       });
     });
   }
-}   
+} 

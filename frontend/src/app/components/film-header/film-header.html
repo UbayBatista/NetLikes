@@ -1,3 +1,6 @@
+@if (isProcessingForum) {
+  <div class="global-blocking-overlay"></div>
+}
 <div class="main-block p-4 mb-4 text-white" 
      style="background-color: #0f172a;" 
      [style.background-image]="'radial-gradient(circle at 15% 40%, ' + dominantColor + ' 0%, transparent 70%)'">
@@ -32,10 +35,13 @@
             
             <div class="dynamic-icon-wrapper" [class.is-visible]="isWatched">
               <i class="bi fs-3 btn-icon" 
-                 [class.bi-chat-text]="!isSubscribed"
-                 [class.bi-chat-text-fill]="isSubscribed"
-                 [class.active]="isSubscribed"
-                 [title]="isSubscribed ? 'Desuscribirse del foro' : 'Suscribirse al foro'"
+                 [class.bi-chat-text]="!isSubscribed && !isProcessingForum"
+                 [class.bi-chat-text-fill]="isSubscribed && !isProcessingForum"
+                 [class.bi-hourglass-split]="isProcessingForum"
+                 [class.active]="isSubscribed && !isProcessingForum"
+                 [class.opacity-50]="isProcessingForum"
+                 [style.pointer-events]="isProcessingForum ? 'none' : 'auto'"
+                 [title]="isProcessingForum ? 'Procesando...' : (isSubscribed ? 'Desuscribirse del foro' : 'Suscribirse al foro')"
                  (click)="toggleSubscription()"></i>
             </div>
           </div>
