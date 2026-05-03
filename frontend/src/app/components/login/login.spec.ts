@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
-import { Subject } from 'rxjs';
+import { Subject, of } from 'rxjs';
 
 import { LoginForm } from './login';
 import { AuthService } from '../../services/auth.service';
@@ -112,5 +112,35 @@ describe('LoginForm', () => {
     subject.next();
 
     expect(component.form.get('password')?.hasError('wrongCredentials')).toBeTruthy();
+  });
+
+  it('forgotPassword() debería mostrar error si el email es inválido', () => {
+    component.form.get('email')?.setValue('');
+    component.forgotPassword();
+    
+    expect(component.showRecoverError).toBeTruthy();
+    expect(component.form.get('email')?.touched).toBeTruthy();
+  });
+
+  it('forgotPassword() debería marcar error notFound si el email no existe en la BD', () => {
+    const authService = TestBed.inject(AuthService);
+    vi.spyOn(authService, 'checkEmailExists').mockReturnValue(of(false));
+
+    component.form.get('email')?.setValue('noexiste@email.com');
+    component.forgotPassword();
+
+    expect(component.showRecoverError).toBeTruthy();
+    expect(component.form.get('email')?.hasError('notFound')).toBeTruthy();
+  });
+
+  it('forgotPassword() debería abrir el modal si el email sí existe en la BD', () => {
+    const authService = TestBed.inject(AuthService);
+    vi.spyOn(authService, 'checkEmailExists').mockReturnValue(of(true));
+
+    component.form.get('email')?.setValue('existe@email.com');
+    component.forgotPassword();
+
+    expect(component.showRecoverError).toBeFalsy();
+    expect(component.showRecoverModal).toBeTruthy();
   });
 });
