@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from "@angular/core";
+import { Component, Input, Output, EventEmitter, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
 
 @Component({
@@ -12,8 +12,7 @@ export class ProfileHeader {
   @Input() userName: string = '';
   @Input() isPrivate: boolean = false;
   @Input() type: string = "Editar Perfil";
-  @Input() option: string = "Ajustes";
-  @Input() otherUser: 'Yes' | 'No' = 'No';
+  @Input() otherUser: boolean = false;
   @Input() followers: number = 0;
   @Input() following: number = 0;
 
@@ -30,6 +29,9 @@ export class ProfileHeader {
   @Output() editClick = new EventEmitter<void>();
   @Output() followClick = new EventEmitter<void>();
   @Output() openSocialModal = new EventEmitter<'Seguidores' | 'Seguidos'>();
+  @Output() block = new EventEmitter<void>();
+  @Output() openBlockedModal = new EventEmitter<void>();
+  @Output() delete = new EventEmitter<void>();
   
   openMenu: boolean = false;
 
@@ -38,7 +40,7 @@ export class ProfileHeader {
   }
 
   handleMainAction() {
-    if (this.otherUser === 'No') {
+    if (!this.otherUser) {
       this.editClick.emit();
     } else {
       this.followClick.emit();
@@ -55,5 +57,20 @@ export class ProfileHeader {
 
   logout() {
       this.logOut.emit()
+  }
+
+  applyBlock() {
+    this.block.emit();
+    this.toggleMenu();
+  }
+
+  showBlockedUsers() {
+    this.openBlockedModal.emit();
+    this.toggleMenu();
+  }
+
+  deleteUser() {
+    this.delete.emit();
+    this.toggleMenu();
   }
 }

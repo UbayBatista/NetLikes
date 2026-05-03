@@ -14,16 +14,11 @@
             <div class="dropdown-menu show position-absolute end-0 mt-1 shadow" 
                  style="min-width: 150px; right: 1rem; z-index: 1050;">
                 
-                @if (otherUser === "Yes") {
-                    @if (option) {
-                        <button class="dropdown-item">{{ option }}</button>
-                    }
+                @if (otherUser) {
+                    <button class="dropdown-item" (click)="applyBlock()">Bloquear</button>
+                    
                 } 
                 @else {
-                    @if (option) {
-                        <button class="dropdown-item fw-bold">{{ option }}</button>
-                    }
-                    <div class="dropdown-divider"></div>
                     
                     <div class="dropdown-item d-flex justify-content-between align-items-center">
                         <span class="me-3">Cuenta privada</span>
@@ -36,9 +31,23 @@
                                 style="cursor: pointer;">
                         </div>
                     </div>
+
+                    <div class="dropdown-divider"></div>
+
+                    <button class="dropdown-item fw-semibold" (click)="showBlockedUsers()">
+                        Usuarios Bloqueados
+                    </button>
+
+                    <div class="dropdown-divider"></div>
                     
                     <button class="dropdown-item text-danger fw-semibold" (click)="logout()">
                         Cerrar sesión
+                    </button>
+
+                    <div class="dropdown-divider"></div>
+                    
+                    <button class="dropdown-item text-danger fw-semibold" (click)="deleteUser()">
+                        Eliminar cuenta
                     </button>
                 }
             </div>
