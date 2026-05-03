@@ -22,7 +22,7 @@ public class Mark {
 
     @ManyToOne
     @MapsId("filmId")
-    @JoinColumn(name = "film_id")
+    @JoinColumn(name = "filmid")
     @JsonIgnore
     private Film film;
 

@@ -192,7 +192,7 @@ export class FilmHeader implements OnInit {
         this.cdr.detectChanges();
 
         if (!this.isSubscribed) {
-          this.subscriptionService.subscribeToFilm(userEmail, this.film.id).subscribe({
+          this.subscriptionService.subscribeToFilm(userEmail, this.film.id, this.film.title).subscribe({
             next: () => {
               console.log('¡Suscripción exitosa en el backend!');
               this.isSubscribed = true; 
