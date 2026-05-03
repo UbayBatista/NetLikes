@@ -17,7 +17,7 @@ public class User {
     @Column(nullable=false) private String password;
     @Column(nullable=false) private String securityQuestion;
     @Column(nullable=false) private String answer;
-    @Column(nullable=false) private String name;
+    @Column(nullable=false, unique=true) private String name;
     @Column(nullable=false) private Date birthdate;
     @Column(nullable=false) private boolean accountPrivacity;
     @Column(nullable=false) private boolean showWatchedFilms;

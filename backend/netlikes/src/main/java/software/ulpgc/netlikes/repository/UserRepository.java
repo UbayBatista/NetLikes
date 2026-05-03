@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface UserRepository extends JpaRepository<User, String> {
     boolean existsByEmail(String email);
+    boolean existsByName(String name);
     Optional<User> findByName(String name);
     List<User> findByNameContainingIgnoreCase(String name, Pageable pageable);
 }

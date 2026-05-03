@@ -101,6 +101,10 @@ public class UserService {
         User user = userRepository.findById(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if (!user.getName().equals(dto.getName()) && userRepository.existsByName(dto.getName())) {
+            throw new RuntimeException("El nombre de usuario ya está en uso");
+        }
+
         applyDtoToEntity(dto, user);
 
         userRepository.save(user);
@@ -125,6 +129,10 @@ public class UserService {
     public UserResponseDTO register(RegisterRequestDTO request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("El email ya está registrado");
+        }
+        
+        if (userRepository.existsByName(request.getUserName())) {
+            throw new RuntimeException("El nombre de usuario ya está en uso");
         }
 
         User newUser = new User();
@@ -155,6 +163,10 @@ public class UserService {
         User user = userRepository.findById(email)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         return user.getSecurityQuestion();
+    }
+
+    public boolean existsName(String name) {
+        return userRepository.existsByName(name);
     }
 
     public boolean isValidAnswer(@NonNull String email, String answer) {
