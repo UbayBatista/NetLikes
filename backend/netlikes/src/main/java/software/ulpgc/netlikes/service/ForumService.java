@@ -50,7 +50,23 @@ public class ForumService {
         }
     }
 
+    @Transactional
     public void deleteForum(Integer id){
-        this.forumRepository.deleteById(id);
+        Optional<Forum> forumOpt = forumRepository.findById(id);
+        
+        if(forumOpt.isPresent()) {
+            Forum forum = forumOpt.get();
+            
+            discourseService.deleteTopic(forum.getDiscourseTopicId(), forum.getFilm().getTitle());
+            
+            Film film = forum.getFilm();
+            if (film != null) {
+                film.setForum(null);
+                filmRepository.saveAndFlush(film);
+            }
+            
+            this.forumRepository.delete(forum);
+            this.forumRepository.flush();
+        }
     }
 }

@@ -18,11 +18,13 @@ public class SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final UserRepository userRepository;
     private final ForumService forumService;
+    private final DiscourseService discourseService;
 
-    public SubscriptionService(SubscriptionRepository subscriptionRepository, UserRepository userRepository, ForumService forumService){
+    public SubscriptionService(SubscriptionRepository subscriptionRepository, UserRepository userRepository, ForumService forumService, DiscourseService discourseService){
         this.subscriptionRepository = subscriptionRepository;
         this.userRepository = userRepository;
         this.forumService = forumService;
+        this.discourseService = discourseService; 
     }
 
     public List<Subscription> getAllSubscriptions() {
@@ -50,7 +52,27 @@ public class SubscriptionService {
 
     @Transactional
     public void deleteSubscription(String email, Integer forumId) {
+        
+        long currentSubscriptions = this.subscriptionRepository.countByIdForumId(forumId);
+
         SubscriptionId id = new SubscriptionId(email, forumId);
         this.subscriptionRepository.deleteById(id);
+        
+        this.subscriptionRepository.flush(); 
+
+        if (currentSubscriptions <= 1) {
+            Forum forum = forumService.getAllForums().stream()
+                .filter(f -> f.getId().equals(forumId))
+                .findFirst()
+                .orElse(null);
+
+            if (forum != null) {
+                Integer postCount = discourseService.getTopicPostCount(forum.getDiscourseTopicId());
+
+                if (postCount != null && postCount <= 1) {
+                    forumService.deleteForum(forumId);
+                }
+            }
+        }
     }
 }
