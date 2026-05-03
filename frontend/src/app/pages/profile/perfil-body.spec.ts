@@ -112,5 +112,51 @@ describe('ProfileBody', () => {
     });
   });
 
-  
+  describe('Lógica de confirmación de Unfollow (BDD)', () => {
+    let followService: any;
+    let profileService: any;
+
+    beforeEach(() => {
+      followService = TestBed.inject(FollowService);
+      profileService = TestBed.inject(ProfileService);
+      
+      component.itsMe$ = of(false);
+    });
+
+    it('Dado un usuario en el perfil de un seguido, Cuando pulse dejar de seguir, Entonces muestra confirmación', () => {
+      component['followStateSubject'].next('ACCEPTED');
+      
+      component.onFollowRequest('TargetUser', 'target@test.com');
+
+      expect(component.showConfirmModal).toBe(true);
+      expect(component['actionToConfirm']).toBe('UNFOLLOW');
+      expect(component.confirmModalMessage).toContain('dejar de seguir a @TargetUser');
+      expect(followService.unfollow).not.toHaveBeenCalled(); // Aún no ejecuta la acción
+    });
+
+    it('Dado el mensaje de confirmación, Cuando pulse Confirmar, Entonces se cierra, deja de seguir y actualiza estado', () => {
+      component['followStateSubject'].next('ACCEPTED');
+      component.onFollowRequest('TargetUser', 'target@test.com'); 
+      const startFollowers = component.followersCount$.value;
+
+      component.handleUnfollowConfirmation(true);
+
+      expect(component.showConfirmModal).toBe(false); 
+      expect(followService.unfollow).toHaveBeenCalledWith('target@test.com'); 
+      expect(component['followStateSubject'].value).toBe('NONE');
+      expect(component.followersCount$.value).toBe(Math.max(0, startFollowers - 1)); 
+    });
+
+    it('Dado el mensaje de confirmación, Cuando pulse Cancelar, Entonces se cierra y no hay cambios', () => {
+      component['followStateSubject'].next('ACCEPTED');
+      component.onFollowRequest('TargetUser', 'target@test.com');
+
+      component.handleUnfollowConfirmation(false);
+
+      expect(component.showConfirmModal).toBe(false); 
+      expect(followService.unfollow).not.toHaveBeenCalled(); 
+      expect(component['followStateSubject'].value).toBe('ACCEPTED');
+      expect(component['userToFollow']).toBe(''); 
+    });
+  });
 });
