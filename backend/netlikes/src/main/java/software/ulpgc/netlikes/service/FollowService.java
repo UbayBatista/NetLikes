@@ -17,10 +17,12 @@ public class FollowService {
 
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
+    private final NotifyService notifyService;
 
-    public FollowService(FollowRepository followRepository, UserRepository userRepository) {
+    public FollowService(FollowRepository followRepository, UserRepository userRepository, NotifyService notifyService) {
         this.followRepository = followRepository;
         this.userRepository = userRepository;
+        this.notifyService = notifyService;
     }
 
     @Transactional
@@ -35,7 +37,13 @@ public class FollowService {
         Follow.State initialState = isPrivateAccount ? Follow.State.PENDING : Follow.State.ACCEPTED;
 
         Follow newFollow = new Follow(followerId, followedId, initialState);
-        return followRepository.save(newFollow);
+        Follow saved = followRepository.save(newFollow);
+
+        if (initialState == Follow.State.PENDING) {
+            notifyService.createFollowNotification(followerId, followedId);
+        }
+
+        return saved;
     }
 
     public String checkStatus(String followerId, String followedId) {
@@ -95,6 +103,31 @@ public class FollowService {
 
     public void deleteFollow(String followerId, String followedId) {
         followRepository.deleteById(new FollowId(followerId, followedId));
+        notifyService.deleteFollowNotification(followerId, followedId);
     }
-    
+
+    public List<UserResponseDTO> getPendingRequests(String followedId) {
+        return followRepository.findByFollowedId(followedId).stream()
+            .filter(follow -> follow.getState() == Follow.State.PENDING)
+            .map(follow -> userRepository.findById(follow.getFollowerId())
+                .map(user -> new UserResponseDTO(
+                    user.getEmail(),
+                    user.getName(),
+                    user.getProfilePicture()
+                ))
+                .orElse(null))
+            .filter(dto -> dto != null)
+            .toList();
+    }
+
+    public Follow acceptFollow(String followerId, String followedId) {
+        Follow follow = followRepository.findById(new FollowId(followerId, followedId))
+            .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+        follow.setState(Follow.State.ACCEPTED);
+        return followRepository.save(follow);
+    }
+
+    public void rejectFollow(String followerId, String followedId) {
+        followRepository.deleteById(new FollowId(followerId, followedId));
+    }
 }

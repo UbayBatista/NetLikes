@@ -11,7 +11,7 @@ import { SocialModal } from "../../components/social-modal/social-modal";
 
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
-import { FollowService } from "../../services/follow";
+import { FollowService } from "../../services/follow.service";
 import { MyProfile, UserProfile } from '../../models/user.models';
 import { ConfirmationModalComponent } from '../../components/confirmation-modal/confirmation-modal';
 
@@ -141,11 +141,8 @@ export class ProfileComplete implements OnInit {
 
   private executeUnfollow(targetEmail: string) {
     this.followService.unfollow(targetEmail).subscribe({
-      next: () => {        
+      next: () => {       
         this.followStateSubject.next('NONE');
-
-        const currentFollowers = this.followersCount$.value;
-        this.followersCount$.next(Math.max(0, currentFollowers - 1));
       },
       error: (error) => console.error('Error al dejar de seguir:', error),
       complete: () => {
@@ -189,6 +186,9 @@ export class ProfileComplete implements OnInit {
             this.followersCount$.next(Math.max(0, this.followersCount$.value - 1));
 
             this.followStateSubject.next('NONE');
+            this.route.params.pipe(take(1)).subscribe(params => {
+              this.profileService.loadProfile(params['username']);
+            });
           }
         });
 
@@ -223,7 +223,7 @@ export class ProfileComplete implements OnInit {
           next: (users) => {
             this.socialData = users.map(u => ({
               name: u.userName,
-              avatar: u.profilePicture || 'assets/default-avatar.png', 
+              avatar: u.profilePicture || 'assets/ProfilePicture.jpg', 
               email: u.email
             }));
             this.cdr.detectChanges();
