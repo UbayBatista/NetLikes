@@ -77,6 +77,7 @@ public class FollowController {
     @DeleteMapping("/{followerId}/reject")
     public ResponseEntity<Void> rejectFollow(@PathVariable String followerId, @RequestHeader("X-User-Id") String myId) {
         followService.rejectFollow(followerId, myId);
+        return ResponseEntity.noContent().build();
     }
     
     @DeleteMapping("/{targetId}/remove")

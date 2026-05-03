@@ -141,14 +141,8 @@ export class ProfileComplete implements OnInit {
 
   private executeUnfollow(targetEmail: string) {
     this.followService.unfollow(targetEmail).subscribe({
-      next: () => {        
+      next: () => {       
         this.followStateSubject.next('NONE');
-
-        const currentFollowers = this.followersCount$.value;
-        this.followersCount$.next(Math.max(0, currentFollowers - 1));
-        this.route.params.pipe(take(1)).subscribe(params => {
-          this.profileService.loadProfile(params['username']);
-        })
       },
       error: (error) => console.error('Error al dejar de seguir:', error),
       complete: () => {
@@ -192,6 +186,9 @@ export class ProfileComplete implements OnInit {
             this.followersCount$.next(Math.max(0, this.followersCount$.value - 1));
 
             this.followStateSubject.next('NONE');
+            this.route.params.pipe(take(1)).subscribe(params => {
+              this.profileService.loadProfile(params['username']);
+            });
           }
         });
 
