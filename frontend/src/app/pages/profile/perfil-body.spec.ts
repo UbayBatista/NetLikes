@@ -59,4 +59,58 @@ describe('ProfileBody', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  describe('follow request logic', () => {
+    let followService: any;
+
+    beforeEach(() => {
+      followService = TestBed.inject(FollowService);
+    });
+
+    it('should request follow and change state to PENDING', () => {
+
+      expect(component['followStateSubject'].value).toBe('NONE');
+      const startFollowers = component.followersCount$.value;
+
+      component.onFollowRequest('TargetUser', 'target@test.com');
+
+      expect(followService.requestFollow).toHaveBeenCalledWith('target@test.com');
+      expect(component['followStateSubject'].value).toBe('PENDING');
+      expect(component.followersCount$.value).toBe(startFollowers);
+    });
+
+    it('should request follow, change state to ACCEPTED and add a follower if it is accepted', () => {
+      followService.requestFollow = vi.fn().mockReturnValue(of({ state: 'ACCEPTED' }));
+      const startFollowers = component.followersCount$.value;
+
+      component.onFollowRequest('TargetUser', 'target@test.com');
+
+      expect(followService.requestFollow).toHaveBeenCalledWith('target@test.com');
+      expect(component['followStateSubject'].value).toBe('ACCEPTED');
+      expect(component.followersCount$.value).toBe(startFollowers + 1);
+    });
+
+    it('should unfollow and return to NONE if the state were PENDING', () => {
+      component['followStateSubject'].next('PENDING');
+
+      component.onFollowRequest('TargetUser', 'target@test.com');
+
+      expect(followService.unfollow).toHaveBeenCalledWith('target@test.com');
+      expect(component['followStateSubject'].value).toBe('NONE');
+    });
+
+    it('should open confirmation modal if state were ACCEPTED', () => {
+
+      component['followStateSubject'].next('ACCEPTED');
+      
+      component.onFollowRequest('TargetUser', 'target@test.com');
+
+      expect(component.showConfirmModal).toBe(true);
+      expect(component['actionToConfirm']).toBe('UNFOLLOW');
+      expect(component.confirmModalMessage).toContain('dejar de seguir a @TargetUser');
+      expect(followService.unfollow).not.toHaveBeenCalled(); 
+    });
+  });
+
+  
 });
