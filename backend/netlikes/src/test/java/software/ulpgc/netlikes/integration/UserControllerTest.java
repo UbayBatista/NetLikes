@@ -91,6 +91,20 @@ class UserControllerTest {
     }
 
     @Test
+    void register_shouldReturn400_whenNameAlreadyExists() throws Exception {
+        createAndSaveUser("juan_original@email.com"); // Crea un usuario con nombre "Juan"
+
+        RegisterRequestDTO request = new RegisterRequestDTO(
+            "Juan", "nuevo_correo@email.com", Date.valueOf("1900-05-21"), "1234", "¿Mascota?", "Toby", List.of(savedGenre1)
+        );
+
+        mockMvc.perform(post("/users/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void register_shouldReturn400_whenEmailAlreadyExists() throws Exception {
         createAndSaveUser("juan@email.com");
 
@@ -157,6 +171,21 @@ class UserControllerTest {
     @Test
     void existsEmail_shouldReturn200False_whenEmailNotExists() throws Exception {
         mockMvc.perform(get("/users/exists/juan@email.com"))
+            .andExpect(status().isOk())
+            .andExpect(content().string("false"));
+    }
+
+    @Test
+    void existsName_shouldReturn200True_whenNameExists() throws Exception {
+        createAndSaveUser("juan@email.com"); // Recordamos que este método de prueba le pone "Juan"
+        mockMvc.perform(get("/users/existsName/Juan"))
+            .andExpect(status().isOk())
+            .andExpect(content().string("true"));
+    }
+
+    @Test
+    void existsName_shouldReturn200False_whenNameNotExists() throws Exception {
+        mockMvc.perform(get("/users/existsName/FalsoUser"))
             .andExpect(status().isOk())
             .andExpect(content().string("false"));
     }

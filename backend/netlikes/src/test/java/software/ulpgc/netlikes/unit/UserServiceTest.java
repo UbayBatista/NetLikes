@@ -111,6 +111,18 @@ class UserServiceTest {
     }
 
     @Test
+    void register_shouldThrowException_whenNameAlreadyExists() {
+        RegisterRequestDTO request = new RegisterRequestDTO(
+        "Juan", "nuevo_email@email.com", Date.valueOf("2002-11-15"), "SuperMan23", "Mascota", "Toby", List.of()
+        );
+
+        when(userRepository.existsByEmail("nuevo_email@email.com")).thenReturn(false); // Email libre
+        when(userRepository.existsByName("Juan")).thenReturn(true); // Nombre ocupado
+
+        assertThrows(RuntimeException.class, () -> userService.register(request));
+    }
+
+    @Test
     void login_shouldReturnUserDTO_whenCredentialsAreCorrect() {
         LoginRequestDTO request = new LoginRequestDTO("juan@email.com", "SuperMan23");
 
@@ -166,6 +178,18 @@ class UserServiceTest {
         boolean result = userService.existsEmail("noexiste@email.com");
 
         assertThat(result).isFalse();
+    }
+
+    @Test
+    void existsName_shouldReturnTrue_whenNameExists() {
+        when(userRepository.existsByName("Juan")).thenReturn(true);
+        assertThat(userService.existsName("Juan")).isTrue();
+    }
+
+    @Test
+    void existsName_shouldReturnFalse_whenNameNotExists() {
+        when(userRepository.existsByName("noexiste")).thenReturn(false);
+        assertThat(userService.existsName("noexiste")).isFalse();
     }
 
     @Test
