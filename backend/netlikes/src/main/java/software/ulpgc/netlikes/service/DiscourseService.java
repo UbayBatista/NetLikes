@@ -182,9 +182,12 @@ public class DiscourseService {
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response.getBody());
-            
+            String user = "";
+
             if (root.isArray() && root.size() > 0) {
-                return root.get(0).get("username").asText();
+                user = root.get(0).get("username").asText();
+                System.out.println("El usuario bloqueado y encontra en discourse es: " + user);
+                return user;
             }
         } catch (Exception e) {
             System.err.println("No se pudo obtener el username real para " + email);
@@ -198,7 +201,7 @@ public class DiscourseService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Api-Key", apiKey);
-        headers.set("Api-Username", blockerUsername);
+        headers.set("Api-Username", "system");
 
         HttpEntity<String> getRequest = new HttpEntity<>(headers);
 
@@ -233,10 +236,13 @@ public class DiscourseService {
             Map<String, Object> body = new HashMap<>();
 
             body.put("ignored_usernames", String.join(",", ignoredList));
+            body.put("muted_usernames", String.join(",", ignoredList));
 
             HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
-            restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
+            ResponseEntity<String> putResponse = restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
+
             System.out.println("Lista de bloqueados actualizada para " + blockerUsername);
+            System.out.println("👉 Respuesta del servidor: " + putResponse.getStatusCode());
 
         } catch (Exception e) {
             System.err.println("Error en la lógica de bloqueo de Discourse: " + e.getMessage());
@@ -250,7 +256,7 @@ public class DiscourseService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Api-Key", apiKey);
-        headers.set("Api-Username", blockerUsername);
+        headers.set("Api-Username", "system");
 
         HttpEntity<String> getRequest = new HttpEntity<>(headers);
 

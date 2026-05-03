@@ -127,12 +127,15 @@ public class FollowService {
         String blockerUsername = discourseService.getRealUsernameByEmail(blockerEmail);
         String blockedUsername = discourseService.getRealUsernameByEmail(blockedEmail);
 
-        try {
-            discourseService.ignoreDiscourseUser(blockerUsername, blockedUsername);
-        } catch (Exception e) {
-            System.out.println("Aviso: No se pudo bloquear en Discourse (posiblemente el usuario no ha entrado nunca). " + e.getMessage());
+        if (blockerUsername != null && blockedUsername != null) {
+            try {
+                discourseService.ignoreDiscourseUser(blockerUsername, blockedUsername);
+            } catch (Exception e) {
+                System.out.println("Aviso: No se pudo bloquear en Discourse. " + e.getMessage());
+            }
+        } else {
+            System.out.println("⏭️ Omitiendo bloqueo en Discourse: Al menos uno de los usuarios no tiene cuenta en el foro.");
         }
-
 
         followRepository.findById(new FollowId(blockerEmail, blockedEmail))
                 .ifPresent(followRepository::delete);
