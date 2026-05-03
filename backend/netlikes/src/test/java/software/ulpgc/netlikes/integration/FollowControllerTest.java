@@ -91,4 +91,21 @@ class FollowRepositoryIntegrationTest {
         assertThat(updatedFollow.getState()).isEqualTo(Follow.State.ACCEPTED);
         assertThat(repository.findAll()).hasSize(1); 
     }
+
+    @Test
+    @DisplayName("Should delete follow")
+    void shouldRemoveFollow() {
+        User follower = this.createUser("follower@test.com", "Seguidor");
+        User followed = this.createUser("target@test.com", "Objetivo");
+        
+        Follow follow = repository.save(this.createFollow(follower, followed, Follow.State.ACCEPTED));
+        entityManager.flush();
+
+        assertThat(repository.findAll()).isNotEmpty();
+
+        repository.delete(follow);
+        entityManager.flush();
+
+        assertThat(repository.findAll()).isEmpty();
+    }
 }
