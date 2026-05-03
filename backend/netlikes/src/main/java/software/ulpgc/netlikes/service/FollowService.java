@@ -39,8 +39,6 @@ public class FollowService {
         Follow newFollow = new Follow(followerId, followedId, initialState);
         Follow saved = followRepository.save(newFollow);
 
-        // <--- 3. ¡EL DISPARADOR! Si la cuenta es privada y el estado es PENDING,
-        // avisamos al sistema de notificaciones para que cree el registro y lo envíe por SSE.
         if (initialState == Follow.State.PENDING) {
             notifyService.createFollowNotification(followerId, followedId);
         }
