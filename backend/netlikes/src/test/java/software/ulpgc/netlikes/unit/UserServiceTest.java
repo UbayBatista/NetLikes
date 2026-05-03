@@ -116,8 +116,8 @@ class UserServiceTest {
         "Juan", "nuevo_email@email.com", Date.valueOf("2002-11-15"), "SuperMan23", "Mascota", "Toby", List.of()
         );
 
-        when(userRepository.existsByEmail("nuevo_email@email.com")).thenReturn(false); // Email libre
-        when(userRepository.existsByName("Juan")).thenReturn(true); // Nombre ocupado
+        when(userRepository.existsByEmail("nuevo_email@email.com")).thenReturn(false);
+        when(userRepository.existsByName("Juan")).thenReturn(true);
 
         assertThrows(RuntimeException.class, () -> userService.register(request));
     }
@@ -245,5 +245,31 @@ class UserServiceTest {
         LoginRequestDTO request = new LoginRequestDTO("noexiste@email.com", "1234");
 
         assertThrows(RuntimeException.class, () -> userService.login(request));
+    }
+
+    @Test
+    void changePassword_shouldEncodeAndSaveNewPassword_whenUserExists() {
+        String email = "juan@email.com";
+        String newPassword = "newSecretPassword";
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword("oldHashedPassword");
+
+        when(userRepository.findById(email)).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode(newPassword)).thenReturn("newHashedPassword");
+
+        userService.changePassword(email, newPassword);
+
+        assertThat(user.getPassword()).isEqualTo("newHashedPassword");
+        org.mockito.Mockito.verify(userRepository).save(user);
+    }
+
+    @Test
+    void changePassword_shouldThrowException_whenUserNotFound() {
+        when(userRepository.findById("noexiste@email.com")).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> 
+            userService.changePassword("noexiste@email.com", "anyPassword")
+        );
     }
 }

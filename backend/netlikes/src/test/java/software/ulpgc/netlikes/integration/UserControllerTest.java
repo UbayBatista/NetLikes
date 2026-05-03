@@ -1,5 +1,6 @@
 package software.ulpgc.netlikes.integration;
 
+import software.ulpgc.netlikes.dto.ChangePasswordDTO;
 import software.ulpgc.netlikes.dto.LoginRequestDTO;
 import software.ulpgc.netlikes.dto.RegisterRequestDTO;
 import software.ulpgc.netlikes.dto.ValidAnswerRequestDTO;
@@ -8,6 +9,7 @@ import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.repository.GenreRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -25,7 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.sql.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -92,7 +96,7 @@ class UserControllerTest {
 
     @Test
     void register_shouldReturn400_whenNameAlreadyExists() throws Exception {
-        createAndSaveUser("juan_original@email.com"); // Crea un usuario con nombre "Juan"
+        createAndSaveUser("juan_original@email.com");
 
         RegisterRequestDTO request = new RegisterRequestDTO(
             "Juan", "nuevo_correo@email.com", Date.valueOf("1900-05-21"), "1234", "¿Mascota?", "Toby", List.of(savedGenre1)
@@ -177,7 +181,7 @@ class UserControllerTest {
 
     @Test
     void existsName_shouldReturn200True_whenNameExists() throws Exception {
-        createAndSaveUser("juan@email.com"); // Recordamos que este método de prueba le pone "Juan"
+        createAndSaveUser("juan@email.com");
         mockMvc.perform(get("/users/existsName/Juan"))
             .andExpect(status().isOk())
             .andExpect(content().string("true"));
@@ -229,5 +233,20 @@ class UserControllerTest {
             .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isOk())
             .andExpect(content().string("false"));
+    }
+
+    @Test
+    void changePassword_shouldReturn200_whenUserExists() throws Exception {
+        createAndSaveUser("juan@email.com");
+
+        ChangePasswordDTO request = new ChangePasswordDTO("juan@email.com", "nueva1234");
+
+        mockMvc.perform(patch("/users/changePassword")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+                
+        User updatedUser = userRepository.findById("juan@email.com").get();
+        assertTrue(passwordEncoder.matches("nueva1234", updatedUser.getPassword()));
     }
 }

@@ -153,4 +153,20 @@ public class UserBehaviorTest {
 
         assertEquals("Credenciales incorrectas", exception.getMessage());
     }
+
+    @Test
+    void testHU_CambioDeContrasena_ActualizaCorrectamente() {
+        String email = "registrado@email.com";
+        String newPass = "nuevaClave987";
+
+        userService.changePassword(email, newPass);
+
+        assertThrows(RuntimeException.class, () -> {
+            userService.login(new LoginRequestDTO(email, "123456"));
+        });
+
+        UserResponseDTO response = userService.login(new LoginRequestDTO(email, newPass));
+        assertNotNull(response);
+        assertEquals(email, response.getEmail());
+    }
 }
