@@ -31,7 +31,7 @@ class SubscriptionRepositoryIntegrationTest {
         user.setPassword("1234");
         user.setSecurityQuestion("¿Tienes marca de nacimiento?");
         user.setAnswer("Sí");
-        user.setName("UsuerioDePrueba");
+        user.setName("User_" + userEmail);
         user.setBirthdate(new Date());
         user.setAccountPrivacity(false);
         user.setShowWatchedFilms(false);
@@ -101,7 +101,7 @@ class SubscriptionRepositoryIntegrationTest {
     @Test
     @DisplayName("Debe eliminar la subscripción indicada a un foro")
     void shouldRemoveSubscription() {
-        List<Subscription> subscriptions = this.prepareSub(Stream.of("usuario@test.com", "usuario2@test.com", "usuario3@test.com"));
+        List<Subscription> subscriptions = this.prepareSub(Stream.of("usuario1@test.com", "usuario2@test.com", "usuario3@test.com"));
 
         repository.delete(subscriptions.get(0));
 
