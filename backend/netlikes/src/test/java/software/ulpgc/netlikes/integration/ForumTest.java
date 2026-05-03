@@ -1,18 +1,17 @@
 package software.ulpgc.netlikes.integration;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-
-import jakarta.persistence.EntityManager;
-
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-
 import software.ulpgc.netlikes.model.*;
 import software.ulpgc.netlikes.repository.ForumRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+
+import jakarta.persistence.EntityManager;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -20,8 +19,8 @@ import java.util.stream.Stream;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 class ForumRepositoryIntegrationTest {
+
     @Autowired private ForumRepository repository;
-    
     @Autowired private EntityManager entityManager;
 
     private Film createFilm(Integer id) {
@@ -37,8 +36,8 @@ class ForumRepositoryIntegrationTest {
 
     private Forum createForum(Film film) {
         Forum forum = new Forum();
-        forum.setFilm(film); 
-        forum.setForumId(film.getId() + 1234 + ""); 
+        forum.setFilm(film);
+        forum.setForumId(film.getId() + 1234 + "");
         entityManager.persist(forum);
         return forum;
     }
@@ -46,8 +45,8 @@ class ForumRepositoryIntegrationTest {
     @Test
     @DisplayName("Debe guardar un foro para una película creada")
     void shouldSaveForum() {
-        Film film = this.createFilm(500);
-        Forum forum = repository.save(this.createForum(film));
+        Film film = createFilm(500);
+        Forum forum = repository.save(createForum(film));
 
         entityManager.flush();
 
@@ -60,26 +59,27 @@ class ForumRepositoryIntegrationTest {
     @DisplayName("Debe guardar un foro para cada película creada")
     void shouldSaveMultipleForums() {
         List<Film> films = Stream.of(501, 502, 503, 504, 505)
-                            .map(i -> this.createFilm(i)).toList();
+            .map(this::createFilm)
+            .toList();
 
         entityManager.flush();
 
-        films.stream().forEach(f -> {
-                            entityManager.flush();
-                            repository.save(this.createForum(f));
+        films.forEach(film -> {
+            repository.save(createForum(film));
+            entityManager.flush();
         });
 
-        assertThat(!repository.findAll().isEmpty()).isTrue();
-        assertThat(repository.findAll().size()).isEqualTo(5);
+        assertThat(repository.findAll()).isNotEmpty();
+        assertThat(repository.findAll()).hasSize(5);
     }
 
     @Test
     @DisplayName("Debe eliminar un foro creado")
     void shouldDeleteForum() {
-        Film film = this.createFilm(500);
-        Forum forum = this.repository.save(this.createForum(film));
+        Film film = createFilm(500);
+        Forum forum = repository.save(createForum(film));
 
-        this.repository.delete(forum);
+        repository.delete(forum);
 
         entityManager.flush();
 
@@ -91,37 +91,39 @@ class ForumRepositoryIntegrationTest {
     @DisplayName("Debe eliminar un único foro de varios creados")
     void shouldDeleteOneForum() {
         List<Film> films = Stream.of(501, 502, 503, 504, 505)
-                            .map(i -> this.createFilm(i)).toList();
+            .map(this::createFilm)
+            .toList();
 
         entityManager.flush();
 
-        List<Forum> forums = films.stream().map(f -> {
-                            entityManager.flush();
-                            return repository.save(this.createForum(f));
-        }).toList();
+        List<Forum> forums = films.stream()
+            .map(film -> {
+                entityManager.flush();
+                return repository.save(createForum(film));
+            })
+            .toList();
 
         entityManager.flush();
 
         repository.delete(forums.get(0));
 
         assertThat(repository.findById(forums.get(0).getId())).isEmpty();
-        assertThat(repository.findAll().size()).isEqualTo(4);
+        assertThat(repository.findAll()).hasSize(4);
     }
 
     @Test
+    @DisplayName("Debe eliminar el foro al eliminar su película asociada")
     void shouldRemoveForumAfterFilmIsRemoved() {
-        Film film = this.createFilm(500);
-        Forum forum = this.createForum(film);
-        
-        film.setForum(forum);
+        Film film = createFilm(500);
+        Forum forum = createForum(film);
 
+        film.setForum(forum);
         repository.save(forum);
 
         entityManager.flush();
         entityManager.clear();
 
         Film filmToDelete = entityManager.find(Film.class, film.getId());
-
         if (filmToDelete != null) entityManager.remove(filmToDelete);
 
         assertThat(repository.findAll()).isEmpty();

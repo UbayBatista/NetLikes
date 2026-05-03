@@ -1,8 +1,7 @@
 package software.ulpgc.netlikes.controller;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.http.ResponseEntity;
 import software.ulpgc.netlikes.model.Mark;
 import software.ulpgc.netlikes.service.MarkService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.Optional;
-
 
 @RestController
 @RequestMapping("/marks")

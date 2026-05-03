@@ -1,8 +1,107 @@
-.card{
-    margin: 10px;
+.custom-section {
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #dedede; 
+    overflow: hidden;
+    
+    width: 96%;
+    max-width: 1600px; 
+    margin: 2rem auto; 
+    box-sizing: border-box;
 }
 
-.btn-danger{
-    background-color: black;
-    border-color: black;
+.section-title {
+    font-size: 1.15rem;
+    color: #262626; 
+    border-bottom: 1px solid #efefef; 
+}
+
+.btn-delete {
+    background-color: #ff3b30; 
+    color: white;
+    border: none;
+    transition: transform 0.2s ease;
+}
+
+.btn-delete:hover {
+    transform: scale(1.1); 
+    color: white;
+}
+
+.netflix-wrapper {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.netflix-row {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none; 
+    padding: 5px 0 10px 0; 
+}
+
+.netflix-row::-webkit-scrollbar {
+    display: none; 
+}
+
+.netflix-slider {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 16px; 
+}
+
+.nav-btn {
+    position: absolute;
+    top: 45%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.95); 
+    border: 1px solid #dbdbdb;
+    border-radius: 50%;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.nav-btn:hover {
+    background-color: #ffffff;
+    transform: translateY(-50%) scale(1.08); 
+}
+
+.nav-btn.left { left: -15px; }
+.nav-btn.right { right: -15px; }
+
+.nav-btn::after {
+    content: '';
+    border: solid #262626;
+    border-width: 0 2px 2px 0;
+    display: inline-block;
+    padding: 5px;
+}
+.nav-btn.left::after { transform: rotate(135deg); margin-left: 5px; }
+.nav-btn.right::after { transform: rotate(-45deg); margin-right: 5px; }
+
+@media (max-width: 768px) {
+    .custom-section {
+        width: 92%; 
+        margin: 1.5rem auto; 
+        
+        border-radius: 12px; 
+        border-left: 1px solid #efefef;
+        border-right: 1px solid #efefef;
+    }
+    
+    .nav-btn {
+        display: none !important; 
+    }
+
+    .netflix-slider {
+        gap: 12px; 
+    }
 }

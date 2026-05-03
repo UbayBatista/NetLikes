@@ -1,30 +1,78 @@
-
 .dropdown-item:active, 
-.dropdown-item:focus {
-    background-color: #e2e2e2 !important;
-    color: #000 !important; 
+.dropdown-item:focus { background-color: #e2e2e2 !important; color: #000 !important; }
+.dropdown-item:hover { background-color: #f1f1f1; }
+.dropdown-menu { margin-right: 10px; }
+
+.ig-grid {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+        "avatar name stats"
+        "avatar button stats";
+    column-gap: 2rem;
+    row-gap: 0.5rem;
+    align-items: center;
+    padding-right: 3rem; 
 }
 
 .header-container {
     padding-right: 60px;
 }
 
-.dropdown-item:hover {
-    background-color: #f1f1f1; 
+.ig-avatar {
+    grid-area: avatar;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
-.text-center{
-    margin-right: 30px;
+.ig-name-container { grid-area: name; }
+.ig-name { font-size: 1.75rem; }
+
+.ig-stats {
+    grid-area: stats;
+    display: flex;
+    gap: 3.5rem; 
+    text-align: center;
 }
 
-.dropdown-menu{
-    margin-right: 10px;
+.stat-item { 
+    cursor: pointer; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
+
+.stat-label { 
+    order: 1; 
+    font-size: 1.1rem; 
+    color: #6c757d; 
+    text-transform: uppercase; 
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.stat-number { 
+    order: 2; 
+    font-size: 2rem; 
+}
+
+.ig-button-container { grid-area: button; justify-self: start; }
+.ig-action-btn {
+    width: auto;
+    padding: 0.35rem 2.5rem;
+    border-radius: 50rem; 
+    font-weight: bold;
+}
+
+.settings-btn { padding: 6px 12px; transition: all 0.2s ease; }
 
 @media (max-width: 768px) {
-    .rounded-circle {
-        width: 80px !important;
-        height: 80px !important;
+    .ig-grid {
+        column-gap: 1rem;
+        padding-right: 4rem; 
     }
 
     .btn-toggle-menu {
@@ -37,36 +85,98 @@
         gap: 10px;
     }
 
-    .ms-auto.text-center {
-        gap: 15px !important;
-        margin-right: 0 !important;
+    .ig-avatar {
+        width: 85px;
+        height: 85px;
     }
 
-    .text-uppercase {
-        font-size: 0.65rem !important;
+    .ig-name {
+        font-size: 1.3rem; 
     }
 
-    .fs-4 {
-        font-size: 1.1rem !important;
+    .ig-stats {
+        gap: 1.5rem;
     }
 
-    .rounded-pill {
-        font-size: 0.75rem;
-        width: 110px;
-        padding: 4px 10px !important;
+    .stat-label {
+        font-size: 0.85rem; 
     }
-    .position-absolute.top-0.end-0 {
-        padding: 10px !important;
+
+    .stat-number {
+        font-size: 1.5rem;
+    }
+
+    .ig-action-btn {
+        padding: 0.25rem 1.5rem; 
+        font-size: 0.9rem;
     }
 }
 
-@media (max-width: 400px) {
-    .rounded-circle {
-        width: 65px !important;
-        height: 65px !important;
+@media (max-width: 480px) {
+    .position-settings { padding: 10px !important; }
+    .settings-btn { padding: 2px 8px; font-size: 0.85rem; }
+
+    .ig-grid {
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto auto auto;
+        grid-template-areas:
+            "avatar name"     
+            "avatar stats"    
+            "button button"; 
+        row-gap: 0.5rem;
+        padding-right: 0;
+        padding-top: 1rem;
+        align-items: center;
+        column-gap: 1rem;
     }
+
+    .ig-avatar {
+        width: 80px; 
+        height: 80px;
+        align-self: start; 
+    }
+
+    .ig-stats {
+        display: flex;
+        justify-content: flex-end;
+        width: 100%;
+        gap: 2.5rem; 
+        padding-right: 1rem; 
+        text-align: center;
+    }
+
+    .stat-label { 
+        order: 2; 
+        font-size: 0.95rem; 
+        text-transform: lowercase;
+        font-weight: normal;
+        margin-bottom: 0;
+    }
+
+    .stat-number { 
+        order: 1; 
+        font-size: 1.4rem; 
+        margin-bottom: 0.2rem;
+    }
+
+    .ig-stats .fs-5 {
+        font-size: 1.4rem !important; 
+    }
+
     
-    .d-flex.gap-4 {
-        gap: 10px !important;
+    .ig-name { 
+        font-size: 1.1rem; 
+        margin-bottom: 5px !important;
+    }
+
+    .ig-button-container {
+        justify-self: stretch; 
+        margin-top: 12px; 
+    }
+
+    .ig-action-btn {
+        width: 100%;
+        border-radius: 8px; 
+        padding: 0.5rem;
     }
 }

@@ -4,10 +4,15 @@
   background: transparent;
   cursor: pointer;
   transition: transform 0.2s ease;
+
+  touch-action: pan-y; 
 }
 
-.netflix-card:hover {
-  transform: scale(1.05);
+@media (hover: hover) {
+  .netflix-card:hover {
+    transform: scale(1.08); 
+    z-index: 10; 
+  }
 }
 
 .netflix-card img {
@@ -15,6 +20,7 @@
   height: 260px;
   object-fit: cover;
   border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
 }
 
 .recommend-badge {

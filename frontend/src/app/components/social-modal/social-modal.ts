@@ -7,6 +7,10 @@ interface User {
   status?: string;
 }
 
+export interface SocialAction {
+  user: User;
+  type: 'Seguidores' | 'Seguidos';
+}
 @Component({
   selector: 'app-social-modal',
   standalone: true,
@@ -20,19 +24,23 @@ export class SocialModal {
   @Input() isMyOwnProfile: boolean = false;
   @Output() close = new EventEmitter<void>();
   @Output() tabChange = new EventEmitter<'Seguidores' | 'Seguidos'>();
+  @Output() actionClick = new EventEmitter<SocialAction>();
+
+  handleAction(user: any) {
+    this.actionClick.emit({
+      user: user,
+      type: this.title
+    });
+  }
 
   closeModal() {
     this.close.emit();
   }
 
-  handleAction(user: User) {
-    console.log(`${this.title === 'Seguidores' ? 'Eliminando' : 'Dejando de seguir'} a:`, user.name);
-  }
-
   changeTab(newTab: 'Seguidores' | 'Seguidos') {
-  if (this.title === newTab) return;
-  
-  this.title = newTab;
-  this.tabChange.emit(newTab); 
-}
+    if (this.title === newTab) return;
+    
+    this.title = newTab;
+    this.tabChange.emit(newTab); 
+  }
 }

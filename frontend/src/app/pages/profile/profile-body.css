@@ -1,3 +1,7 @@
+.profileComplete {
+  min-height: 100vh;
+}
+
 .netflix-wrapper {
   position: relative;
   width: 100%;

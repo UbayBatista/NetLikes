@@ -1,16 +1,13 @@
-<div class="position-relative p-4 border-bottom border-dark border-2 bg-light header-container">
+<div class="position-relative p-3 p-md-4 border-bottom border-dark border-2 bg-light">
 
-    <div class="position-absolute top-0 end-0 p-3 z-3">
-        @if(this.otherUser === 'No'){
-            <button class="btn btn-light border-dark shadow-sm btn-toggle-menu" (click)="toggleMenu()">
-            <i class="bi bi-gear-fill"></i>
-            </button>
-        } @else {
-            <button class="btn btn-light border-dark shadow-sm btn-toggle-menu" (click)="toggleMenu()">
-            <i class="bi bi-three-dots-vertical"></i>
-            </button>
-        }
-        
+    <div class="position-absolute top-0 end-0 p-3 z-3 position-settings">
+        <button class="btn btn-light border-dark shadow-sm settings-btn" (click)="toggleMenu()">
+            @if (otherUser === "Yes") {
+                <i class="bi bi-three-dots-vertical"></i>
+            } @else {
+                <i class="bi bi-gear-fill"></i>
+            }
+        </button>
 
         @if (openMenu) {
             <div class="position-fixed top-0 start-0 w-100 h-100" 
@@ -35,12 +32,10 @@
                     <div class="dropdown-item d-flex justify-content-between align-items-center">
                         <span class="me-3">Cuenta privada</span>
                         <div class="form-check form-switch mb-0">
-                            <input 
-                                class="form-check-input" 
-                                type="checkbox" 
-                                [checked]="isPrivate"
-                                (change)="togglePrivacy()"
-                                style="cursor: pointer;">
+                            <input class="form-check-input" type="checkbox" 
+                                   [checked]="isPrivate"
+                                   (change)="togglePrivacy()"
+                                   style="cursor: pointer;">
                         </div>
                     </div>
                     
@@ -52,37 +47,32 @@
         }
     </div>
 
-    <div class="d-flex align-items-center w-100 pe-5">
+    <div class="ig-grid">
 
-        <div class="d-flex align-items-center gap-4">
-            
-            <img class="rounded-circle border border-dark border-3 shadow-sm flex-shrink-0" 
-                 style="width: 120px; height: 120px; object-fit: cover;" 
-                 [src]="userPicture" 
-                 alt="Perfil">
+        <img class="ig-avatar border border-dark border-2 shadow-sm" 
+             [src]="userPicture" 
+             alt="Perfil">
 
-            <div class="d-flex flex-column align-items-start gap-2">
-                <h3 class="fw-bold m-0">{{ userName }}</h3>
-                <button class="btn btn-dark px-4 py-1 rounded-pill fw-bold shadow-sm" 
-                        (click)="handleMainAction()">
-                    {{ type }}
-                </button>
+        <div class="ig-stats">
+            <div class="stat-item" (click)="openSocial('Seguidores')">
+                <span class="d-block fw-bold lh-1 stat-number">{{ followers }}</span>
+                <span class="d-block stat-label">seguidores</span>
             </div>
-
+            <div class="stat-item" (click)="openSocial('Seguidos')">
+                <span class="d-block fw-bold lh-1 stat-number">{{ following }}</span>
+                <span class="d-block stat-label">seguidos</span>
+            </div>
         </div>
 
-        <div class="d-flex gap-4 ms-auto text-center">
-            
-            <div (click)="openSocial('Seguidores')" style="cursor: pointer;">
-                <h6 class="text-muted text-uppercase fw-bold mb-0" style="font-size: 1rem;">Seguidores</h6>
-                <p class="fw-bold fs-4 m-0">{{ followers }}</p>
-            </div>
+        <div class="ig-name-container">
+            <h3 class="fw-bold m-0 ig-name">{{ userName }}</h3>
+        </div>
 
-            <div (click)="openSocial('Seguidos')" style="cursor: pointer;">
-                <h6 class="text-muted text-uppercase fw-bold mb-0" style="font-size: 1rem;">Seguidos</h6>
-                <p class="fw-bold fs-4 m-0">{{ following }}</p>
-            </div>
-
+        <div class="ig-button-container">
+            <button class="btn btn-dark shadow-sm ig-action-btn" 
+                    (click)="handleMainAction()">
+                {{ type }}
+            </button>
         </div>
 
     </div>
