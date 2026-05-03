@@ -2,8 +2,8 @@ import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import { Router } from '@angular/router';
-import as from '@angular/common/locales/extra/as';
 import { AuthService } from '../../../services/auth.service';
+import { forkJoin } from 'rxjs';
 
 function validateAge(group: FormGroup) {
   const day = group.get('day')?.value;
@@ -35,6 +35,7 @@ export class Step1 {
 
   form: FormGroup;
   emailExists: boolean = false;
+  nameExists: boolean = false;
 
   days = Array.from({ length: 31 }, (_, i) => i + 1);
   months = [
@@ -70,36 +71,43 @@ export class Step1 {
           day: parseInt(dateParts[2], 10)
         });
       }
-      this.form.get('email')?.valueChanges.subscribe(() => {
-        this.emailExists = false;
-      });
     } else if (this.initialData) {
       this.form.patchValue({
         userName: this.initialData.userName,
         email: this.initialData.email
-      });
-      this.form.get('email')?.valueChanges.subscribe(() => {
-        this.emailExists = false;
-      });
+      }); 
     }
+    this.form.get('email')?.valueChanges.subscribe(() => {
+        this.emailExists = false;
+    });
+    this.form.get('userName')?.valueChanges.subscribe(() => {
+        this.nameExists = false;
+    });
   }
 
   notifyNext() {
     if (this.form.valid) {
       const email = this.form.get('email')?.value;
-      this.authService.checkEmailExists(email).subscribe({
-        next: (exists) => {
-          if (exists) {
-            this.emailExists = true;
-            this.form.get('email')?.setErrors({ alreadyExists: true });
-          } else {
-            this.emailExists = false;
+      const userName = this.form.get('userName')?.value;
+
+      forkJoin({
+        emailEnUso: this.authService.checkEmailExists(email),
+        nameEnUso: this.authService.checkNameExists(userName)
+      }).subscribe({
+        next: (respuestas: { emailEnUso: boolean; nameEnUso: boolean }) => {
+          this.emailExists = respuestas.emailEnUso;
+          this.nameExists = respuestas.nameEnUso;
+
+          if (this.emailExists) this.form.get('email')?.setErrors({ alreadyExists: true });
+          if (this.nameExists) this.form.get('userName')?.setErrors({ alreadyExists: true });
+
+          if (!this.emailExists && !this.nameExists) {
             const val = this.form.value;
             const birthdate = `${val.year}-${String(val.month).padStart(2, '0')}-${String(val.day).padStart(2, '0')}`;
             this.toNext.emit({ userName: val.userName, email: val.email, birthdate });
           }
         },
-        error: (err) => console.error('Error al comprobar el email', err)
+        error: (err: any) => console.error('Error al comprobar credenciales', err)
       });
     } else {
       this.form.markAllAsTouched();
