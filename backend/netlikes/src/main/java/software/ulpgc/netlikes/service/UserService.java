@@ -7,7 +7,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
-import software.ulpgc.netlikes.service.DiscourseService;
 import software.ulpgc.netlikes.dto.FilmResponseDTO;
 import software.ulpgc.netlikes.dto.LoginRequestDTO;
 import software.ulpgc.netlikes.dto.UserProfileDTO;
@@ -151,6 +150,7 @@ public class UserService {
         // }
 
         // newUser.setDiscourseId(discourseId);
+        newUser.setDiscourseId("discourseId");
         
         User saved = userRepository.save(newUser);
 
@@ -261,6 +261,13 @@ public class UserService {
         dto.setProfilePicture(user.getProfilePicture());
 
         return dto;
-    }   
+    }  
+    
+    public boolean verifyPassword(@NonNull String email, String rawPassword) {
+        User user = userRepository.findById(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        
+        return passwordEncoder.matches(rawPassword, user.getPassword());
+    }
 }
 

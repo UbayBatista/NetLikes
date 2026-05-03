@@ -4,11 +4,12 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { AuthService } from './auth.service';
 import { User, RegisterData } from '../models/user.models';
+import { environment } from '../../environments/environment';
 
 describe('AuthService', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
-  const apiUrl = ' https://api-db.duckdns.org/users';
+  const apiUrl = `${environment.apiUrl}/users`;
 
   const mockUser: User = {
     userName: 'Juan Perez',

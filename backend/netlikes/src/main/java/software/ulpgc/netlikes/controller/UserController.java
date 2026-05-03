@@ -10,11 +10,13 @@ import software.ulpgc.netlikes.dto.RegisterRequestDTO;
 import software.ulpgc.netlikes.dto.ValidAnswerRequestDTO;
 import software.ulpgc.netlikes.service.UserService;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @RestController
@@ -49,9 +51,11 @@ public class UserController {
         return userService.updateUser(email, dto);
     }
 
-    @DeleteMapping("/{email}")
-    public void deleteUser(@NonNull @PathVariable String email) {
-        userService.deleteUser(email);
+    @DeleteMapping
+    public ResponseEntity<Void> deleteUser(@RequestHeader("X-User-Id") String myId) {
+        userService.deleteUser(myId);
+        
+        return ResponseEntity.ok().build(); 
     }
 
     @PostMapping("/login")
@@ -124,5 +128,20 @@ public class UserController {
     @GetMapping("/search")
     public ResponseEntity<List<UserResponseDTO>> searchFilm(@RequestParam String query) {
         return this.userService.searchBy(query);
+    }
+
+    @PostMapping("/verify-password")
+    public ResponseEntity<Map<String, Boolean>> verifyPassword(
+            @RequestHeader("X-User-Id") String myId,
+            @RequestBody Map<String, String> requestBody) {
+        
+        String password = requestBody.get("password");
+        boolean isValid = userService.verifyPassword(myId, password);
+        
+        if (isValid) {
+            return ResponseEntity.ok(Map.of("valid", true));
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("valid", false));
+        }
     }
 }

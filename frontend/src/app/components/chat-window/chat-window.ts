@@ -1,12 +1,12 @@
-import { Component, Output, EventEmitter, signal, Input, SimpleChanges } from '@angular/core';
+import { Component, Output, EventEmitter, Input, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MessageBubble } from '../message-bubble/message-bubble';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-chat-window',
   standalone: true,
-  imports: [FormsModule, MessageBubble],
+  imports: [FormsModule],
   templateUrl: './chat-window.html',
   styleUrl: './chat-window.css'
 })
@@ -18,12 +18,10 @@ export class ChatWindow {
   saveUrl: SafeResourceUrl | null = null;
   activeForum = false;
 
-  constructor(
-    private sanitizer: DomSanitizer
-  ) {}
+  private sanitizer = inject(DomSanitizer);
 
-  @Input() set selectedForumTitle(filmName: string) {
-    this.ForumTitle = filmName;
+  @Input() set selectedForumTitle(value: string) {
+    this.ForumTitle = value;
   }
 
   @Input() set selectedForumId(value: number | null ){
@@ -103,9 +101,16 @@ export class ChatWindow {
   //     console.log("Angular está intentando meter en el iframe exactamente esta URL:", originalUrl);
   //     this.saveUrl = this.sanitizer.bypassSecurityTrustResourceUrl(originalUrl);
   // }
+  
+  // @Input() set discourseTopicId(value: number | undefined) {
+  //   if (value) {
+  //     this.currentTopicId = value;
+  //     const url = `${environment.discourseUrl}/t/-/${value}`;
+  //     this.safeForumUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  //   }
+  // }
 
   goBack() {
     this.return.emit();
   }
-
 }

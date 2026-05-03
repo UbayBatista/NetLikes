@@ -1,7 +1,7 @@
-<div class="chat-container">
+<div class="chat-container" style="display: flex; flex-direction: column; height: 100vh; width: 100%;">
   <header class="chat-header">
     <button class="mobile-back-btn" (click)="goBack()"><i class="bi bi-arrow-left"></i></button>
-    <h2> {{ ForumTitle }}</h2>
+    <h2>{{ ForumTitle }}</h2>
   </header>
 
   @if (saveUrl && activeForum) {
@@ -32,21 +32,15 @@
       </div>
     } @empty {
       <p class="text-center text-muted p-4">No hay messages aún. ¡Sé el primero!</p>
+  
+  <div class="messages-viewport" style="flex-grow: 1; width: 100%;">
+    @if (safeForumUrl) {
+      <iframe 
+        [src]="safeForumUrl" 
+        width="100%" 
+        height="100%" 
+        frameborder="0">
+      </iframe>
     }
   </div>
-
-  <footer class="chat-footer">
-    <div class="input-wrapper">
-      <textarea 
-      #txtArea
-      [(ngModel)]="newMessage" 
-      placeholder="Escribe un mensaje..."
-      (input)="AdjustHeight(txtArea)"
-      (keydown.enter)="$event.preventDefault(); sendMessage(txtArea)"
-      rows="1"></textarea>
-      <button (click)="sendMessage(txtArea)" [disabled]="!newMessage()">
-        ➤
-      </button>
-    </div>
-  </footer>
--->
+</div>

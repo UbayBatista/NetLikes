@@ -6,18 +6,18 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
-
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.micrometer.common.lang.NonNull;
 
 @Service
 public class DiscourseService {
@@ -54,10 +54,7 @@ public class DiscourseService {
         RestTemplate restTemplate = new RestTemplate();
         String endpoint = discourseUrl + "/posts.json";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Api-Key", apiKey);
-        headers.set("Api-Username", apiUsername);
+        setHeaders();
             
         Map<String, Object> body = new HashMap<>();
         
@@ -69,7 +66,7 @@ public class DiscourseService {
         
         body.put("category", moviesCategoryId);
 
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body);
 
         try {
             ResponseEntity<Map> response = restTemplate.postForEntity(endpoint, request, Map.class);
@@ -78,10 +75,40 @@ public class DiscourseService {
                 return (Integer) response.getBody().get("topic_id");
             }
         } catch (Exception e) {
-            System.err.println("Error al comunicar con la API de Discourse: " + e.getMessage());
+            System.err.println("Error al crear foro en Discourse: " + e.getMessage());
         }
         return null;
     }
+
+    // public Integer getForumIdByTitle(String filmTitle) {
+    //     String endpoint = discourseUrl + "/search.json?q=" + filmTitle;
+
+    //     try {
+    //         ResponseEntity<JsonNode> response = restTemplate.exchange(
+    //             endpoint, 
+    //             HttpMethod.GET, 
+    //             null, 
+    //             JsonNode.class
+    //         );
+
+    //         JsonNode root = response.getBody();
+
+    //         if (root != null && root.has("topics") && root.get("topics").isArray()) {
+    //             String targetTitle = "Foro oficial: " + filmTitle;
+
+    //             for (JsonNode topic : root.get("topics")) {
+    //                 String topicTitle = topic.get("title").asText();
+                    
+    //                 if (topicTitle.equalsIgnoreCase(targetTitle)) {
+    //                     return topic.get("id").asInt();
+    //                 }
+    //             }
+    //         }
+    //     } catch (Exception e) {
+    //         System.err.println("Error al comunicar con la API de Discourse (Búsqueda): " + e.getMessage());
+    //     }
+    //     return null;
+    // }
 
     public Integer getForumIdByTitle(String filmTitle) {
         RestTemplate restTemplate = new RestTemplate();
@@ -169,7 +196,6 @@ public class DiscourseService {
                 userNode.get("ignored_usernames").forEach(node -> ignoredList.add(node.asText()));
             }
 
-            // 2. Añadir el nuevo bloqueado si no está ya
             if (!ignoredList.contains(blockedUsername)) {
                 ignoredList.add(blockedUsername);
             } else {
@@ -177,16 +203,15 @@ public class DiscourseService {
                 return; 
             }
 
-            // 3. Enviar la lista actualizada a Discourse
             Map<String, Object> body = new HashMap<>();
             body.put("ignored_usernames", ignoredList); 
 
             HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
             restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
-            System.out.println("Lista de bloqueados actualizada en Discourse para " + blockerUsername);
+            System.out.println("Lista de bloqueados actualizada para " + blockerUsername);
 
         } catch (Exception e) {
-            System.err.println("Error al ignorar usuario en Discourse: " + e.getMessage());
+            System.err.println("Error en la lógica de bloqueo de Discourse: " + e.getMessage());
             throw new RuntimeException("No se pudo sincronizar el bloqueo con el foro.");
         }
     }
@@ -227,7 +252,7 @@ public class DiscourseService {
     //     }
     // }
 
-        public void unignoreDiscourseUser(String blockerUsername, String unblockedUsername) {
+    public void unignoreDiscourseUser(String blockerUsername, String unblockedUsername) {
         String url = discourseUrl + "/u/" + blockerUsername + ".json";
 
         HttpHeaders headers = setHeaders();

@@ -6,5 +6,4 @@ import software.ulpgc.netlikes.model.Forum;
 
 @Repository
 public interface ForumRepository extends JpaRepository<Forum, Integer> {
-
 }

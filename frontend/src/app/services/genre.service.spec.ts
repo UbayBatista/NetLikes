@@ -3,11 +3,12 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { GenreService } from './genre.service';
 import { Genre } from '../models/genre.models';
+import { environment } from '../../environments/environment';
 
 describe('GenreService', () => {
   let service: GenreService;
   let httpMock: HttpTestingController;
-  const apiUrl = 'https://api-db.duckdns.org/genres';
+  const apiUrl = `${environment.apiUrl}/genres`;
 
   const mockGenres: Genre[] = [
     { id: 1, name: 'Acción' },

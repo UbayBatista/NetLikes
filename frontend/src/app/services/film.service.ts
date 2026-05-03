@@ -2,12 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, Observable, throwError, map, of } from 'rxjs';
 import { Film, FilmListItem, GenreGroup } from '../models/film.models';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FilmService {
-  readonly dbUrl = ' https://api-db.duckdns.org/films';
+  readonly dbUrl = `${environment.apiUrl}/films`;
 
   constructor(private http: HttpClient) {}
   

@@ -18,6 +18,6 @@ public class Forum {
     @JoinColumn(name = "id")
     private Film film;
 
-    @Column(name = "discourse_topic_id", unique = true, nullable = false)
-    private Integer forumId; 
+    @Column(unique = true, nullable = false)
+    private Integer discourseTopicId; 
 }

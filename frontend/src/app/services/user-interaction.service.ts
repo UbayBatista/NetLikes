@@ -2,14 +2,15 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { AuthService } from './auth.service';
 import { Observable, of } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class UserInteractionService {
 
     private http = inject(HttpClient);
     private authService = inject(AuthService);
-    private readonly markUrl = 'https://api-db.duckdns.org/marks';
-    private readonly rateUrl = 'https://api-db.duckdns.org/rates';
+    private readonly markUrl = `${environment.apiUrl}/marks`;
+    private readonly rateUrl = `${environment.apiUrl}/rates`;
 
     toggleMark(filmId: number, type: 'SEEN' | 'WATCHLATER'): Observable<any> {
         const email = this.authService.getCurrentUserEmail();

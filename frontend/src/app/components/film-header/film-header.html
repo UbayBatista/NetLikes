@@ -1,3 +1,6 @@
+@if (isProcessingForum) {
+  <div class="global-blocking-overlay"></div>
+}
 <div class="main-block p-4 mb-4 text-white" 
      style="background-color: #0f172a;" 
      [style.background-image]="'radial-gradient(circle at 15% 40%, ' + dominantColor + ' 0%, transparent 70%)'">
@@ -18,20 +21,68 @@
         </div>
       }
       
-      <div class="d-flex justify-content-center gap-4 mb-2">
-        <i class="bi fs-3 btn-icon" [class.bi-eye]="!isWatched" [class.bi-eye-fill]="isWatched" [class.active]="isWatched" (click)="toggleWatched()"></i>
-        <i class="bi fs-3 btn-icon" [class.bi-clock]="!isWatchLater" [class.bi-clock-fill]="isWatchLater" [class.active]="isWatchLater" (click)="toggleWatchLater()"></i>
-        <i class="bi bi-share fs-3 btn-icon" (click)="shareFilm()"></i>
-      </div>
-
-      <div class="d-flex justify-content-center gap-4 rating-container" [class.is-visible]="isWatched">
-        <i class="bi fs-4 btn-icon" [class.bi-emoji-frown]="currentRating !== 'dislike'" [class.bi-emoji-frown-fill]="currentRating === 'dislike'" [class.active]="currentRating === 'dislike'" (click)="rateFilm('dislike')"></i>
-        <i class="bi fs-4 btn-icon" [class.bi-emoji-smile]="currentRating !== 'like'" [class.bi-emoji-smile-fill]="currentRating === 'like'" [class.active]="currentRating === 'like'" (click)="rateFilm('like')"></i>
-        <i class="bi fs-4 btn-icon" [class.bi-emoji-heart-eyes]="currentRating !== 'love'" [class.bi-emoji-heart-eyes-fill]="currentRating === 'love'" [class.active]="currentRating === 'love'" (click)="rateFilm('love')"></i>
-        <button (click)="suscribeToForum(film.id, film.title)" class="tu-clase-css">
-          Suscribirse
-        </button>
+      <div class="d-flex flex-column align-items-center w-100">
         
+        <div class="d-flex justify-content-center align-items-center flex-wrap column-gap-3 column-gap-md-4 row-gap-1 mb-2 parent-transition">
+          
+          <div class="d-flex align-items-center gap-3 gap-md-4">
+            <i class="bi fs-3 btn-icon" 
+               [class.bi-eye]="!isWatched" 
+               [class.bi-eye-fill]="isWatched" 
+               [class.active]="isWatched" 
+               [title]="isWatched ? 'Desmarcar como Vista' : 'Marcar como Vista'"
+               (click)="toggleWatched()"></i>
+            
+            <div class="dynamic-icon-wrapper" [class.is-visible]="isWatched">
+              <i class="bi fs-3 btn-icon" 
+                 [class.bi-chat-text]="!isSubscribed && !isProcessingForum"
+                 [class.bi-chat-text-fill]="isSubscribed && !isProcessingForum"
+                 [class.bi-hourglass-split]="isProcessingForum"
+                 [class.active]="isSubscribed && !isProcessingForum"
+                 [class.opacity-50]="isProcessingForum"
+                 [style.pointer-events]="isProcessingForum ? 'none' : 'auto'"
+                 [title]="isProcessingForum ? 'Procesando...' : (isSubscribed ? 'Desuscribirse del foro' : 'Suscribirse al foro')"
+                 (click)="toggleSubscription()"></i>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-3 gap-md-4">
+            <i class="bi fs-3 btn-icon" 
+               [class.bi-clock]="!isWatchLater" 
+               [class.bi-clock-fill]="isWatchLater" 
+               [class.active]="isWatchLater" 
+               [title]="isWatchLater ? 'Desmarcar de ver más tarde' : 'Marcar para Ver más tarde'"
+               (click)="toggleWatchLater()"></i>
+
+            <i class="bi bi-share fs-3 btn-icon" 
+               title="Compartir película"
+               (click)="shareFilm()"></i>
+          </div>
+             
+        </div>
+
+        <div class="d-flex justify-content-center flex-wrap gap-3 gap-md-4 rating-container" [class.is-visible]="isWatched">
+          <i class="bi fs-4 btn-icon" 
+             [class.bi-emoji-frown]="currentRating !== 'dislike'" 
+             [class.bi-emoji-frown-fill]="currentRating === 'dislike'" 
+             [class.active]="currentRating === 'dislike'" 
+             title="No me gustó"
+             (click)="rateFilm('dislike')"></i>
+
+          <i class="bi fs-4 btn-icon" 
+             [class.bi-emoji-smile]="currentRating !== 'like'" 
+             [class.bi-emoji-smile-fill]="currentRating === 'like'" 
+             [class.active]="currentRating === 'like'" 
+             title="Me gustó"
+             (click)="rateFilm('like')"></i>
+
+          <i class="bi fs-4 btn-icon" 
+             [class.bi-emoji-heart-eyes]="currentRating !== 'love'" 
+             [class.bi-emoji-heart-eyes-fill]="currentRating === 'love'" 
+             [class.active]="currentRating === 'love'" 
+             title="Me encantó"
+             (click)="rateFilm('love')"></i>
+        </div>
       </div>
     </div>
 

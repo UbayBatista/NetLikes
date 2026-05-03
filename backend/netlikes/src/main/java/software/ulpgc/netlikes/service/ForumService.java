@@ -4,52 +4,36 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import software.ulpgc.netlikes.model.Film;
 import software.ulpgc.netlikes.model.Forum;
-import software.ulpgc.netlikes.model.Subscription;
-import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.repository.FilmRepository;
 import software.ulpgc.netlikes.repository.ForumRepository;
-import software.ulpgc.netlikes.repository.SubscriptionRepository;
-import software.ulpgc.netlikes.repository.UserRepository;
 
 @Service
 public class ForumService {
     
     private final ForumRepository forumRepository;
-    private final FilmRepository filmRepository; // Añadido para buscar la película
-    private final DiscourseService discourseService; // Añadido para conectar con Discourse
-    private final UserRepository userRepository;
-    private final SubscriptionRepository subscriptionRepository;
+    private final DiscourseService discourseService;
+    private final FilmRepository filmRepository; 
 
-    // Actualizamos el constructor para inyectar las nuevas dependencias
-    public ForumService(ForumRepository forumRepository, FilmRepository filmRepository, 
-            DiscourseService discourseService, UserRepository userRepository, SubscriptionRepository subscriptionRepository){
+    public ForumService(ForumRepository forumRepository, DiscourseService discourseService, FilmRepository filmRepository){
         this.forumRepository = forumRepository;
-        this.filmRepository = filmRepository;
         this.discourseService = discourseService;
-        this.userRepository = userRepository;
-        this.subscriptionRepository = subscriptionRepository;
+        this.filmRepository = filmRepository;
     }
 
     public List<Forum> getAllForums(){
         return this.forumRepository.findAll();
     }
 
-    public Forum createForum(Forum forum) {
-        return this.forumRepository.save(forum);
-    }
-
-    public void deleteForum(Integer id){
-        this.forumRepository.deleteById(id);
-    }
-
-    public Integer getOrCreateForum(Integer filmId, String filmTitle) {
+    @Transactional
+     public Integer getOrCreateForum(Integer filmId, String filmTitle) {
         Optional<Forum> existingForum = forumRepository.findById(filmId);
 
         if (existingForum.isPresent()) {
-            return existingForum.get().getForumId();
+            return existingForum.get().getDiscourseTopicId();
         }
         
         Integer newTopicId = null;
@@ -72,14 +56,33 @@ public class ForumService {
 
             Forum newForum = new Forum();
             newForum.setFilm(film);
-            newForum.setForumId(newTopicId);
+            newForum.setDiscourseTopicId(newTopicId);
             
             this.forumRepository.save(newForum);
 
             System.out.println("¡Foro creado/obtenido con éxito! FilmID:" + filmId + "Forum ID: " + newTopicId);            
             return newTopicId;
         }
-
         return null;
+    }
+
+    @Transactional
+    public void deleteForum(Integer id){
+        Optional<Forum> forumOpt = forumRepository.findById(id);
+        
+        if(forumOpt.isPresent()) {
+            Forum forum = forumOpt.get();
+            
+            discourseService.deleteTopic(forum.getDiscourseTopicId(), forum.getFilm().getTitle());
+            
+            Film film = forum.getFilm();
+            if (film != null) {
+                film.setForum(null);
+                filmRepository.saveAndFlush(film);
+            }
+            
+            this.forumRepository.delete(forum);
+            this.forumRepository.flush();
+        }
     }
 }
