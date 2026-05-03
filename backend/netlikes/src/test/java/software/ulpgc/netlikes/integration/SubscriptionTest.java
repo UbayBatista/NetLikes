@@ -31,7 +31,7 @@ class SubscriptionRepositoryIntegrationTest {
         user.setPassword("1234");
         user.setSecurityQuestion("¿Tienes marca de nacimiento?");
         user.setAnswer("Sí");
-        user.setName("UsuerioDePrueba");
+        user.setName("User_" + userEmail);
         user.setBirthdate(new Date());
         user.setAccountPrivacity(false);
         user.setShowWatchedFilms(false);
