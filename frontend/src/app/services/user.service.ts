@@ -3,12 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { MyProfile, UserProfile } from '../models/user.models';
 import { catchError, Observable, throwError, of } from 'rxjs';
 import { User } from '../models/user.models';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserService {
-  private readonly dbUrl = 'http://localhost:8080/users';
+  private readonly dbUrl = `${environment.apiUrl}/users`;
 
   constructor(private http: HttpClient) {}
 
@@ -44,7 +45,9 @@ export class UserService {
 
   updatePrivacy(email: string, isPrivate: boolean): Observable<void> {
     return this.http.patch<void>(`${this.dbUrl}/myProfile/${email}/privacy`, { isPrivate });
-  }private handleError(error: any): Observable<never> {
+  }
+  
+  private handleError(error: any): Observable<never> {
     return throwError(() => new Error('Something went wrong; please try again later.'));
   }
 }

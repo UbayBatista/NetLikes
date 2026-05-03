@@ -1,6 +1,7 @@
 import { Component, Output, EventEmitter, Input, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-chat-window',
@@ -25,7 +26,7 @@ export class ChatWindow {
   @Input() set discourseTopicId(value: number | undefined) {
     if (value) {
       this.currentTopicId = value;
-      const url = `http://localhost/t/-/${value}`;
+      const url = `${environment.discourseUrl}/t/-/${value}`;
       this.safeForumUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
     }
   }

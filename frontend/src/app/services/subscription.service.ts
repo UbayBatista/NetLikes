@@ -2,13 +2,14 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { SubscriptionResponse } from '../models/subscription.models';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SubscriptionService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:8080/subscribe_to';
+  private baseUrl = `${environment.apiUrl}/subscribe_to`;
 
   getUserSubscriptions(email: string): Observable<SubscriptionResponse[]> {
     return this.http.get<SubscriptionResponse[]>(`${this.baseUrl}/${email}`);
