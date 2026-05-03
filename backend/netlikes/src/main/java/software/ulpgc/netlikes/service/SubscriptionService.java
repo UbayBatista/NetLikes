@@ -7,6 +7,7 @@ import software.ulpgc.netlikes.model.Forum;
 import software.ulpgc.netlikes.model.Subscription;
 import software.ulpgc.netlikes.model.SubscriptionId;
 import software.ulpgc.netlikes.model.User;
+import software.ulpgc.netlikes.repository.ForumRepository;
 import software.ulpgc.netlikes.repository.SubscriptionRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
 
@@ -19,12 +20,14 @@ public class SubscriptionService {
     private final UserRepository userRepository;
     private final ForumService forumService;
     private final DiscourseService discourseService;
+    private final ForumRepository forumRepository;
 
-    public SubscriptionService(SubscriptionRepository subscriptionRepository, UserRepository userRepository, ForumService forumService, DiscourseService discourseService){
+    public SubscriptionService(SubscriptionRepository subscriptionRepository, UserRepository userRepository, ForumService forumService, DiscourseService discourseService, ForumRepository forumRepository){
         this.subscriptionRepository = subscriptionRepository;
         this.userRepository = userRepository;
         this.forumService = forumService;
         this.discourseService = discourseService; 
+        this.forumRepository = forumRepository;
     }
 
     public List<Subscription> getAllSubscriptions() {
@@ -40,7 +43,9 @@ public class SubscriptionService {
         User user = userRepository.findById(email)
                 .orElseThrow(() -> new RuntimeException("UserNotFound"));
 
-        Forum forum = forumService.createForumForFilmId(filmId);
+        // Forum forum = forumService.getOrCreateForum(filmId, filmTitle);
+        Forum forum = forumRepository.findById(filmId)
+            .orElseThrow(() -> new RuntimeException("Foro no encontrado para la película con ID: " + filmId));
 
         Subscription subscription = new Subscription();
         subscription.setId(new SubscriptionId(email, forum.getId()));
