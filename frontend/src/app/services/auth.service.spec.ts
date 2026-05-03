@@ -26,6 +26,9 @@ describe('AuthService', () => {
     });
     service = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
+
+    const reqs = httpMock.match(req => req.url.includes('/exists/'));
+    reqs.forEach(req => req.flush(false));
     
     localStorage.clear();
   });
@@ -57,6 +60,18 @@ describe('AuthService', () => {
     });
 
     const reqs = httpMock.match(`${apiUrl}/exists/${email}`);
+    expect(reqs.length).toBeGreaterThan(0);
+    expect(reqs[0].request.method).toBe('GET');
+    reqs.forEach(req => req.flush(true));
+  });
+
+  it('checkNameExists debe llamar a la URL correcta (/existsName/name)', () => {
+    const name = 'UsuarioTest';
+    service.checkNameExists(name).subscribe(exists => {
+      expect(exists).toBe(true);
+    });
+
+    const reqs = httpMock.match(`${apiUrl}/existsName/${name}`);
     expect(reqs.length).toBeGreaterThan(0);
     expect(reqs[0].request.method).toBe('GET');
     reqs.forEach(req => req.flush(true));

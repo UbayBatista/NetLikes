@@ -14,7 +14,8 @@ describe('Step1', () => {
 
   beforeEach(async () => {
     mockAuthService = {
-      checkEmailExists: vi.fn().mockReturnValue(of(false))
+      checkEmailExists: vi.fn().mockReturnValue(of(false)),
+      checkNameExists: vi.fn().mockReturnValue(of(false))
     };
     mockRouter = { navigate: vi.fn() };
 
@@ -64,6 +65,21 @@ describe('Step1', () => {
 
     expect(component.emailExists).toBe(true);
     expect(component.form.get('email')?.hasError('alreadyExists')).toBe(true);
+  });
+
+  it('debería marcar el error si el nombre de usuario ya existe en la BD', () => {
+    mockAuthService.checkNameExists.mockReturnValue(of(true));
+    
+    component.form.patchValue({
+      userName: 'Cogido',
+      email: 'nuevo@test.com',
+      day: 1, month: 1, year: 1990
+    });
+
+    component.notifyNext();
+
+    expect(component.nameExists).toBe(true);
+    expect(component.form.get('userName')?.hasError('alreadyExists')).toBe(true);
   });
 
   it('debería emitir los datos y avanzar si el formulario es válido y el email no existe', () => {
