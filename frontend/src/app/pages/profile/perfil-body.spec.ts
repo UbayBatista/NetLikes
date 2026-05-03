@@ -131,7 +131,7 @@ describe('ProfileBody', () => {
       expect(component.showConfirmModal).toBe(true);
       expect(component['actionToConfirm']).toBe('UNFOLLOW');
       expect(component.confirmModalMessage).toContain('dejar de seguir a @TargetUser');
-      expect(followService.unfollow).not.toHaveBeenCalled(); // Aún no ejecuta la acción
+      expect(followService.unfollow).not.toHaveBeenCalled();
     });
 
     it('Dado el mensaje de confirmación, Cuando pulse Confirmar, Entonces se cierra, deja de seguir y actualiza estado', () => {
@@ -223,6 +223,31 @@ describe('ProfileBody', () => {
       expect(component.socialData.length).toBe(2);
       expect(component.followersCount$.value).toBe(2);
       expect(component['userToFollow']).toBe('');
+    });
+  });
+
+  describe('Lógica de Cancelar Solicitud de Seguimiento (BDD)', () => {
+    let followService: any;
+
+    beforeEach(() => {
+      followService = TestBed.inject(FollowService);
+      
+      followService.unfollow = vi.fn().mockReturnValue(of({}));
+    });
+
+    it('Dado un usuario con solicitud pendiente, Cuando pulse Cancelar Solicitud, Entonces se cancela y el botón cambia a Seguir', () => {
+      component['followStateSubject'].next('PENDING');
+      
+      let currentButtonText = '';
+      component.followButtonText$.subscribe(text => currentButtonText = text);
+      
+      expect(currentButtonText).toBe('Pendiente');
+
+      component.onFollowRequest('TargetUser', 'target@test.com');
+
+      expect(followService.unfollow).toHaveBeenCalledWith('target@test.com');
+      expect(component['followStateSubject'].value).toBe('NONE');
+      expect(currentButtonText).toBe('Seguir');
     });
   });
 });
