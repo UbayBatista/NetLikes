@@ -39,7 +39,7 @@ public class ForumService {
         Integer newTopicId = null;
 
         try {
-             newTopicId = discourseService.createMovieForum(filmTitle);
+            newTopicId = discourseService.createMovieForum(filmTitle);
         } catch (Exception e) {
 
             System.out.println("El foro posiblemente ya existe en Discourse. Buscando ID...");           

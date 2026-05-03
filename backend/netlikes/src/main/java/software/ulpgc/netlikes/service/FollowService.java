@@ -126,8 +126,12 @@ public class FollowService {
 
         String blockerUsername = blocker.getName().replaceAll("\\s+", "").toLowerCase();
         String blockedUsername = blocked.getName().replaceAll("\\s+", "").toLowerCase();
-        discourseService.ignoreDiscourseUser(blockerUsername, blockedUsername);
-        
+
+        try {
+            discourseService.ignoreDiscourseUser(blockerUsername, blockedUsername);
+        } catch (Exception e) {
+            System.out.println("Aviso: No se pudo bloquear en Discourse (posiblemente el usuario no ha entrado nunca). " + e.getMessage());
+        }
 
 
         followRepository.findById(new FollowId(blockerEmail, blockedEmail))
@@ -153,7 +157,12 @@ public class FollowService {
 
         String blockerUsername = blocker.getName().replaceAll("\\s+", "").toLowerCase();
         String unblockedUsername = unblocked.getName().replaceAll("\\s+", "").toLowerCase();
-        discourseService.unignoreDiscourseUser(blockerUsername, unblockedUsername);
+
+        try {
+            discourseService.unignoreDiscourseUser(blockerUsername, unblockedUsername);
+        } catch (Exception e) {
+            System.out.println("Aviso: No se pudo desbloquear en Discourse (posiblemente el usuario no ha entrado nunca). " + e.getMessage());
+        }
 
         followRepository.deleteById(new FollowId(blockerEmail, unblockedEmail));
     }
