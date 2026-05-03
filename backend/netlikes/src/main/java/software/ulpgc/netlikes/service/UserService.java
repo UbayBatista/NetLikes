@@ -150,7 +150,6 @@ public class UserService {
         // }
 
         // newUser.setDiscourseId(discourseId);
-        newUser.setDiscourseId("discourseId");
         
         User saved = userRepository.save(newUser);
 
@@ -268,6 +267,24 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         
         return passwordEncoder.matches(rawPassword, user.getPassword());
+    }
+
+    public String getCachedDiscourseId(User user) {
+        // 1. Si ya lo tenemos guardado de antes, lo devolvemos al instante (0 saturación)
+        if (user.getDiscourseId() != null) {
+            return user.getDiscourseId();
+        }
+
+        // 2. Si es null, significa que lo necesitamos por primera vez. Se lo pedimos a Discourse.
+        Integer dId = discourseService.getDiscourseUserId(user.getName());
+
+        if (dId != null) {
+            // 3. Lo guardamos en la base de datos para no tener que volver a pedirlo NUNCA MÁS.
+            user.setDiscourseId(String.valueOf(dId));
+            userRepository.save(user);
+        }
+
+        return String.valueOf(dId);
     }
 }
 

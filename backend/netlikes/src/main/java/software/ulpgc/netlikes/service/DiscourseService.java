@@ -151,6 +151,28 @@ public class DiscourseService {
         return null;
     }
 
+    public Integer getDiscourseUserId(String username) {
+        String url = discourseUrl + "/u/" + username + ".json";
+        
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                url, 
+                HttpMethod.GET, 
+                new HttpEntity<>(setHeaders()), 
+                String.class
+            );
+            
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response.getBody());
+            
+            return root.get("user").get("id").asInt();
+            
+        } catch (Exception e) {
+            System.out.println("El usuario " + username + " aún no tiene cuenta en Discourse.");
+            return null;
+        }
+    }
+
     public void deleteDiscourseUserById(String discourseId) {
         if (discourseId == null) {
             System.out.println("El usuario no tiene ID de Discourse asociado.");
