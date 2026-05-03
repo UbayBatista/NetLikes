@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/forum")
-@CrossOrigin(origins = "http://localhost:4200")
 public class ForumController {
     
     private final ForumService forumService;

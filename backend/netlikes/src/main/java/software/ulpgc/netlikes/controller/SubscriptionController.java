@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/subscribe_to")
-@CrossOrigin(origins = "http://localhost:4200")
 public class SubscriptionController {
     
     private final SubscriptionService subscriptionService;
