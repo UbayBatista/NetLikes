@@ -43,7 +43,7 @@
       ]; track section.title) {
         
         <app-profile-components [title]="section.title" [isEditing]="isEditing">
-          <div class="netflix-wrapper">
+          <div class="film-items">
                 @for(film of section.data; track film.id) {
                   <div class="film-item">
                     <app-film 
