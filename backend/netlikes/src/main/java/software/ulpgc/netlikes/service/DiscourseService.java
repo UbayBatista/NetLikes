@@ -196,53 +196,58 @@ public class DiscourseService {
     }
 
     public void ignoreDiscourseUser(String blockerUsername, String blockedUsername) {
-        String url = discourseUrl + "/u/" + blockerUsername + ".json";
+        String url = discourseUrl + "/u/" + blockedUsername + "/notification_level.json";
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Api-Key", apiKey);
-        headers.set("Api-Username", "system");
+        headers.set("Api-Username", blockerUsername);
 
-        HttpEntity<String> getRequest = new HttpEntity<>(headers);
+        Map<String, Object> body = new HashMap<>();
+        body.put("notification_level", 2);
 
         try {
             // 1. Obtener los datos actuales del usuario
-            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(response.getBody());
-            JsonNode userNode = root.get("user");
+            // ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            // ObjectMapper mapper = new ObjectMapper();
+            // JsonNode root = mapper.readTree(response.getBody());
+            // JsonNode userNode = root.get("user");
             
-            List<String> ignoredList = new ArrayList<>();
-            JsonNode ignoredNode = userNode.get("ignored_usernames");
+            // List<String> ignoredList = new ArrayList<>();
+            // JsonNode ignoredNode = userNode.get("ignored_usernames");
 
-            if (ignoredNode != null && !ignoredNode.isNull()) {
-                if (ignoredNode.isArray()) {
-                    ignoredNode.forEach(node -> ignoredList.add(node.asText()));
-                } else if (ignoredNode.isTextual()) {
-                    String[] names = ignoredNode.asText().split(",");
-                    for (String n : names) {
-                        if (!n.trim().isEmpty()) ignoredList.add(n.trim());
-                    }
-                }
-            }
+            // if (ignoredNode != null && !ignoredNode.isNull()) {
+            //     if (ignoredNode.isArray()) {
+            //         ignoredNode.forEach(node -> ignoredList.add(node.asText()));
+            //     } else if (ignoredNode.isTextual()) {
+            //         String[] names = ignoredNode.asText().split(",");
+            //         for (String n : names) {
+            //             if (!n.trim().isEmpty()) ignoredList.add(n.trim());
+            //         }
+            //     }
+            // }
 
-            if (!ignoredList.contains(blockedUsername)) {
-                ignoredList.add(blockedUsername);
-            } else {
-                System.out.println("El usuario ya estaba bloqueado en Discourse.");
-                return; 
-            }
+            // if (!ignoredList.contains(blockedUsername)) {
+            //     ignoredList.add(blockedUsername);
+            // } else {
+            //     System.out.println("El usuario ya estaba bloqueado en Discourse.");
+            //     return; 
+            // }
 
-            Map<String, Object> body = new HashMap<>();
+            // Map<String, Object> body = new HashMap<>();
 
-            body.put("ignored_usernames", String.join(",", ignoredList));
-            body.put("muted_usernames", String.join(",", ignoredList));
+            // String textList = String.join(",", ignoredList);
+            // body.put("ignored_usernames", textList);
+            // body.put("muted_usernames", textList);
+
+            // HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
+            // ResponseEntity<String> putResponse = restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
 
             HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
-            ResponseEntity<String> putResponse = restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
-
-            System.out.println("Lista de bloqueados actualizada para " + blockerUsername);
-            System.out.println("👉 Respuesta del servidor: " + putResponse.getStatusCode());
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
+            
+            System.out.println("✅ ¡BINGO! Usuario " + blockedUsername + " bloqueado por " + blockerUsername);
+            System.out.println("👉 Respuesta: " + response.getStatusCode());
 
         } catch (Exception e) {
             System.err.println("Error en la lógica de bloqueo de Discourse: " + e.getMessage());
@@ -251,51 +256,54 @@ public class DiscourseService {
     }
 
     public void unignoreDiscourseUser(String blockerUsername, String unblockedUsername) {
-        String url = discourseUrl + "/u/" + blockerUsername + ".json";
+        String url = discourseUrl + "/u/" + unblockedUsername + "/notification_level.json";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Api-Key", apiKey);
-        headers.set("Api-Username", "system");
+        headers.set("Api-Username", blockerUsername);
 
-        HttpEntity<String> getRequest = new HttpEntity<>(headers);
+        // HttpEntity<String> getRequest = new HttpEntity<>(headers);
+        Map<String, Object> body = new HashMap<>();
+        body.put("notification_level", 0);
 
         try {
-            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, getRequest, String.class);
+            // ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, getRequest, String.class);
             
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(response.getBody());
-            JsonNode userNode = root.get("user");
-            List<String> ignoredList = new ArrayList<>();
+            // ObjectMapper mapper = new ObjectMapper();
+            // JsonNode root = mapper.readTree(response.getBody());
+            // JsonNode userNode = root.get("user");
+            // List<String> ignoredList = new ArrayList<>();
 
-            JsonNode ignoredNode = userNode.get("ignored_usernames");
+            // JsonNode ignoredNode = userNode.get("ignored_usernames");
 
-            if (ignoredNode != null && !ignoredNode.isNull()) {
-                if (ignoredNode.isArray()) {
-                    ignoredNode.forEach(node -> ignoredList.add(node.asText()));
-                } else if (ignoredNode.isTextual()) {
-                    String[] names = ignoredNode.asText().split(",");
-                    for (String n : names) {
-                        if (!n.trim().isEmpty()) ignoredList.add(n.trim());
-                    }
-                }
-            }
+            // if (ignoredNode != null && !ignoredNode.isNull()) {
+            //     if (ignoredNode.isArray()) {
+            //         ignoredNode.forEach(node -> ignoredList.add(node.asText()));
+            //     } else if (ignoredNode.isTextual()) {
+            //         String[] names = ignoredNode.asText().split(",");
+            //         for (String n : names) {
+            //             if (!n.trim().isEmpty()) ignoredList.add(n.trim());
+            //         }
+            //     }
+            // }
 
-            if (ignoredList.contains(unblockedUsername)) {
-                ignoredList.remove(unblockedUsername);
-            } else {
-                System.out.println("El usuario no estaba en la lista de ignorados.");
-                return; 
-            }
+            // if (ignoredList.contains(unblockedUsername)) {
+            //     ignoredList.remove(unblockedUsername);
+            // } else {
+            //     System.out.println("El usuario no estaba en la lista de ignorados.");
+            //     return; 
+            // }
 
-            Map<String, Object> body = new HashMap<>();
+            // Map<String, Object> body = new HashMap<>();
 
+            // String textList = String.join(",", ignoredList);
+            // body.put("ignored_usernames", textList);
 
-            body.put("ignored_usernames", String.join(",", ignoredList));
-
+            // HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
+            // restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
             HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
-            restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
-            
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
             System.out.println("Usuario " + unblockedUsername + " desbloqueado en Discourse.");
 
         } catch (Exception e) {
