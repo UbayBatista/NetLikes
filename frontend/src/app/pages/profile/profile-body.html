@@ -24,6 +24,9 @@
       (editClick)="toggleEdit()"
       (followClick)="onFollowRequest(profile.userName, profile.email)"
       (logOut)="logout()"
+      (openBlockedModal)="isBlockedModalOpen = true"
+      (block)="onBlockRequest(profile.email, profile.userName)"
+      (delete)="startDeleteProcess(profile.email)"
       (openSocialModal)="showSocial($event)"
       (privacyChange)="onPrivacyChange($event)">
     </app-profile-header>
@@ -41,12 +44,6 @@
         
         <app-profile-components [title]="section.title" [isEditing]="isEditing">
           <div class="netflix-wrapper">
-            @if (canScrollLeft) {
-              <button class="nav-btn left" (click)="scroll('left')"></button>
-            }
-
-            <div class="netflix-row" #scrollContainer (scroll)="updateScrollButtons()">
-              <div class="netflix-slider">
                 @for(film of section.data; track film.id) {
                   <div class="film-item">
                     <app-film 
@@ -57,12 +54,6 @@
                   </div>
                 }
               </div>
-            </div>
-
-            @if (canScrollRight) {
-              <button class="nav-btn right" (click)="scroll('right')"></button>
-            }
-          </div>
         </app-profile-components>
       }
 
@@ -90,7 +81,8 @@
       [users]="socialData" 
       [isMyOwnProfile]="(itsMe$ | async) ?? false"
       (close)="isSocialModalOpen = false"
-      (tabChange)="showSocial($event)">
+      (tabChange)="showSocial($event)"
+      (actionClick)="handleSocialAction($event)">
     </app-social-modal>
   }
 

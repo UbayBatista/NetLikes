@@ -80,28 +80,6 @@ export class ProfileComplete implements OnInit {
   isPasswordModalOpen = false;
   isDeleteConfirmModalOpen = false;
 
-  @ViewChild('scrollContainer') scrollContainer!: ElementRef;
-
-  scroll(direction: 'left' | 'right') {
-    if (this.scrollContainer) {
-      const container = this.scrollContainer.nativeElement;
-      const scrollAmount = 300;
-      if (direction === 'left') {
-        container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-      } else {
-        container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-      }
-    }
-  }
-
-  updateScrollButtons() {
-    if (this.scrollContainer) {
-      const container = this.scrollContainer.nativeElement;
-      this.canScrollLeft = container.scrollLeft > 0;
-      this.canScrollRight = Math.ceil(container.scrollLeft) < (container.scrollWidth - container.clientWidth);
-    }
-  }
-
   ngOnInit() {
     this.route.params
       .pipe(takeUntilDestroyed(this.destroyRef))

@@ -17,7 +17,7 @@
         <div class="list-group list-group-flush">
           @for (user of users; track user.name) {
             <div class="list-group-item d-flex align-items-center justify-content-between py-3 border-bottom">
-              <div class="d-flex align-items-center gap-3" (click)="goToProfile(user.name)">
+              <div class="d-flex align-items-center gap-3" style="cursor: pointer;" (click)="goToProfile(user.name)">
                 <img [src]="user.avatar || 'assets/ProfilePicture.jpg'" class="rounded-circle border" style="width: 50px; height: 50px; object-fit: cover;">
                 <div>
                   <p class="m-0 fw-bold">{{ user.name }}</p>
