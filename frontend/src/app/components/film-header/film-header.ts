@@ -181,7 +181,6 @@ export class FilmHeader implements OnInit {
     this.authService.getCurrentUser().subscribe({
       next: (user) => {
         if (!user || !user.email) {
-          alert('¡Debes iniciar sesión para poder suscribirte a un foro!');
           return;
         }
 
@@ -260,7 +259,6 @@ export class FilmHeader implements OnInit {
     this.authService.getCurrentUser().subscribe(user => { 
 
         if (!user || !user.email) {
-          alert('¡Debes iniciar sesión para poder suscribirte a un foro!');
           return; 
         }
       
