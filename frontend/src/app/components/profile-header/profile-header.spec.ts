@@ -110,3 +110,53 @@ describe('ProfileHeader', () => {
     expect(emitted).toBeTruthy();
   });
 });
+
+describe('HU6.1 - Cambiar privacidad de la cuenta', () => {
+  describe('ProfileHeader - Toggle de privacidad', () => {
+    let component: ProfileHeader;
+    let fixture: ComponentFixture<ProfileHeader>;
+
+    beforeEach(async () => {
+      await TestBed.configureTestingModule({
+        imports: [ProfileHeader]
+      }).compileComponents();
+
+      fixture = TestBed.createComponent(ProfileHeader);
+      component = fixture.componentInstance;
+    });
+
+    it('HU6.1 - Dado cuenta pública, cuando activa privada, debe emitir true', () => {
+      component.isPrivate = false;
+      fixture.detectChanges();
+
+      const privacySpy = vi.spyOn(component.privacyChange, 'emit');
+      component.togglePrivacy();
+
+      expect(privacySpy).toHaveBeenCalledWith(true);
+    });
+
+    it('HU6.1 - Dado cuenta privada, cuando activa pública, debe emitir false', () => {
+      component.isPrivate = true;
+      fixture.detectChanges();
+
+      const privacySpy = vi.spyOn(component.privacyChange, 'emit');
+      component.togglePrivacy();
+
+      expect(privacySpy).toHaveBeenCalledWith(false);
+    });
+
+    it('HU6.1 - togglePrivacy debe emitir el valor contrario al actual', () => {
+      component.isPrivate = false;
+      fixture.detectChanges();
+
+      const privacySpy = vi.spyOn(component.privacyChange, 'emit');
+
+      component.togglePrivacy();
+      expect(privacySpy).toHaveBeenCalledWith(true);
+
+      component.isPrivate = true;
+      component.togglePrivacy();
+      expect(privacySpy).toHaveBeenCalledWith(false);
+    });
+  });
+});
