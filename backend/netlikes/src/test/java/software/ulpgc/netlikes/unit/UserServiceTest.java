@@ -148,7 +148,7 @@ class UserServiceTest {
         user.setPassword("hashedPassword");
 
         when(userRepository.findById("juan@email.com")).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches("SuperMan21", "hashedPassword")).thenReturn(false);
+        when(passwordEncoder.matches("wrongPassword", "hashedPassword")).thenReturn(false);
 
         assertThrows(RuntimeException.class, () -> userService.login(request));
     }
