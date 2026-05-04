@@ -50,6 +50,10 @@ export class AuthService {
     return this.http.get<boolean>(`${this.dbUrl}/exists/${email}`);
   }
 
+  checkNameExists(name: string): Observable<boolean> {
+    return this.http.get<boolean>(`${this.dbUrl}/existsName/${name}`);
+  }
+
   getSecurityQuestion(email:string): Observable<string> {
     return this.http.get(`${this.dbUrl}/securityQuestion/${email}`, { 
       responseType: 'text' 

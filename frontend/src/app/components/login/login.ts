@@ -89,5 +89,5 @@ export class LoginForm {
         this.showRecoverError = false;
         this.showRecoverModal = true;
     });
-}
+  }
 }

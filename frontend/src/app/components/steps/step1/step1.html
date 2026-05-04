@@ -16,6 +16,9 @@
     @if (form.get('userName')?.hasError('minlength') && form.get('userName')?.touched) {
       <div class="invalid-feedback">Mínimo 3 caracteres.</div>
     }
+    @if (nameExists) {
+      <div class="invalid-feedback">Este nombre de usuario ya está en uso.</div>
+    }
   </div>
 
   <div class="form-floating mb-3">

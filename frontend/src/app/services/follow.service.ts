@@ -112,19 +112,30 @@ export class FollowService {
   }
 
   unfollow(targetEmail: string): Observable<void> {
-    return this.authService.getCurrentUser().pipe(
-      take(1),
-      switchMap((currentUser) => {
-        const headers = new HttpHeaders({
-          'Content-Type': 'application/json',
-          'X-User-Id': currentUser?.email || ''
-        });
-        
-        return this.http.delete<void>(
-          `${this.apiUrl}/${targetEmail}/unfollow`, 
-          { headers }
-        );
-      })
+    return this.http.delete<void>(
+      `${this.apiUrl}/${targetEmail}/unfollow`, 
+      { headers: this.getHeaders() }
+    );
+  }
+
+  remove(targetEmail: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/${targetEmail}/remove`, 
+      { headers: this.getHeaders() }
+    );
+  }
+
+  getPendingRequests(): Observable<LoggedUser[]> {
+    return this.http.get<LoggedUser[]>(
+      `${this.apiUrl}/pending`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  rejectFollow(followerId: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/${followerId}/reject`,
+      { headers: this.getHeaders() }
     );
   }
 

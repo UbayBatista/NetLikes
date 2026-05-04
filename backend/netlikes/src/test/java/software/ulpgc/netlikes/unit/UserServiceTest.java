@@ -1,5 +1,19 @@
 package software.ulpgc.netlikes.unit;
 
+import software.ulpgc.netlikes.dto.LoginRequestDTO;
+import software.ulpgc.netlikes.dto.RegisterRequestDTO;
+import software.ulpgc.netlikes.dto.UserResponseDTO;
+import software.ulpgc.netlikes.model.User;
+import software.ulpgc.netlikes.model.Genre;
+import software.ulpgc.netlikes.repository.GenreRepository;
+import software.ulpgc.netlikes.repository.UserRepository;
+import software.ulpgc.netlikes.service.UserService;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -10,20 +24,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
-import software.ulpgc.netlikes.dto.LoginRequestDTO;
-import software.ulpgc.netlikes.dto.RegisterRequestDTO;
-import software.ulpgc.netlikes.dto.UserResponseDTO;
-import software.ulpgc.netlikes.model.User;
-import software.ulpgc.netlikes.model.Genre;
-import software.ulpgc.netlikes.repository.GenreRepository;
-import software.ulpgc.netlikes.repository.UserRepository;
-import software.ulpgc.netlikes.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -111,6 +111,18 @@ class UserServiceTest {
     }
 
     @Test
+    void register_shouldThrowException_whenNameAlreadyExists() {
+        RegisterRequestDTO request = new RegisterRequestDTO(
+        "Juan", "nuevo_email@email.com", Date.valueOf("2002-11-15"), "SuperMan23", "Mascota", "Toby", List.of()
+        );
+
+        when(userRepository.existsByEmail("nuevo_email@email.com")).thenReturn(false);
+        when(userRepository.existsByName("Juan")).thenReturn(true);
+
+        assertThrows(RuntimeException.class, () -> userService.register(request));
+    }
+
+    @Test
     void login_shouldReturnUserDTO_whenCredentialsAreCorrect() {
         LoginRequestDTO request = new LoginRequestDTO("juan@email.com", "SuperMan23");
 
@@ -169,6 +181,18 @@ class UserServiceTest {
     }
 
     @Test
+    void existsName_shouldReturnTrue_whenNameExists() {
+        when(userRepository.existsByName("Juan")).thenReturn(true);
+        assertThat(userService.existsName("Juan")).isTrue();
+    }
+
+    @Test
+    void existsName_shouldReturnFalse_whenNameNotExists() {
+        when(userRepository.existsByName("noexiste")).thenReturn(false);
+        assertThat(userService.existsName("noexiste")).isFalse();
+    }
+
+    @Test
     void getSecurityQuestion_shouldReturnQuestion_whenUserExists() {
         User user = new User();
         user.setEmail("juan@email.com");
@@ -221,5 +245,31 @@ class UserServiceTest {
         LoginRequestDTO request = new LoginRequestDTO("noexiste@email.com", "1234");
 
         assertThrows(RuntimeException.class, () -> userService.login(request));
+    }
+
+    @Test
+    void changePassword_shouldEncodeAndSaveNewPassword_whenUserExists() {
+        String email = "juan@email.com";
+        String newPassword = "newSecretPassword";
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword("oldHashedPassword");
+
+        when(userRepository.findById(email)).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode(newPassword)).thenReturn("newHashedPassword");
+
+        userService.changePassword(email, newPassword);
+
+        assertThat(user.getPassword()).isEqualTo("newHashedPassword");
+        org.mockito.Mockito.verify(userRepository).save(user);
+    }
+
+    @Test
+    void changePassword_shouldThrowException_whenUserNotFound() {
+        when(userRepository.findById("noexiste@email.com")).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> 
+            userService.changePassword("noexiste@email.com", "anyPassword")
+        );
     }
 }

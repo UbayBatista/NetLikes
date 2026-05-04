@@ -1,8 +1,7 @@
 package software.ulpgc.netlikes.controller;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.http.ResponseEntity;
 import software.ulpgc.netlikes.model.Mark;
 import software.ulpgc.netlikes.service.MarkService;
 import lombok.RequiredArgsConstructor;

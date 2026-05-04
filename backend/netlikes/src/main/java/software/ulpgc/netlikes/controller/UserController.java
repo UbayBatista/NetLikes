@@ -81,6 +81,11 @@ public class UserController {
         return ResponseEntity.ok(userService.existsEmail(email));
     }
 
+    @GetMapping("/existsName/{name}")
+    public ResponseEntity<?> existsName(@PathVariable String name) {
+        return ResponseEntity.ok(userService.existsName(name));
+    }
+
     @GetMapping("/securityQuestion/{email}")
     public ResponseEntity<?> getSecurityQuestion(@NonNull @PathVariable String email) {
         try {

@@ -10,14 +10,15 @@
 
       <app-notification-panel
         [isOpen]="boxOpen"
-        [notifications]="notifications"
         (closed)="boxOpen = false">
       </app-notification-panel>
 
-      @if (hasNotifications) {
-        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-          {{ notifications.length }}
-        </span>
+      @if ((unreadCount$ | async) ?? 0; as unread) {
+        @if (unread > 0) {
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            {{ unread }}
+          </span>
+        }
       }
     </div>
 
@@ -29,7 +30,6 @@
         class="rounded-circle avatar"
         />
       }
-      
     </div>
   </div>
 </nav>

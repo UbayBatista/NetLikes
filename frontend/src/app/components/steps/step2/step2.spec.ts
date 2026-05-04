@@ -24,8 +24,8 @@ describe('Step2', () => {
 
   it('debería fallar la validación si las contraseñas no coinciden', () => {
     component.form.patchValue({
-      password: 'password123',
-      confirmPassword: 'password456',
+      password: 'Password123',
+      confirmPassword: 'Password456',
       question: '¿En qué país naciste?',
       answer: 'España'
     });
@@ -36,8 +36,8 @@ describe('Step2', () => {
 
   it('debería ser válido si las contraseñas coinciden y todos los campos están llenos', () => {
     component.form.patchValue({
-      password: 'password123',
-      confirmPassword: 'password123',
+      password: 'Password123!',
+      confirmPassword: 'Password123!',
       question: '¿En qué país naciste?',
       answer: 'España'
     });
@@ -55,8 +55,8 @@ describe('Step2', () => {
     const spyEmit = vi.spyOn(component.toNext, 'emit');
     
     component.form.patchValue({
-      password: 'misuperpassword',
-      confirmPassword: 'misuperpassword',
+      password: 'Misuperpassword123',
+      confirmPassword: 'Misuperpassword123',
       question: '¿Cuál es el nombre de tu madre?',
       answer: 'Maria'
     });
@@ -64,7 +64,7 @@ describe('Step2', () => {
     component.notifyNext();
 
     expect(spyEmit).toHaveBeenCalledWith({
-      password: 'misuperpassword',
+      password: 'Misuperpassword123',
       securityQuestion: '¿Cuál es el nombre de tu madre?',
       answer: 'Maria'
     });

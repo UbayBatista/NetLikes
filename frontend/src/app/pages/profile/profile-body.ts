@@ -12,7 +12,7 @@ import { PasswordVerifyModalComponent } from '../../components/password-ask-moda
 
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
-import { FollowService } from "../../services/follow";
+import { FollowService } from "../../services/follow.service";
 import { MyProfile, UserProfile } from '../../models/user.models';
 import { ConfirmationModalComponent } from '../../components/confirmation-modal/confirmation-modal';
 import { BlockedUsersModalComponent } from '../../components/blocked-users/blocked-users';
@@ -60,8 +60,6 @@ export class ProfileComplete implements OnInit {
   canScrollRight = true;
   isBlockedModalOpen = false;
 
-  @ViewChild('scrollContainer') scrollContainer?: ElementRef<HTMLDivElement>;
-
   private followStateSubject = new BehaviorSubject<FollowStatus>('NONE');
   followState$ = this.followStateSubject.asObservable();
 
@@ -77,7 +75,7 @@ export class ProfileComplete implements OnInit {
   showConfirmModal = false;
   confirmModalMessage = '';
   private actionUser: string = '';
-  private actionToConfirm: 'FOLLOW' | 'UNFOLLOW' | 'BLOCK' | 'DELETE' = 'FOLLOW';
+  private actionToConfirm: 'UNFOLLOW' | 'BLOCK' | 'DELETE' | 'REMOVE_FOLLOWER' = 'UNFOLLOW';
 
   isPasswordModalOpen = false;
   isDeleteConfirmModalOpen = false;
@@ -122,10 +120,8 @@ export class ProfileComplete implements OnInit {
       this.showConfirmModal = true;
     } 
     else if (currentState === 'PENDING') {
-      this.actionToConfirm = 'UNFOLLOW';
       this.executeUnfollow(this.actionUser);
     } else {
-      this.actionToConfirm = 'FOLLOW';
       this.executeFollow(this.actionUser);
     }
   }
@@ -134,23 +130,22 @@ export class ProfileComplete implements OnInit {
     this.showConfirmModal = false;
 
     if (confirmed && this.actionUser) {
-      if (this.actionToConfirm === 'UNFOLLOW') {
-        this.executeUnfollow(this.actionUser);
+      if (this.actionToConfirm === 'UNFOLLOW' || this.actionToConfirm === 'REMOVE_FOLLOWER') {
+        this.executeSocialAction(this.actionUser, this.actionToConfirm);
       } else if (this.actionToConfirm === 'BLOCK'){
         this.executeBlock(this.actionUser);
-      } else if(this.actionToConfirm === 'DELETE') {
+      } else if (this.actionToConfirm === 'DELETE'){
         this.executeDelete();
-      } else {
+      }  
+      else {
         this.executeFollow(this.actionUser);
       }
     } else {
-      console.log('Acción cancelada');
       this.actionUser = '';
     }
   }
 
   private executeFollow(targetEmail: string) {
-    console.log(`Ejecutando lógica de seguimiento hacia ${targetEmail}...`);
     this.followService.requestFollow(targetEmail).subscribe({
       next: (followResponse) => {
         this.followStateSubject.next(followResponse.state);
@@ -168,19 +163,63 @@ export class ProfileComplete implements OnInit {
   }
 
   private executeUnfollow(targetEmail: string) {
-    console.log(`Ejecutando lógica para dejar de seguir a ${targetEmail}...`);
     this.followService.unfollow(targetEmail).subscribe({
-      next: () => {
-        console.log('Se ha dejado de seguir al usuario o cancelado la solicitud.');
-        
+      next: () => {       
         this.followStateSubject.next('NONE');
-
-        const currentFollowers = this.followersCount$.value;
-        this.followersCount$.next(Math.max(0, currentFollowers - 1));
       },
       error: (error) => console.error('Error al dejar de seguir:', error),
       complete: () => {
         this.actionUser = ''; 
+      }
+    });
+  }
+
+  handleSocialAction(event: { user: any, type: 'Seguidores' | 'Seguidos' }) {
+    const { user, type } = event;
+    this.actionUser = user.email;
+
+    if (type === 'Seguidores') {
+      this.actionToConfirm = 'REMOVE_FOLLOWER';
+      this.confirmModalMessage = `¿Estás seguro de que quieres eliminar a @${user.name} de tus seguidores?`;
+    } else {
+      this.actionToConfirm = 'UNFOLLOW';
+      this.confirmModalMessage = `¿Estás seguro de que quieres dejar de seguir a @${user.name}?`;
+    }
+
+    this.showConfirmModal = true;
+  }
+
+  private executeSocialAction(targetEmail: string, type: 'UNFOLLOW' | 'REMOVE_FOLLOWER') {
+    const request$ = type === 'REMOVE_FOLLOWER'
+      ? this.followService.remove(targetEmail)
+      : this.followService.unfollow(targetEmail);
+
+    request$.subscribe({
+      next: () => {
+        this.socialData = this.socialData.filter(u => u.email !== targetEmail);
+
+        this.itsMe$.pipe(take(1)).subscribe(itsMe => {
+          if (itsMe) {
+            if (type === 'REMOVE_FOLLOWER') {
+              this.followersCount$.next(Math.max(0, this.followersCount$.value - 1));
+            } else {
+              this.followingCount$.next(Math.max(0, this.followingCount$.value - 1));
+            }
+          } else {
+            this.followersCount$.next(Math.max(0, this.followersCount$.value - 1));
+
+            this.followStateSubject.next('NONE');
+            this.route.params.pipe(take(1)).subscribe(params => {
+              this.profileService.loadProfile(params['username']);
+            });
+          }
+        });
+
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error(`Error al ejecutar ${type}:`, err),
+      complete: () => {
+        this.actionUser = '';
       }
     });
   }
@@ -196,9 +235,7 @@ export class ProfileComplete implements OnInit {
       take(1)
     ).subscribe(profile => {
       const currentProfileEmail = (profile as any)?.email;
-      
-      console.log(`[DEBUG] Buscando ${type} para el email:`, currentProfileEmail);
-      
+
       if (!currentProfileEmail) {
         console.error('El perfil actual no tiene email. Revisa la interfaz del perfil.');
         return;
@@ -207,10 +244,9 @@ export class ProfileComplete implements OnInit {
       if (type === 'Seguidores') {
         this.followService.getFollowers(currentProfileEmail).subscribe({
           next: (users) => {
-            console.log('[DEBUG] Seguidores recibidos:', users);
             this.socialData = users.map(u => ({
               name: u.userName,
-              avatar: u.profilePicture || 'assets/default-avatar.png', 
+              avatar: u.profilePicture || 'assets/ProfilePicture.jpg', 
               email: u.email
             }));
             this.cdr.detectChanges();
@@ -220,10 +256,9 @@ export class ProfileComplete implements OnInit {
       } else {
         this.followService.getFollowing(currentProfileEmail).subscribe({
           next: (users) => {
-            console.log('[DEBUG] Seguidos recibidos:', users);
             this.socialData = users.map(u => ({
               name: u.userName,
-              avatar: u.profilePicture || 'assets/default-avatar.png',
+              avatar: u.profilePicture || 'assets/ProfilePicture.jpg',
               email: u.email
             }));
             this.cdr.detectChanges();
@@ -232,25 +267,6 @@ export class ProfileComplete implements OnInit {
         });
       }
     });
-  }
-
-  scroll(direction: 'left' | 'right') {
-    if (!this.scrollContainer) return;
-    
-    const element = this.scrollContainer.nativeElement;
-    const scrollAmount = direction === 'left' ? -300 : 300;
-    
-    element.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    setTimeout(() => this.updateScrollButtons(), 350);
-  }
-
-  updateScrollButtons() {
-    const el = this.scrollContainer?.nativeElement;
-    if (!el) return;
-
-    this.canScrollLeft = el.scrollLeft > 5;
-    this.canScrollRight = el.scrollLeft + el.clientWidth < el.scrollWidth - 5;
-    this.cdr.detectChanges();
   }
 
   toggleEdit() {
