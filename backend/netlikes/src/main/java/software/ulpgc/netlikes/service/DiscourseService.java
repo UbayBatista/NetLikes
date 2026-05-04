@@ -197,7 +197,7 @@ public class DiscourseService {
 
     public void ignoreDiscourseUser(String blockerUsername, String blockedUsername) {
         // ¡LA CLAVE! Usamos el endpoint exclusivo de Ignorar, no el de nivel de notificaciones
-        String url = discourseUrl + "/u/" + blockedUsername + "/ignore.json";
+        String url = discourseUrl + "/u/" + blockedUsername + "notification_level.json";
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -206,6 +206,7 @@ public class DiscourseService {
 
         Map<String, Object> body = new HashMap<>();
         // Discourse ahora exige una fecha. Le ponemos el año 2099 para que sea un bloqueo permanente
+        body.put("notification_level", "ignore");
         body.put("expiring_at", "2099-12-31T23:59:59.000Z"); 
 
         try {
@@ -259,19 +260,25 @@ public class DiscourseService {
 
     public void unignoreDiscourseUser(String blockerUsername, String unblockedUsername) {
         
-        String url = discourseUrl + "/u/" + unblockedUsername + "/unignore.json";
+        String url = discourseUrl + "/u/" + unblockedUsername + "notification_level.json";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Api-Key", apiKey);
         headers.set("Api-Username", blockerUsername);
 
+        Map<String, Object> body = new HashMap<>();
+        body.put("notification_level", "normal");
+        body.put("expiring_at", ""); 
+
         try {
             // No necesitamos mandar body para desbloquear, pero enviamos un mapa vacío
-            HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(new HashMap<>(), headers);
+            HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
             
+            
             System.out.println("✅ Usuario " + unblockedUsername + " DESBLOQUEADO en Discourse.");
+            System.out.println("👉 Respuesta: " + response.getStatusCode());
 
         } catch (Exception e) {
             System.err.println("Error al desbloquear en Discourse: " + e.getMessage());
