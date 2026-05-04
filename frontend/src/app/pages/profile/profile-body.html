@@ -43,17 +43,15 @@
       ]; track section.title) {
         
         <app-profile-components [title]="section.title" [isEditing]="isEditing">
-          <div class="film-items">
-                @for(film of section.data; track film.id) {
-                  <div class="film-item">
-                    <app-film 
-                      [posterPath]="film.posterPath" 
-                      [title]="film.title" 
-                      [id]="film.id">
-                    </app-film>
-                  </div>
-                }
-              </div>
+          @for(film of section.data; track film.id) {
+            <div class="film-item">
+              <app-film 
+                [posterPath]="film.posterPath" 
+                [title]="film.title" 
+                [id]="film.id">
+              </app-film>
+            </div>
+          }
         </app-profile-components>
       }
 
