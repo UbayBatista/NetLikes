@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from "@angular/router";
 
 interface User {
   name: string;
@@ -26,6 +27,8 @@ export class SocialModal {
   @Output() tabChange = new EventEmitter<'Seguidores' | 'Seguidos'>();
   @Output() actionClick = new EventEmitter<SocialAction>();
 
+  constructor(private router: Router) {}
+
   handleAction(user: any) {
     this.actionClick.emit({
       user: user,
@@ -42,5 +45,10 @@ export class SocialModal {
     
     this.title = newTab;
     this.tabChange.emit(newTab); 
+  }
+  
+  goToProfile(userName: string) {
+    this.router.navigate(['/profile', userName]);
+    this.closeModal();
   }
 }

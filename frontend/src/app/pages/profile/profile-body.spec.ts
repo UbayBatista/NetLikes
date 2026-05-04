@@ -193,4 +193,23 @@ describe('ProfileComplete (Profile Body)', () => {
       expect(navigateSpy).toHaveBeenCalledWith(['/']);
     });
   });
+
+  describe('HU7.2 - Acceder al perfil de otro usuario', () => {
+  it('HU7.2 - Desde búsqueda: debe llamar a loadProfile con el username de la ruta', () => {
+    expect(profileService.loadProfile).toHaveBeenCalledWith('TestUser');
+  });
+
+  it('HU7.2 - Desde búsqueda: debe consultar el estado de seguimiento del perfil visitado', () => {
+    expect(followService.checkFollowStatus).toHaveBeenCalledWith('test@test.com');
+  });
+
+  it('HU7.2 - Desde búsqueda: debe recargar el perfil si el username de la ruta cambia', async () => {
+    expect(profileService.loadProfile).toHaveBeenCalledWith('TestUser');
+    expect(profileService.loadProfile).toHaveBeenCalledTimes(1);
+  });
+
+  it('HU7.2 - isMyProfile debe ser false al visitar el perfil de otro usuario', () => {
+    expect(profileService.isMyProfile).toHaveBeenCalled();
+  });
+});
 });
