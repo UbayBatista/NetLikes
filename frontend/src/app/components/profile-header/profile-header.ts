@@ -15,6 +15,7 @@ export class ProfileHeader {
   @Input() otherUser: "Yes" | "No" = "No";
   @Input() followers: number = 0;
   @Input() following: number = 0;
+  @Input() option: 'Ajustes' | 'Bloquear' = 'Ajustes';
 
   private _userPicture: string | null = null;
   @Input() set userPicture(value: string | null) {
