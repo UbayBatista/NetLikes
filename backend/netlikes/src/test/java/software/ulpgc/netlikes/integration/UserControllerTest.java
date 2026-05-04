@@ -247,4 +247,106 @@ class UserControllerTest {
         User updatedUser = userRepository.findById("juan@email.com").get();
         assertTrue(passwordEncoder.matches("nueva1234", updatedUser.getPassword()));
     }
+    
+    @Test
+    void userProfile_shouldReturn200_whenAccountIsPublic() throws Exception {
+        User requester = new User();
+        requester.setEmail("yo@email.com");
+        requester.setPassword(passwordEncoder.encode("1234"));
+        requester.setBirthdate(Date.valueOf("1990-01-01"));
+        requester.setName("Yo");
+        requester.setSecurityQuestion("?");
+        requester.setAnswer("x");
+        requester.setFavoriteGenres(List.of(savedGenre1, savedGenre2, savedGenre3));
+        userRepository.save(requester);
+
+        User target = new User();
+        target.setEmail("ana@email.com");
+        target.setPassword(passwordEncoder.encode("1234"));
+        target.setBirthdate(Date.valueOf("1995-03-10"));
+        target.setName("Ana");
+        target.setSecurityQuestion("?");
+        target.setAnswer("x");
+        target.setAccountPrivacity(false);
+        target.setFavoriteGenres(List.of(savedGenre1, savedGenre2, savedGenre3));
+        userRepository.save(target);
+
+        mockMvc.perform(get("/users/profile/Ana")
+                .param("requesterEmail", "yo@email.com"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.email").value("ana@email.com"))
+            .andExpect(jsonPath("$.userName").value("Ana"))
+            .andExpect(jsonPath("$.isPrivate").value(false))
+            .andExpect(jsonPath("$.watchedFilms").isArray())
+            .andExpect(jsonPath("$.laterFilms").isArray());
+    }
+
+    @Test
+    void userProfile_shouldReturn200_withNullLists_whenPrivateAndNotFollowing() throws Exception {
+        User requester = new User();
+        requester.setEmail("yo@email.com");
+        requester.setPassword(passwordEncoder.encode("1234"));
+        requester.setBirthdate(Date.valueOf("1990-01-01"));
+        requester.setName("Yo");
+        requester.setSecurityQuestion("?");
+        requester.setAnswer("x");
+        requester.setFavoriteGenres(List.of(savedGenre1, savedGenre2, savedGenre3));
+        userRepository.save(requester);
+
+        User target = new User();
+        target.setEmail("ana@email.com");
+        target.setPassword(passwordEncoder.encode("1234"));
+        target.setBirthdate(Date.valueOf("1995-03-10"));
+        target.setName("Ana");
+        target.setSecurityQuestion("?");
+        target.setAnswer("x");
+        target.setAccountPrivacity(true);
+        target.setFavoriteGenres(List.of(savedGenre1, savedGenre2, savedGenre3));
+        userRepository.save(target);
+
+        mockMvc.perform(get("/users/profile/Ana")
+                .param("requesterEmail", "yo@email.com"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.isPrivate").value(true))
+            .andExpect(jsonPath("$.watchedFilms").doesNotExist())
+            .andExpect(jsonPath("$.laterFilms").doesNotExist());
+    }
+
+    @Test
+    void userProfile_shouldReturn200_withContent_whenViewingOwnProfile() throws Exception {
+        createAndSaveUser("juan@email.com");
+
+        mockMvc.perform(get("/users/profile/Juan")
+                .param("requesterEmail", "juan@email.com"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.email").value("juan@email.com"))
+            .andExpect(jsonPath("$.watchedFilms").isArray())
+            .andExpect(jsonPath("$.laterFilms").isArray());
+    }
+
+    @Test
+    void searchBy_shouldReturn200_withMatchingUsers() throws Exception {
+        createAndSaveUser("juan@email.com");
+
+        mockMvc.perform(get("/users/search")
+                .param("query", "Juan"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].userName").value("Juan"));
+    }
+
+    @Test
+    void searchBy_shouldReturn200_withEmptyList_whenNoMatches() throws Exception {
+        mockMvc.perform(get("/users/search")
+                .param("query", "UsuarioQueNoExiste"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void searchBy_shouldReturn200_withEmptyList_whenQueryIsBlank() throws Exception {
+        mockMvc.perform(get("/users/search")
+                .param("query", ""))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(0));
+    }
 }
