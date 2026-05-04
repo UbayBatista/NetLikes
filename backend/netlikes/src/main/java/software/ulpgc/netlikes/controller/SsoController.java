@@ -33,7 +33,7 @@ class SsoPayload {
 @RestController
 @RequestMapping("/auth")
 @CrossOrigin(
-    origins = "https://net-likes.vercel.app", 
+    origins = "https://net-likes-bay.vercel.app", 
     allowCredentials = "true", 
     allowedHeaders = "*", 
     methods = {RequestMethod.POST, RequestMethod.GET, RequestMethod.OPTIONS}
