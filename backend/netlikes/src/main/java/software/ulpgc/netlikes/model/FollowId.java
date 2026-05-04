@@ -1,15 +1,12 @@
 package software.ulpgc.netlikes.model;
 
 import java.io.Serializable;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class FollowId implements Serializable {
-    private String followerId;
-    private String followedId;
+    private String follower; 
+    private String followed; 
 }

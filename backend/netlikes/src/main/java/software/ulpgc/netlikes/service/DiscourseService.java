@@ -297,16 +297,19 @@ public class DiscourseService {
 
     public void deleteTopic(Integer topicId, String originalTitle) {
         try {
+            HttpHeaders headers = setHeaders();
+
             String renameEndpoint = discourseUrl + "/t/" + topicId + ".json";
             Map<String, Object> body = new HashMap<>();
             body.put("title", "Eliminado-" + System.currentTimeMillis() + "-" + originalTitle);
-            
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body);
-            restTemplate.exchange(renameEndpoint, HttpMethod.PUT, request, String.class);
+
+            HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
+            restTemplate.exchange(renameEndpoint, HttpMethod.PUT, putRequest, String.class);
 
             String deleteEndpoint = discourseUrl + "/t/" + topicId + ".json";
-            restTemplate.delete(deleteEndpoint);
-            
+            HttpEntity<Void> deleteRequest = new HttpEntity<>(headers);
+            restTemplate.exchange(deleteEndpoint, HttpMethod.DELETE, deleteRequest, String.class);
+
             System.out.println("Foro renombrado y eliminado correctamente. ID: " + topicId);
         } catch (Exception e) {
             System.err.println("Error al eliminar el foro en Discourse: " + e.getMessage());

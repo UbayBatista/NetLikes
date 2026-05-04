@@ -46,10 +46,14 @@ public class FollowControllerTest {
     @Autowired
     private FollowRepository followRepository;
 
+    private User paco;
+    private User elena;
+
     @BeforeEach
     void setUp() {
         java.sql.Date dummyDate = new java.sql.Date(System.currentTimeMillis());
-        User paco = new User();
+        
+        paco = new User();
         paco.setEmail("paco@gmail.com");
         paco.setName("Paco");
         paco.setBirthdate(dummyDate);
@@ -58,7 +62,7 @@ public class FollowControllerTest {
         paco.setAnswer("Rojo");
         userRepository.save(paco);
 
-        User elena = new User();
+        elena = new User();
         elena.setEmail("elena@gmail.com");
         elena.setName("Elena");
         elena.setAccountPrivacity(true);
@@ -69,50 +73,46 @@ public class FollowControllerTest {
         userRepository.save(elena);
     }
 
-    // TEST 1
     @Test
     void testRequestFollow_ReturnsOkAndPendingState() throws Exception {
         mockMvc.perform(post("/follows/elena@gmail.com")
                 .header("X-User-Id", "paco@gmail.com"))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.state").value("PENDING"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.state").value("PENDING"));
     }
 
-    // TEST 2
     @Test
     void testAcceptFollow_ReturnsOkAndAcceptedState() throws Exception {
-        Follow pendingRequest = new Follow("paco@gmail.com", "elena@gmail.com", Follow.State.PENDING);
+        // Usamos los objetos paco y elena creados en setUp
+        Follow pendingRequest = new Follow(paco, elena, Follow.State.PENDING);
         followRepository.save(pendingRequest);
 
         mockMvc.perform(post("/follows/paco@gmail.com/accept")
                 .header("X-User-Id", "elena@gmail.com"))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.state").value("ACCEPTED"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.state").value("ACCEPTED"));
     }
 
-    // TEST 3
     @Test
     void testRejectFollow_ReturnsNoContent() throws Exception {
-        Follow pendingRequest = new Follow("paco@gmail.com", "elena@gmail.com", Follow.State.PENDING);
+        Follow pendingRequest = new Follow(paco, elena, Follow.State.PENDING);
         followRepository.save(pendingRequest);
 
         mockMvc.perform(delete("/follows/paco@gmail.com/reject")
                 .header("X-User-Id", "elena@gmail.com"))
-               .andExpect(status().isNoContent());
+                .andExpect(status().isNoContent());
     }
 
-    // TEST 4
     @Test
     void testUnfollow_ReturnsNoContent() throws Exception {
-        Follow acceptedFollow = new Follow("paco@gmail.com", "elena@gmail.com", Follow.State.ACCEPTED);
+        Follow acceptedFollow = new Follow(paco, elena, Follow.State.ACCEPTED);
         followRepository.save(acceptedFollow);
 
         mockMvc.perform(delete("/follows/elena@gmail.com/unfollow")
                 .header("X-User-Id", "paco@gmail.com"))
-               .andExpect(status().isNoContent());
+                .andExpect(status().isNoContent());
     }
 
-    // TEST 5
     @Test
     void testRequestFollow_PublicAccount_ReturnsOkAndAcceptedState() throws Exception {
         java.sql.Date dummyDate = new java.sql.Date(System.currentTimeMillis());
@@ -128,21 +128,20 @@ public class FollowControllerTest {
 
         mockMvc.perform(post("/follows/publico@gmail.com")
                 .header("X-User-Id", "paco@gmail.com"))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.state").value("ACCEPTED"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.state").value("ACCEPTED"));
     }
 
-    // TEST 6
     @Test
     void testGetPendingRequests_ReturnsOkAndList() throws Exception {
-        Follow pendingRequest = new Follow("paco@gmail.com", "elena@gmail.com", Follow.State.PENDING);
+        Follow pendingRequest = new Follow(paco, elena, Follow.State.PENDING);
         followRepository.save(pendingRequest);
 
         mockMvc.perform(get("/follows/pending")
                 .header("X-User-Id", "elena@gmail.com"))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$").isArray())
-               .andExpect(jsonPath("$[0].email").value("paco@gmail.com"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].email").value("paco@gmail.com"));
     }
 }
 
@@ -177,14 +176,12 @@ class FollowRepositoryIntegrationTest {
 
     private Follow createFollow(User follower, User followed, Follow.State state) {
         Follow follow = new Follow();
-        follow.setFollowerId(follower.getEmail());
-        follow.setFollowedId(followed.getEmail());
+        follow.setFollower(follower);
+        follow.setFollowed(followed);
         follow.setState(state);
-        
         return follow;
     }
 
-    // TEST 7
     @Test
     @DisplayName("Should save follow with PENDING state")
     void shouldSaveFollow() {
@@ -198,14 +195,14 @@ class FollowRepositoryIntegrationTest {
         entityManager.flush(); 
 
         assertThat(savedFollow).isNotNull();
-        assertThat(savedFollow.getFollowerId()).isEqualTo("follower@test.com");
+        // Accedemos al email a través del objeto User
+        assertThat(savedFollow.getFollower().getEmail()).isEqualTo("follower@test.com");
         assertThat(savedFollow.getState()).isEqualTo(Follow.State.PENDING);
 
         assertThat(repository.findAll()).hasSize(1);
         assertThat(repository.findAll().get(0)).isEqualTo(savedFollow);
     }
 
-    // TEST 8
     @Test
     @DisplayName("Should update state from PENDING to ACCEPTED")
     void shouldUpdateFollowState() {
@@ -223,7 +220,6 @@ class FollowRepositoryIntegrationTest {
         assertThat(repository.findAll()).hasSize(1); 
     }
 
-    // TEST 9
     @Test
     @DisplayName("Should delete follow")
     void shouldRemoveFollow() {

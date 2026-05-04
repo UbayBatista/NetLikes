@@ -2,6 +2,10 @@ package software.ulpgc.netlikes.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.sql.Date;
+
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,12 +21,14 @@ public class Notify {
     @ManyToOne
     @MapsId("emailSender")
     @JoinColumn(name = "email_sender")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonIgnore
     private User userSender;
 
     @ManyToOne
     @MapsId("emailReceiver")
     @JoinColumn(name = "email_receiver")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonIgnore
     private User userReceiver;
 

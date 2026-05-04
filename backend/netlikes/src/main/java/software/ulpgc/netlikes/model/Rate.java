@@ -1,5 +1,8 @@
 package software.ulpgc.netlikes.model;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
@@ -17,6 +20,7 @@ public class Rate {
     @ManyToOne
     @MapsId("email")
     @JoinColumn(name = "user_email")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonIgnore
     private User user;
 

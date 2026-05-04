@@ -1,6 +1,5 @@
 package software.ulpgc.netlikes.service;
 
-import software.ulpgc.netlikes.service.DiscourseService;
 import software.ulpgc.netlikes.dto.UserResponseDTO;
 import software.ulpgc.netlikes.model.Follow;
 import software.ulpgc.netlikes.model.FollowId;
@@ -38,12 +37,15 @@ public class FollowService {
             throw new IllegalArgumentException("Un usuario no puede seguirse a sí mismo.");
         }
 
-        boolean isPrivateAccount = userRepository.findById(followedId)
-                                    .orElseThrow(() -> new RuntimeException("User not found"))
-                                    .isAccountPrivacity();
-        Follow.State initialState = isPrivateAccount ? Follow.State.PENDING : Follow.State.ACCEPTED;
+        User followed = userRepository.findById(followedId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        User follower = userRepository.findById(followerId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Follow newFollow = new Follow(followerId, followedId, initialState);
+        Follow.State initialState = followed.isAccountPrivacity() ? Follow.State.PENDING : Follow.State.ACCEPTED;
+
+        Follow newFollow = new Follow(follower, followed, initialState);
         Follow saved = followRepository.save(newFollow);
 
         if (initialState == Follow.State.PENDING) {
@@ -70,47 +72,35 @@ public class FollowService {
     }
 
     public List<UserResponseDTO> getFollowersOf(String targetEmail) {
-        return followRepository.findByFollowedId(targetEmail).stream()
+        return followRepository.findByFollowed_Email(targetEmail).stream()
                 .filter(follow -> follow.getState() == Follow.State.ACCEPTED)
                 .map(follow -> {
-                    return userRepository.findById(follow.getFollowerId())
-                            .map(user -> new UserResponseDTO(
-                                    user.getEmail(), 
-                                    user.getName(), 
-                                    user.getProfilePicture()
-                            ))
-                            .orElse(null);
+                    User u = follow.getFollower();
+                    return new UserResponseDTO(u.getEmail(), u.getName(), u.getProfilePicture());
                 })
-                .filter(dto -> dto != null) 
                 .toList();
     }
 
     public List<UserResponseDTO> getFollowsOf(String targetEmail) {
-        return followRepository.findByFollowerId(targetEmail).stream()
+        return followRepository.findByFollower_Email(targetEmail).stream()
                 .filter(follow -> follow.getState() == Follow.State.ACCEPTED)
                 .map(follow -> {
-                    return userRepository.findById(follow.getFollowedId())
-                            .map(user -> new UserResponseDTO(
-                                    user.getEmail(), 
-                                    user.getName(), 
-                                    user.getProfilePicture()
-                            ))
-                            .orElse(null);
+                    User u = follow.getFollowed();
+                    return new UserResponseDTO(u.getEmail(), u.getName(), u.getProfilePicture());
                 })
-                .filter(dto -> dto != null)
                 .toList();
     }
 
     public Integer countFollowersOf(String userId) {
-        return (int)this.getFollowersOf(userId).stream().count();
+        return getFollowersOf(userId).size();
     }
 
     public Integer countFollowsOf(String userId) {
-        return (int)this.getFollowsOf(userId).stream().count();
+        return getFollowsOf(userId).size();
     }
 
     public Follow updateFollow(Follow follow) {
-        return followRepository.findById(new FollowId(follow.getFollowerId(), follow.getFollowedId()))
+        return followRepository.findById(new FollowId(follow.getFollower().getEmail(), follow.getFollowed().getEmail()))
                 .map(existingFollow -> {
                     existingFollow.setState(follow.getState());
                     return followRepository.save(existingFollow);
@@ -124,16 +114,12 @@ public class FollowService {
     }
 
     public List<UserResponseDTO> getPendingRequests(String followedId) {
-        return followRepository.findByFollowedId(followedId).stream()
+        return followRepository.findByFollowed_Email(followedId).stream()
             .filter(follow -> follow.getState() == Follow.State.PENDING)
-            .map(follow -> userRepository.findById(follow.getFollowerId())
-                .map(user -> new UserResponseDTO(
-                    user.getEmail(),
-                    user.getName(),
-                    user.getProfilePicture()
-                ))
-                .orElse(null))
-            .filter(dto -> dto != null)
+            .map(follow -> {
+                User u = follow.getFollower();
+                return new UserResponseDTO(u.getEmail(), u.getName(), u.getProfilePicture());
+            })
             .toList();
     }
 
@@ -159,12 +145,13 @@ public class FollowService {
         User blocked = userRepository.findById(blockedEmail)
                 .orElseThrow(() -> new RuntimeException("Usuario a bloquear no encontrado"));
 
+
         String blockerUsername = discourseService.getRealUsernameByEmail(blockerEmail);
         String blockedUsername = discourseService.getRealUsernameByEmail(blockedEmail);
 
         if (blockerUsername != null && blockedUsername != null) {
             try {
-                discourseService.ignoreDiscourseUser(blockerUsername, blockedUsername);
+               discourseService.ignoreDiscourseUser(blockerUsername, blockedUsername);
             } catch (Exception e) {
                 System.out.println("Aviso: No se pudo bloquear en Discourse. " + e.getMessage());
             }
@@ -172,51 +159,36 @@ public class FollowService {
             System.out.println("⏭️ Omitiendo bloqueo en Discourse: Al menos uno de los usuarios no tiene cuenta en el foro.");
         }
 
-        followRepository.findById(new FollowId(blockerEmail, blockedEmail))
-                .ifPresent(followRepository::delete);
-                
-        followRepository.findById(new FollowId(blockedEmail, blockerEmail))
-                .ifPresent(followRepository::delete);
+        followRepository.findById(new FollowId(blockerEmail, blockedEmail)).ifPresent(followRepository::delete);
+        followRepository.findById(new FollowId(blockedEmail, blockerEmail)).ifPresent(followRepository::delete);
 
-        Follow follow = new Follow();
-        follow.setFollowedId(blockedEmail);
-        follow.setFollowerId(blockerEmail);
-        follow.setState(Follow.State.BLOCKED);
-        followRepository.save(follow);
-
+        Follow blockRecord = new Follow(blocker, blocked, Follow.State.BLOCKED);
+        followRepository.save(blockRecord);
     }
 
     @Transactional
     public void unblockUser(@NonNull String blockerEmail, @NonNull String unblockedEmail) {
-        User blocker = userRepository.findById(blockerEmail)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        User unblocked = userRepository.findById(unblockedEmail)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
         String blockerUsername = discourseService.getRealUsernameByEmail(blockerEmail);
         String unblockedUsername = discourseService.getRealUsernameByEmail(unblockedEmail);
 
-        try {
-            discourseService.unignoreDiscourseUser(blockerUsername, unblockedUsername);
-        } catch (Exception e) {
-            System.out.println("Aviso: No se pudo desbloquear en Discourse (posiblemente el usuario no ha entrado nunca). " + e.getMessage());
+        if (blockerUsername != null && unblockedUsername != null) {
+            try {
+                discourseService.unignoreDiscourseUser(blockerUsername, unblockedUsername);
+            } catch (Exception e) {
+                System.out.println("Aviso: No se pudo desbloquear en Discourse. " + e.getMessage());
+            }
         }
 
         followRepository.deleteById(new FollowId(blockerEmail, unblockedEmail));
     }
 
     public List<UserResponseDTO> getBlockedUsers(String userEmail) {
-        return followRepository.findByFollowerId(userEmail).stream()
+        return followRepository.findByFollower_Email(userEmail).stream()
                 .filter(follow -> follow.getState() == Follow.State.BLOCKED)
-                .map(follow -> userRepository.findById(follow.getFollowedId())
-                        .map(user -> new UserResponseDTO(
-                                user.getEmail(), 
-                                user.getName(), 
-                                user.getProfilePicture()
-                        ))
-                        .orElse(null))
-                .filter(dto -> dto != null)
+                .map(follow -> {
+                    User u = follow.getFollowed();
+                    return new UserResponseDTO(u.getEmail(), u.getName(), u.getProfilePicture());
+                })
                 .toList();
     }
-    
 }
