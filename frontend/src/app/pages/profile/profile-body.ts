@@ -293,7 +293,7 @@ export class ProfileComplete implements OnInit {
   onPasswordVerified() {
     this.isPasswordModalOpen = false; 
     this.actionToConfirm = 'DELETE';
-    this.confirmModalMessage = `¿Estás seguro de que desear borrar permanentemente tu cuenta?`;
+    this.confirmModalMessage = `¿Estás seguro de que deseas borrar permanentemente tu cuenta?`;
     this.showConfirmModal = true;
   }
 

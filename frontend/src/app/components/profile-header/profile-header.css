@@ -1,3 +1,21 @@
+:host ::ng-deep .form-check-input {
+  background-color: #ccc;
+  border-color: #ccc;
+}
+
+:host ::ng-deep .form-check-input:checked {
+  background-color: #2a2827;
+  border-color: #605c5b;
+}
+
+:host ::ng-deep .form-check-input::before {
+  background-color: white;
+}
+
+:host ::ng-deep .form-check-input:focus {
+  border-color: transparent;
+  box-shadow: none;
+}
 
 .dropdown-item:active, 
 .dropdown-item:focus {
