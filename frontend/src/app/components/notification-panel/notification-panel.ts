@@ -26,6 +26,7 @@ export class NotificationPanel implements OnInit, OnDestroy, OnChanges {
   
   notifications: NotifyResponse[] = [];
   private notifSub!: Subscription;
+  router: any;
   
   constructor(
     private followService: FollowService, 
@@ -81,5 +82,10 @@ export class NotificationPanel implements OnInit, OnDestroy, OnChanges {
 
   goBack() {
     this.view = 'notifications';
+  }
+
+  goToProfile(userName: string) {
+    this.router.navigate(['/profile', userName]);
+    this.close();
   }
 }
