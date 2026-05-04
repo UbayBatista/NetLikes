@@ -196,17 +196,30 @@ public class DiscourseService {
     }
 
     public void ignoreDiscourseUser(String blockerUsername, String blockedUsername) {
-        String url = discourseUrl + "/u/" + blockedUsername + "/notification_level.json";
+        // ¡LA CLAVE! Usamos el endpoint exclusivo de Ignorar, no el de nivel de notificaciones
+        String url = discourseUrl + "/u/" + blockedUsername + "/ignore.json";
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Api-Key", apiKey);
-        headers.set("Api-Username", blockerUsername);
+        headers.set("Api-Username", blockerUsername); // La persona que bloquea
 
         Map<String, Object> body = new HashMap<>();
-        body.put("notification_level", 2);
+        // Discourse ahora exige una fecha. Le ponemos el año 2099 para que sea un bloqueo permanente
+        body.put("expiring_at", "2099-12-31T23:59:59.000Z"); 
 
         try {
+            HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
+            // La acción de ignorar se hace mediante un PUT (si te diera error 404, cámbialo a HttpMethod.POST)
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
+            
+            System.out.println("✅ ¡BINGO! Usuario " + blockedUsername + " IGNORADO por " + blockerUsername);
+            System.out.println("👉 Respuesta: " + response.getStatusCode());
+
+        } catch (Exception e) {
+            System.err.println("Error en la lógica de bloqueo de Discourse: " + e.getMessage());
+            throw new RuntimeException("No se pudo sincronizar el bloqueo con el foro.");
+        }
             // 1. Obtener los datos actuales del usuario
             // ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
             // ObjectMapper mapper = new ObjectMapper();
@@ -242,32 +255,29 @@ public class DiscourseService {
 
             // HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
             // ResponseEntity<String> putResponse = restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
-
-            HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
-            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
-            
-            System.out.println("✅ ¡BINGO! Usuario " + blockedUsername + " bloqueado por " + blockerUsername);
-            System.out.println("👉 Respuesta: " + response.getStatusCode());
-
-        } catch (Exception e) {
-            System.err.println("Error en la lógica de bloqueo de Discourse: " + e.getMessage());
-            throw new RuntimeException("No se pudo sincronizar el bloqueo con el foro.");
-        }
     }
 
     public void unignoreDiscourseUser(String blockerUsername, String unblockedUsername) {
-        String url = discourseUrl + "/u/" + unblockedUsername + "/notification_level.json";
+        
+        String url = discourseUrl + "/u/" + unblockedUsername + "/unignore.json";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Api-Key", apiKey);
         headers.set("Api-Username", blockerUsername);
 
-        // HttpEntity<String> getRequest = new HttpEntity<>(headers);
-        Map<String, Object> body = new HashMap<>();
-        body.put("notification_level", 0);
-
         try {
+            // No necesitamos mandar body para desbloquear, pero enviamos un mapa vacío
+            HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(new HashMap<>(), headers);
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
+            
+            System.out.println("✅ Usuario " + unblockedUsername + " DESBLOQUEADO en Discourse.");
+
+        } catch (Exception e) {
+            System.err.println("Error al desbloquear en Discourse: " + e.getMessage());
+            throw new RuntimeException("No se pudo sincronizar el desbloqueo con el foro.");
+        }
+    
             // ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, getRequest, String.class);
             
             // ObjectMapper mapper = new ObjectMapper();
@@ -302,14 +312,6 @@ public class DiscourseService {
 
             // HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
             // restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
-            HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
-            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
-            System.out.println("Usuario " + unblockedUsername + " desbloqueado en Discourse.");
-
-        } catch (Exception e) {
-            System.err.println("Error al desbloquear en Discourse: " + e.getMessage());
-            throw new RuntimeException("No se pudo sincronizar el desbloqueo con el foro.");
-        }
     }
 
     /**
