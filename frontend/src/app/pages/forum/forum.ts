@@ -11,7 +11,7 @@ import { ChatWindow } from '../../components/chat-window/chat-window';
 })
 export class Forum { 
   currentTitle: string = 'Selecciona un foro'; 
-  currentTopicId?: number; 
+  currentTopicId: number | null = null
   selectedForum: boolean = false;
 
   seeChat(event: { title: string, topicId: number }) {

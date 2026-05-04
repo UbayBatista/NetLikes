@@ -11,17 +11,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 @Service
 public class DiscourseService {
 
-    private final RestTemplate discourseRestTemplate;
 
     @Value("${discourse.api.url}")
     private String discourseUrl;
@@ -35,8 +35,10 @@ public class DiscourseService {
     @Value("${discourse.api.username}")
     private String apiUsername;
 
-    public DiscourseService(RestTemplate discourseRestTemplate) {
-        this.discourseRestTemplate = discourseRestTemplate;
+    private final RestTemplate restTemplate;
+
+    public DiscourseService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
     @NonNull
@@ -48,26 +50,28 @@ public class DiscourseService {
         return headers;
     }
 
-    public Integer createMovieTopic(String movieTitle, Integer tmdbId) {
-        Integer existingId = getForumIdByTitle(movieTitle);
-        
-        if (existingId != null) {
-            return existingId; 
-        }
-
-        String uniqueRaw = "¡Bienvenido al foro oficial de la película **" + movieTitle + "**! \n\n¿Qué te ha parecido? Anímate a compartir tu opinión con otros usuarios suscritos. \n\n<!-- " + System.currentTimeMillis() + " -->";
+    public Integer createMovieForum(String filmTitle) {
+        RestTemplate restTemplate = new RestTemplate();
         String endpoint = discourseUrl + "/posts.json";
+
+        HttpHeaders headers = setHeaders();
+            
         Map<String, Object> body = new HashMap<>();
+        
+        String uniqueRaw = "¡Bienvenido al foro oficial de la película **" + filmTitle + "**! \n\n¿Qué te ha parecido? Anímate a compartir tu opinión con otros usuarios suscritos. \n\n<!-- " + System.currentTimeMillis() + " -->";
 
-        body.put("title", "Foro oficial: " + movieTitle); 
+        body.put("title", "Foro oficial: " + filmTitle); 
+        
         body.put("raw", uniqueRaw);
-        body.put("category", moviesCategoryId); 
+        
+        body.put("category", moviesCategoryId);
 
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body);
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
         try {
-            ResponseEntity<Map> response = discourseRestTemplate.exchange(endpoint, HttpMethod.POST, request, Map.class);
-            if (response.getBody() != null && response.getBody().containsKey("topic_id")) {
+            ResponseEntity<Map> response = restTemplate.postForEntity(endpoint, request, Map.class);
+            
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 return (Integer) response.getBody().get("topic_id");
             }
         } catch (Exception e) {
@@ -77,21 +81,31 @@ public class DiscourseService {
     }
 
     public Integer getForumIdByTitle(String filmTitle) {
+        RestTemplate restTemplate = new RestTemplate();
+        
         String endpoint = discourseUrl + "/search.json?q=" + filmTitle;
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Api-Key", apiKey);
+        headers.set("Api-Username", apiUsername);
+
+        HttpEntity<String> request = new HttpEntity<>(headers);
+
         try {
-            ResponseEntity<JsonNode> response = discourseRestTemplate.exchange(
+            ResponseEntity<JsonNode> response = restTemplate.exchange(
                 endpoint, 
                 HttpMethod.GET, 
-                null, 
+                request, 
                 JsonNode.class
             );
 
             JsonNode root = response.getBody();
 
             if (root != null && root.has("topics") && root.get("topics").isArray()) {
+                
                 String targetTitle = "Foro oficial: " + filmTitle;
 
+                // Recorremos los resultados para encontrar el exacto
                 for (JsonNode topic : root.get("topics")) {
                     String topicTitle = topic.get("title").asText();
                     
@@ -105,6 +119,28 @@ public class DiscourseService {
         }
         
         return null;
+    }
+
+    public Integer getDiscourseUserId(String username) {
+        String url = discourseUrl + "/u/" + username + ".json";
+        
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                url, 
+                HttpMethod.GET, 
+                new HttpEntity<>(setHeaders()), 
+                String.class
+            );
+            
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response.getBody());
+            
+            return root.get("user").get("id").asInt();
+            
+        } catch (Exception e) {
+            System.out.println("El usuario " + username + " aún no tiene cuenta en Discourse.");
+            return null;
+        }
     }
 
     public void deleteDiscourseUserById(String discourseId) {
@@ -127,7 +163,7 @@ public class DiscourseService {
         
         try {
             HttpEntity<Map<String, Object>> deleteRequest = new HttpEntity<>(body, headers);
-            discourseRestTemplate.exchange(deleteUrl, HttpMethod.DELETE, deleteRequest, String.class);
+            restTemplate.exchange(deleteUrl, HttpMethod.DELETE, deleteRequest, String.class);
             
             System.out.println("Usuario eliminado de Discourse correctamente.");
         } catch (Exception e) {
@@ -135,96 +171,195 @@ public class DiscourseService {
         }
     }
 
-    public void ignoreDiscourseUser(String blockerUsername, String blockedUsername) {
-        String url = discourseUrl + "/u/" + blockerUsername + ".json";
-
-        HttpHeaders headers = setHeaders();
-
-        HttpEntity<String> getRequest = new HttpEntity<>(headers);
+    public String getRealUsernameByEmail(String email) {
+        String url = discourseUrl + "/admin/users/list/active.json?filter=" + email;
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Api-Key", apiKey);
+        headers.set("Api-Username", "system");
 
         try {
-
-            ResponseEntity<String> response = discourseRestTemplate.exchange(url, HttpMethod.GET, getRequest, String.class);
-            
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response.getBody());
+            String user = "";
 
-            JsonNode userNode = root.get("user");
-            List<String> ignoredList = new ArrayList<>();
-
-            if (userNode.has("ignored_usernames") && !userNode.get("ignored_usernames").isNull()) {
-                userNode.get("ignored_usernames").forEach(node -> ignoredList.add(node.asText()));
+            if (root.isArray() && root.size() > 0) {
+                user = root.get(0).get("username").asText();
+                System.out.println("El usuario bloqueado y encontra en discourse es: " + user);
+                return user;
             }
+        } catch (Exception e) {
+            System.err.println("No se pudo obtener el username real para " + email);
+        }
+        return null;
+    }
 
-            if (!ignoredList.contains(blockedUsername)) {
-                ignoredList.add(blockedUsername);
-            } else {
-                System.out.println("El usuario ya estaba bloqueado en Discourse.");
-                return; 
-            }
+    public void ignoreDiscourseUser(String blockerUsername, String blockedUsername) {
+        // ¡LA CLAVE! Usamos el endpoint exclusivo de Ignorar, no el de nivel de notificaciones
+        String url = discourseUrl + "/u/" + blockedUsername + "notification_level.json";
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Api-Key", apiKey);
+        headers.set("Api-Username", blockerUsername); // La persona que bloquea
 
-            Map<String, Object> body = new HashMap<>();
-            body.put("ignored_usernames", ignoredList); 
+        Map<String, Object> body = new HashMap<>();
+        // Discourse ahora exige una fecha. Le ponemos el año 2099 para que sea un bloqueo permanente
+        body.put("notification_level", "ignore");
+        body.put("expiring_at", "2099-12-31T23:59:59.000Z"); 
 
+        try {
             HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
-            discourseRestTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
+            // La acción de ignorar se hace mediante un PUT (si te diera error 404, cámbialo a HttpMethod.POST)
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
             
-            System.out.println("Lista de bloqueados actualizada para " + blockerUsername);
+            System.out.println("✅ ¡BINGO! Usuario " + blockedUsername + " IGNORADO por " + blockerUsername);
+            System.out.println("👉 Respuesta: " + response.getStatusCode());
 
         } catch (Exception e) {
             System.err.println("Error en la lógica de bloqueo de Discourse: " + e.getMessage());
             throw new RuntimeException("No se pudo sincronizar el bloqueo con el foro.");
         }
+            // 1. Obtener los datos actuales del usuario
+            // ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            // ObjectMapper mapper = new ObjectMapper();
+            // JsonNode root = mapper.readTree(response.getBody());
+            // JsonNode userNode = root.get("user");
+            
+            // List<String> ignoredList = new ArrayList<>();
+            // JsonNode ignoredNode = userNode.get("ignored_usernames");
+
+            // if (ignoredNode != null && !ignoredNode.isNull()) {
+            //     if (ignoredNode.isArray()) {
+            //         ignoredNode.forEach(node -> ignoredList.add(node.asText()));
+            //     } else if (ignoredNode.isTextual()) {
+            //         String[] names = ignoredNode.asText().split(",");
+            //         for (String n : names) {
+            //             if (!n.trim().isEmpty()) ignoredList.add(n.trim());
+            //         }
+            //     }
+            // }
+
+            // if (!ignoredList.contains(blockedUsername)) {
+            //     ignoredList.add(blockedUsername);
+            // } else {
+            //     System.out.println("El usuario ya estaba bloqueado en Discourse.");
+            //     return; 
+            // }
+
+            // Map<String, Object> body = new HashMap<>();
+
+            // String textList = String.join(",", ignoredList);
+            // body.put("ignored_usernames", textList);
+            // body.put("muted_usernames", textList);
+
+            // HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
+            // ResponseEntity<String> putResponse = restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
     }
 
     public void unignoreDiscourseUser(String blockerUsername, String unblockedUsername) {
-        String url = discourseUrl + "/u/" + blockerUsername + ".json";
+        
+        String url = discourseUrl + "/u/" + unblockedUsername + "notification_level.json";
 
-        HttpHeaders headers = setHeaders();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Api-Key", apiKey);
+        headers.set("Api-Username", blockerUsername);
 
-        HttpEntity<String> getRequest = new HttpEntity<>(headers);
+        Map<String, Object> body = new HashMap<>();
+        body.put("notification_level", "normal");
+        body.put("expiring_at", ""); 
 
         try {
-            ResponseEntity<String> response = discourseRestTemplate.exchange(url, HttpMethod.GET, getRequest, String.class);
-            
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(response.getBody());
-            JsonNode userNode = root.get("user");
-            
-            List<String> ignoredList = new ArrayList<>();
-
-            if (userNode.has("ignored_usernames") && !userNode.get("ignored_usernames").isNull()) {
-                userNode.get("ignored_usernames").forEach(node -> ignoredList.add(node.asText()));
-            }
-
-            if (ignoredList.contains(unblockedUsername)) {
-                ignoredList.remove(unblockedUsername);
-            } else {
-                System.out.println("El usuario no estaba en la lista de ignorados.");
-                return; 
-            }
-
-            Map<String, Object> body = new HashMap<>();
-            body.put("ignored_usernames", ignoredList); 
-
+            // No necesitamos mandar body para desbloquear, pero enviamos un mapa vacío
             HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
-            discourseRestTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
             
-            System.out.println("Usuario " + unblockedUsername + " desbloqueado en Discourse.");
+            
+            System.out.println("✅ Usuario " + unblockedUsername + " DESBLOQUEADO en Discourse.");
+            System.out.println("👉 Respuesta: " + response.getStatusCode());
 
         } catch (Exception e) {
             System.err.println("Error al desbloquear en Discourse: " + e.getMessage());
             throw new RuntimeException("No se pudo sincronizar el desbloqueo con el foro.");
         }
+    
+            // ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, getRequest, String.class);
+            
+            // ObjectMapper mapper = new ObjectMapper();
+            // JsonNode root = mapper.readTree(response.getBody());
+            // JsonNode userNode = root.get("user");
+            // List<String> ignoredList = new ArrayList<>();
+
+            // JsonNode ignoredNode = userNode.get("ignored_usernames");
+
+            // if (ignoredNode != null && !ignoredNode.isNull()) {
+            //     if (ignoredNode.isArray()) {
+            //         ignoredNode.forEach(node -> ignoredList.add(node.asText()));
+            //     } else if (ignoredNode.isTextual()) {
+            //         String[] names = ignoredNode.asText().split(",");
+            //         for (String n : names) {
+            //             if (!n.trim().isEmpty()) ignoredList.add(n.trim());
+            //         }
+            //     }
+            // }
+
+            // if (ignoredList.contains(unblockedUsername)) {
+            //     ignoredList.remove(unblockedUsername);
+            // } else {
+            //     System.out.println("El usuario no estaba en la lista de ignorados.");
+            //     return; 
+            // }
+
+            // Map<String, Object> body = new HashMap<>();
+
+            // String textList = String.join(",", ignoredList);
+            // body.put("ignored_usernames", textList);
+
+            // HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
+            // restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
     }
 
-    
+    /**
+     * Elimina a un usuario del foro cuando se da de baja en Netlikes.
+     * Busca el ID internamente usando el username.
+     */
+    public void deleteDiscourseUserByUsername(String username) {
+        try {
+            // 1. Primero buscamos el ID interno de Discourse de ese usuario
+            String getUserUrl = discourseUrl + "/u/" + username + ".json";
+            ResponseEntity<String> response = restTemplate.exchange(getUserUrl, HttpMethod.GET, new HttpEntity<>(setHeaders()), String.class);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response.getBody());
+            
+            int discourseId = root.get("user").get("id").asInt();
+
+            // 2. Con el ID, procedemos a borrarlo (o anonimizarlo)
+            String deleteUrl = discourseUrl + "/admin/users/" + discourseId + ".json";
+            
+            Map<String, Object> body = new HashMap<>();
+            body.put("delete_posts", true); // Borra también todo lo que escribió
+            
+            HttpEntity<Map<String, Object>> deleteRequest = new HttpEntity<>(body, setHeaders());
+            restTemplate.exchange(deleteUrl, HttpMethod.DELETE, deleteRequest, String.class);
+            System.out.println("Usuario " + username + " eliminado de Discourse correctamente.");
+
+        } catch (Exception e) {
+            System.err.println("Error al eliminar usuario en Discourse: " + e.getMessage());
+        }
+    }
+
+    // public String createDiscourseUser(String name, String email, String password) {
+    //     // TODO Auto-generated method stub
+    //     throw new UnsupportedOperationException("Unimplemented method 'createDiscourseUser'");
+    // }
 
     public Integer getTopicPostCount(Integer topicId) {
         String endpoint = discourseUrl + "/t/" + topicId + ".json";
 
         try {
-            ResponseEntity<JsonNode> response = discourseRestTemplate.exchange(
+            ResponseEntity<JsonNode> response = restTemplate.exchange(
                 endpoint, 
                 HttpMethod.GET, 
                 null, 
@@ -253,10 +388,10 @@ public class DiscourseService {
             body.put("title", "Eliminado-" + System.currentTimeMillis() + "-" + originalTitle);
             
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(body);
-            discourseRestTemplate.exchange(renameEndpoint, HttpMethod.PUT, request, String.class);
+            restTemplate.exchange(renameEndpoint, HttpMethod.PUT, request, String.class);
 
             String deleteEndpoint = discourseUrl + "/t/" + topicId + ".json";
-            discourseRestTemplate.delete(deleteEndpoint);
+            restTemplate.delete(deleteEndpoint);
             
             System.out.println("Foro renombrado y eliminado correctamente. ID: " + topicId);
         } catch (Exception e) {
