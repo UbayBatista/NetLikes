@@ -29,25 +29,41 @@ public class ForumService {
     }
 
     @Transactional
-    public Forum createForumForFilmId(Integer filmId) {
-        Film film = filmRepository.findById(filmId)
-                .orElseThrow(() -> new RuntimeException("FilmNotFound"));
-
+     public Integer getOrCreateForum(Integer filmId, String filmTitle) {
         Optional<Forum> existingForum = forumRepository.findById(filmId);
+
         if (existingForum.isPresent()) {
-            return existingForum.get();
+            return existingForum.get().getDiscourseTopicId();
+        }
+        
+        Integer newTopicId = null;
+
+        try {
+            newTopicId = discourseService.createMovieForum(filmTitle);
+        } catch (Exception e) {
+
+            System.out.println("El foro posiblemente ya existe en Discourse. Buscando ID...");           
+            newTopicId = discourseService.getForumIdByTitle(filmTitle);
+            
+            if (newTopicId == null) {
+                throw new RuntimeException("No se pudo crear ni encontrar el foro en Discourse.", e);
+            }
         }
 
-        Integer topicId = discourseService.createMovieTopic(film.getTitle(), film.getId());
+        if (newTopicId != null) {
+            Film film = filmRepository.findById(filmId)
+                .orElseThrow(() -> new RuntimeException("La película con ID " + filmId + " no existe en la BD local. Guárdala antes de crear el foro."));
 
-        if (topicId != null) {
-            Forum forum = new Forum();
-            forum.setFilm(film);
-            forum.setDiscourseTopicId(topicId);
-            return this.forumRepository.save(forum);
-        } else {
-            throw new RuntimeException("DiscourseError");
+            Forum newForum = new Forum();
+            newForum.setFilm(film);
+            newForum.setDiscourseTopicId(newTopicId);
+            
+            this.forumRepository.save(newForum);
+
+            System.out.println("¡Foro creado/obtenido con éxito! FilmID:" + filmId + "Forum ID: " + newTopicId);            
+            return newTopicId;
         }
+        return null;
     }
 
     @Transactional

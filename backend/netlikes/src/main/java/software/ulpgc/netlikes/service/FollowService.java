@@ -1,5 +1,6 @@
 package software.ulpgc.netlikes.service;
 
+import software.ulpgc.netlikes.service.DiscourseService;
 import software.ulpgc.netlikes.dto.UserResponseDTO;
 import software.ulpgc.netlikes.model.Follow;
 import software.ulpgc.netlikes.model.FollowId;
@@ -123,9 +124,18 @@ public class FollowService {
         User blocked = userRepository.findById(blockedEmail)
                 .orElseThrow(() -> new RuntimeException("Usuario a bloquear no encontrado"));
 
-        String blockerUsername = blocker.getName().replaceAll("\\s+", "").toLowerCase();
-        String blockedUsername = blocked.getName().replaceAll("\\s+", "").toLowerCase();
+        String blockerUsername = discourseService.getRealUsernameByEmail(blockerEmail);
+        String blockedUsername = discourseService.getRealUsernameByEmail(blockedEmail);
 
+        if (blockerUsername != null && blockedUsername != null) {
+            try {
+                discourseService.ignoreDiscourseUser(blockerUsername, blockedUsername);
+            } catch (Exception e) {
+                System.out.println("Aviso: No se pudo bloquear en Discourse. " + e.getMessage());
+            }
+        } else {
+            System.out.println("⏭️ Omitiendo bloqueo en Discourse: Al menos uno de los usuarios no tiene cuenta en el foro.");
+        }
 
         followRepository.findById(new FollowId(blockerEmail, blockedEmail))
                 .ifPresent(followRepository::delete);
@@ -148,8 +158,14 @@ public class FollowService {
         User unblocked = userRepository.findById(unblockedEmail)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        String blockerUsername = blocker.getName().replaceAll("\\s+", "").toLowerCase();
-        String unblockedUsername = unblocked.getName().replaceAll("\\s+", "").toLowerCase();
+        String blockerUsername = discourseService.getRealUsernameByEmail(blockerEmail);
+        String unblockedUsername = discourseService.getRealUsernameByEmail(unblockedEmail);
+
+        try {
+            discourseService.unignoreDiscourseUser(blockerUsername, unblockedUsername);
+        } catch (Exception e) {
+            System.out.println("Aviso: No se pudo desbloquear en Discourse (posiblemente el usuario no ha entrado nunca). " + e.getMessage());
+        }
 
         followRepository.deleteById(new FollowId(blockerEmail, unblockedEmail));
     }

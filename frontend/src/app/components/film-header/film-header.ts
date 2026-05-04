@@ -5,6 +5,7 @@ import { UserInteractionService } from '../../services/user-interaction.service'
 import { SubscriptionService } from '../../services/subscription.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { ForumService } from '../../services/forum.service';
 
 @Component({
   selector: 'app-film-header',
@@ -30,6 +31,8 @@ export class FilmHeader implements OnInit {
   private subscriptionService = inject(SubscriptionService);
   private authService = inject(AuthService);
   private router = inject(Router);
+
+  constructor(private forumService: ForumService) {}
 
   ngOnInit(): void {
     if (this.film?.posterPath) {
@@ -189,7 +192,7 @@ export class FilmHeader implements OnInit {
         this.cdr.detectChanges();
 
         if (!this.isSubscribed) {
-          this.subscriptionService.subscribeToFilm(userEmail, this.film.id).subscribe({
+          this.subscriptionService.subscribeToFilm(userEmail, this.film.id, this.film.title).subscribe({
             next: () => {
               console.log('¡Suscripción exitosa en el backend!');
               this.isSubscribed = true; 
@@ -247,5 +250,39 @@ export class FilmHeader implements OnInit {
       this.dominantColor = `rgba(${~~(r/count)}, ${~~(g/count)}, ${~~(b/count)}, 0.35)`;
       this.cdr.detectChanges();
     };
+  }
+
+  forumUrl: string | null = null;
+  
+  suscribeToForum(filmId: number, filmTitle: string) {
+    console.log('Botón pulsado. Enviando petición a Spring Boot...');
+
+    this.authService.getCurrentUser().subscribe(user => { 
+
+        if (!user || !user.email) {
+          alert('¡Debes iniciar sesión para poder suscribirte a un foro!');
+          return; 
+        }
+      
+      
+      console.log('Usuario detectado:', user.email, 'Enviando petición a Spring Boot...')
+
+      this.forumService.suscribeForum(filmId, filmTitle, user.email).subscribe({
+        next: (response) => {
+          console.log('¡Éxito! El ID del foro en Discourse es:', response.discourseTopicId);
+
+          this.forumUrl = `https://netlikes.duckdns.org/t/${response.discourseTopicId}`;
+
+          alert('¡Foro creado/obtenido con éxito! ID: ' + response.discourseTopicId);
+
+        },
+        error: (error) => {
+          console.error('Ha ocurrido un error:', error);
+          alert('Error al crear el foro. Revisa la consola.');
+        }
+      });
+    
+    });
+
   }
 }
