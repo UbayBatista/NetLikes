@@ -9,6 +9,7 @@ import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.repository.GenreRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -348,5 +349,83 @@ class UserControllerTest {
                 .param("query", ""))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void changePrivacy_shouldReturn200_whenSetToPrivate() throws Exception {
+        createAndSaveUser("juan@email.com");
+
+        String body = "{\"isPrivate\": true}";
+
+        mockMvc.perform(patch("/users/myProfile/juan@email.com/privacy")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isOk());
+
+        User updated = userRepository.findById("juan@email.com").get();
+        assertTrue(updated.isAccountPrivacity());
+    }
+
+    @Test
+    void changePrivacy_shouldReturn200_whenSetToPublic() throws Exception {
+        User user = createAndSaveUser("juan@email.com");
+        user.setAccountPrivacity(true);
+        userRepository.save(user);
+
+        String body = "{\"isPrivate\": false}";
+
+        mockMvc.perform(patch("/users/myProfile/juan@email.com/privacy")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isOk());
+
+        User updated = userRepository.findById("juan@email.com").get();
+        assertFalse(updated.isAccountPrivacity());
+    }
+
+    @Test
+    void userProfile_shouldHideListsWhenPrivateAndNotFollowing() throws Exception {
+        User target = new User();
+        target.setEmail("privado@email.com");
+        target.setPassword(passwordEncoder.encode("1234"));
+        target.setBirthdate(Date.valueOf("1995-03-10"));
+        target.setName("Privado");
+        target.setSecurityQuestion("?");
+        target.setAnswer("x");
+        target.setAccountPrivacity(true);
+        target.setFavoriteGenres(List.of(savedGenre1, savedGenre2, savedGenre3));
+        userRepository.save(target);
+
+        createAndSaveUser("juan@email.com");
+
+        mockMvc.perform(get("/users/profile/Privado")
+                .param("requesterEmail", "juan@email.com"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.userName").value("Privado"))
+            .andExpect(jsonPath("$.watchedFilms").doesNotExist())
+            .andExpect(jsonPath("$.watchLaterFilms").doesNotExist());
+    }
+
+    @Test
+    void userProfile_shouldShowListsWhenPublicAndNotFollowing() throws Exception {
+        User target = new User();
+        target.setEmail("publico@email.com");
+        target.setPassword(passwordEncoder.encode("1234"));
+        target.setBirthdate(Date.valueOf("1995-03-10"));
+        target.setName("Publico");
+        target.setSecurityQuestion("?");
+        target.setAnswer("x");
+        target.setAccountPrivacity(false);
+        target.setFavoriteGenres(List.of(savedGenre1, savedGenre2, savedGenre3));
+        userRepository.save(target);
+
+        createAndSaveUser("juan@email.com");
+
+        mockMvc.perform(get("/users/profile/Publico")
+                .param("requesterEmail", "juan@email.com"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.userName").value("Publico"))
+            .andExpect(jsonPath("$.watchedFilms").isArray())
+            .andExpect(jsonPath("$.laterFilms").isArray());
     }
 }
