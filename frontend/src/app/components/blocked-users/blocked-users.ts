@@ -1,6 +1,6 @@
 import { Component, EventEmitter, inject, OnInit, Output, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FollowService, LoggedUser } from '../../services/follow';
+import { FollowService, LoggedUser } from '../../services/follow.service';
 
 @Component({
   selector: 'app-blocked-users-modal',
