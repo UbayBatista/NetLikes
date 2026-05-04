@@ -18,10 +18,10 @@
           @for (user of blockedUsers; track user.email) {
             <div class="user-item">
               <div class="user-info">
-                <img [src]="user.profilePicture || 'assets/default-avatar.png'" alt="Avatar" class="user-avatar">
+                <img [src]="user.profilePicture || 'assets/ProfilePicture.jpg'" alt="Avatar" class="user-avatar">
                 <span class="user-name fw-semibold">{{ user.userName }}</span>
               </div>
-              <button class="btn btn-outline-primary btn-sm" (click)="unblock(user)">
+              <button class="btn btn-dark btn-sm" (click)="unblock(user)">
                 Desbloquear
               </button>
             </div>
