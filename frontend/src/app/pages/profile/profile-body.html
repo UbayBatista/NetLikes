@@ -19,8 +19,7 @@
                 ? (isEditing ? 'Continuar' : 'Editar Perfil') 
                 : ((followButtonText$ | async) ?? 'Seguir')" 
 
-      [otherUser]="(itsMe$ | async) ? 'No' : 'Yes'"
-      [option]="(itsMe$ | async) ? 'Ajustes' : 'Bloquear'"
+      [otherUser]="(itsMe$ | async) ? false : true"
 
       (editClick)="toggleEdit()"
       (followClick)="onFollowRequest(profile.userName, profile.email)"

@@ -12,10 +12,9 @@ export class ProfileHeader {
   @Input() userName: string = '';
   @Input() isPrivate: boolean = false;
   @Input() type: string = "Editar Perfil";
-  @Input() otherUser: "Yes" | "No" = "No";
+  @Input() otherUser: boolean = false;
   @Input() followers: number = 0;
   @Input() following: number = 0;
-  @Input() option: 'Ajustes' | 'Bloquear' = 'Ajustes';
 
   private _userPicture: string | null = null;
   @Input() set userPicture(value: string | null) {

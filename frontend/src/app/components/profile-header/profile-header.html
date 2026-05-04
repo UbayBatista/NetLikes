@@ -2,7 +2,7 @@
 
     <div class="position-absolute top-0 end-0 p-3 z-3 position-settings">
         <button class="btn btn-light border-dark shadow-sm settings-btn" (click)="toggleMenu()">
-            @if (otherUser === "Yes") {
+            @if (otherUser) {
                 <i class="bi bi-three-dots-vertical"></i>
             } @else {
                 <i class="bi bi-gear-fill"></i>

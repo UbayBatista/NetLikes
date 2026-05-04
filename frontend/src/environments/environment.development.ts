@@ -1,5 +1,5 @@
 export const environment = {
     production: false,
-    apiUrl: 'http://localhost:8080',
-    discourseUrl: 'http://localhost'
+    apiUrl: 'https://api-db.duckdns.org',
+    discourseUrl: 'https://netlikes.duckdns.org'
 };

@@ -8,7 +8,7 @@ import { NotifyResponse } from '../models/notify.models';
   providedIn: 'root'
 })
 export class NotificationService {
-  private readonly apiUrl = 'http://localhost:8080/notifications';
+  private readonly apiUrl = 'https://api-db.duckdns.org/notifications';
   private eventSource: EventSource | null = null;
 
   private notificationsSubject = new BehaviorSubject<NotifyResponse[]>([]);
