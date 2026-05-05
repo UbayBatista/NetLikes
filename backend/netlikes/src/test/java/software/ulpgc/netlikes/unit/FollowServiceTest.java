@@ -59,7 +59,7 @@ public class FollowServiceTest {
     @Test
     void testRequestFollow_PrivateAccount_CreatesPendingAndNotifies() {
         when(userRepository.findById("privado@gmail.com")).thenReturn(Optional.of(privateUser));
-        when(userRepository.getReferenceById("paco@gmail.com")).thenReturn(paco);
+        when(userRepository.findById("paco@gmail.com")).thenReturn(Optional.of(paco));
         when(followRepository.save(any(Follow.class))).thenAnswer(i -> i.getArguments()[0]);
 
         Follow result = followService.requestFollow("paco@gmail.com", "privado@gmail.com");
@@ -96,7 +96,7 @@ public class FollowServiceTest {
         publicUser.setAccountPrivacity(false); 
 
         when(userRepository.findById("publico@gmail.com")).thenReturn(Optional.of(publicUser));
-        when(userRepository.getReferenceById("paco@gmail.com")).thenReturn(paco);
+        when(userRepository.findById("paco@gmail.com")).thenReturn(Optional.of(paco));
         when(followRepository.save(any(Follow.class))).thenAnswer(i -> i.getArguments()[0]);
 
         Follow result = followService.requestFollow("paco@gmail.com", "publico@gmail.com");
