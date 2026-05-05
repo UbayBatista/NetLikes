@@ -3,6 +3,7 @@ import { NotificationService } from './notification.service';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { AuthService } from './auth.service';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { provideRouter } from '@angular/router';
 
 describe('NotificationService', () => {
   let service: NotificationService;
@@ -18,7 +19,8 @@ describe('NotificationService', () => {
       imports: [HttpClientTestingModule],
       providers: [
         NotificationService,
-        { provide: AuthService, useValue: authServiceMock }
+        { provide: AuthService, useValue: authServiceMock },
+        provideRouter([])
       ]
     });
 
@@ -37,7 +39,7 @@ describe('NotificationService', () => {
 
     service.markAllAsRead();
 
-    const req = httpMock.expectOne('http://localhost:8080/notifications/test@test.com/read-all');
+    const req = httpMock.expectOne('https://api-db.duckdns.org/notifications/test@test.com/read-all');
     expect(req.request.method).toBe('PUT');
     
     req.flush({}); 

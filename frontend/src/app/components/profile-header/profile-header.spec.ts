@@ -55,7 +55,7 @@ describe('ProfileHeader', () => {
 
   it('handleMainAction() should emit editClick when otherUser is No', () => {
     let emitted = false;
-    component.otherUser = 'No';
+    component.otherUser = false;
     component.editClick.subscribe(() => emitted = true);
 
     component.handleMainAction();
@@ -65,7 +65,7 @@ describe('ProfileHeader', () => {
 
   it('handleMainAction() should emit followClick when otherUser is Yes', () => {
     let emitted = false;
-    component.otherUser = 'Yes';
+    component.otherUser = true;
     component.followClick.subscribe(() => emitted = true);
 
     component.handleMainAction();

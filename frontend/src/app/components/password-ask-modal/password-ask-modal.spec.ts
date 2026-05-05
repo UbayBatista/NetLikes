@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PasswordAskModal } from './password-ask-modal';
+import { PasswordVerifyModalComponent } from './password-ask-modal';
 
-describe('PasswordAskModal', () => {
-  let component: PasswordAskModal;
-  let fixture: ComponentFixture<PasswordAskModal>;
+describe('PasswordVerifyModalComponent', () => {
+  let component: PasswordVerifyModalComponent;
+  let fixture: ComponentFixture<PasswordVerifyModalComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PasswordAskModal],
+      imports: [PasswordVerifyModalComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(PasswordAskModal);
+    fixture = TestBed.createComponent(PasswordVerifyModalComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

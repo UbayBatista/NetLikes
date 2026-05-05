@@ -1,17 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ForoSso } from './foro-sso';
+import { ForumSsoComponent } from './forum-sso';
+import { provideRouter } from '@angular/router';
 
-describe('ForoSso', () => {
-  let component: ForoSso;
-  let fixture: ComponentFixture<ForoSso>;
+describe('ForumSsoComponent', () => {
+  let component: ForumSsoComponent;
+  let fixture: ComponentFixture<ForumSsoComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ForoSso],
+      imports: [ForumSsoComponent],
+      providers: [provideRouter([])]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ForoSso);
+    fixture = TestBed.createComponent(ForumSsoComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

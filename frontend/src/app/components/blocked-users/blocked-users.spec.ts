@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { BlockedUsers } from './blocked-users';
+import { BlockedUsersModalComponent } from './blocked-users';
 
-describe('BlockedUsers', () => {
-  let component: BlockedUsers;
-  let fixture: ComponentFixture<BlockedUsers>;
+describe('BlockedUsersModalComponent', () => {
+  let component: BlockedUsersModalComponent;
+  let fixture: ComponentFixture<BlockedUsersModalComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BlockedUsers],
+      imports: [BlockedUsersModalComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(BlockedUsers);
+    fixture = TestBed.createComponent(BlockedUsersModalComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

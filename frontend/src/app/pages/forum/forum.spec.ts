@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Forum } from './forum';
 import { ForumList } from '../../components/forum-list/forum-list';
 import { ChatWindow } from '../../components/chat-window/chat-window';
+import { provideRouter } from '@angular/router';
 
 describe('Forum', () => {
   let component: Forum;
@@ -9,7 +10,8 @@ describe('Forum', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Forum, ForumList, ChatWindow]
+      imports: [Forum, ForumList, ChatWindow],
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(Forum);

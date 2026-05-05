@@ -116,7 +116,7 @@ describe('ProfileComplete (Profile Body)', () => {
       component.onFollowRequest('TargetUser', 'target@test.com'); 
       const startFollowers = component.followersCount$.value;
 
-      component.handleUnfollowConfirmation(true);
+      component.handleConfirmation(true);
 
       expect(component.showConfirmModal).toBe(false); 
       expect(followService.unfollow).toHaveBeenCalledWith('target@test.com'); 
@@ -128,7 +128,7 @@ describe('ProfileComplete (Profile Body)', () => {
       component['followStateSubject'].next('ACCEPTED');
       component.onFollowRequest('TargetUser', 'target@test.com');
 
-      component.handleUnfollowConfirmation(false);
+      component.handleConfirmation(false);
 
       expect(component.showConfirmModal).toBe(false); 
       expect(followService.unfollow).not.toHaveBeenCalled(); 
@@ -158,7 +158,7 @@ describe('ProfileComplete (Profile Body)', () => {
     it('Dado el modal abierto, Cuando confirma, Entonces elimina seguidor y actualiza la lista', () => {
       component.handleSocialAction({ user: { name: 'UsuarioMolesto', email: 'molesto@test.com' }, type: 'Seguidores' });
 
-      component.handleUnfollowConfirmation(true);
+      component.handleConfirmation(true);
 
       expect(component.showConfirmModal).toBe(false); 
       expect(followService.remove).toHaveBeenCalledWith('molesto@test.com'); 
