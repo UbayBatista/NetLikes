@@ -7,14 +7,14 @@
   </div>
 
   <div class="list-container">
-    @for (pelicula of filtereForums; track pelicula.title; let i = $index) {
+    @for (film of filteredForums(); track film.forumTopicId; let i = $index) {
       <div 
       class="foro-item" 
-      [class.active]="pelicula.active"
+      [class.active]="film.active"
       (click)="selectForum(i)"
       >
-      <div class="foro-info" (click)="selectForum(1)">
-        <span class="foro-name"> {{ pelicula.title }}</span>
+      <div class="foro-info">
+        <span class="foro-name"> {{ film.title }}</span>
       </div>
     </div>
     } @empty {

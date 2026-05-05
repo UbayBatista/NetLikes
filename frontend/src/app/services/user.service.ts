@@ -1,16 +1,45 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MyProfile, UserProfile } from '../models/user.models';
 import { catchError, Observable, throwError, of } from 'rxjs';
 import { User } from '../models/user.models';
+import { environment } from '../../environments/environment';
+
+export interface LoggedUser {
+  email: string;
+  userName: string;
+  profilePicture: string;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserService {
-  private readonly dbUrl = 'http://localhost:8080/users';
+  private readonly dbUrl = `${environment.apiUrl}/users`;
 
   constructor(private http: HttpClient) {}
+
+  private getHeaders(): HttpHeaders {
+    
+    const userString = localStorage.getItem('user'); 
+    let currentUserId = '';
+
+    if (userString) {
+      try {
+        const user: LoggedUser = JSON.parse(userString);
+
+        currentUserId = user.email; 
+        
+      } catch (error) {
+        console.error('Error al parsear el usuario del localStorage', error);
+      }
+      }
+
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'X-User-Id': currentUserId 
+    });
+  }
 
   getUsers(email: string): Observable<User[]> {
     return this.http.get<User[]>(`${this.dbUrl}?mail=${email}`)
@@ -44,8 +73,25 @@ export class UserService {
 
   updatePrivacy(email: string, isPrivate: boolean): Observable<void> {
     return this.http.patch<void>(`${this.dbUrl}/myProfile/${email}/privacy`, { isPrivate });
-  }private handleError(error: any): Observable<never> {
+  }
+  
+  private handleError(error: any): Observable<never> {
     return throwError(() => new Error('Something went wrong; please try again later.'));
+  }
+
+  deleteUser(): Observable<void> {
+    return this.http.delete<void>(
+      `${this.dbUrl}`, 
+      { headers: this.getHeaders() }
+    );
+  }
+
+  verifyPassword(password: string): Observable<{valid: boolean}> {
+    return this.http.post<{valid: boolean}>(
+      `${this.dbUrl}/verify-password`, 
+      { password }, 
+      { headers: this.getHeaders() }
+    );
   }
 }
 

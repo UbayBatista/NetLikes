@@ -1,4 +1,4 @@
-package software.ulpgc.netlikes.api;
+package software.ulpgc.netlikes.tmdbApi;
 
 import java.time.LocalDate;
 import java.util.stream.Collectors;
@@ -8,11 +8,12 @@ import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import software.ulpgc.netlikes.dto.FilmRequestDTO;
-import software.ulpgc.netlikes.api.TmdbModels.Film;
-import software.ulpgc.netlikes.api.TmdbModels.Video;
-import software.ulpgc.netlikes.api.TmdbModels.Genre;
-import software.ulpgc.netlikes.api.TmdbModels.Provider;
-import software.ulpgc.netlikes.api.TmdbModels.CastMember;
+import software.ulpgc.netlikes.tmdbApi.TmdbModels.CastMember;
+import software.ulpgc.netlikes.tmdbApi.TmdbModels.Film;
+import software.ulpgc.netlikes.tmdbApi.TmdbModels.Genre;
+import software.ulpgc.netlikes.tmdbApi.TmdbModels.Provider;
+import software.ulpgc.netlikes.tmdbApi.TmdbModels.Video;
+
 import java.sql.Date;
 import java.util.List;
 import java.util.Map;

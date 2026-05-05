@@ -16,7 +16,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/marks")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
 public class MarkController {
 
     private final MarkService markService;

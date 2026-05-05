@@ -47,6 +47,7 @@ public class Film{
         inverseJoinColumns = @JoinColumn(name = "platformId")    
     )
 
+    @JsonIgnore
     private List<Platform> watchProviders;
 
     @OneToMany(mappedBy = "film")
@@ -59,9 +60,11 @@ public class Film{
         joinColumns = @JoinColumn(name = "filmId"),
         inverseJoinColumns = @JoinColumn(name = "genreId")
     )
+    @JsonIgnore
     private List<Genre> genres;
 
     @OneToMany(mappedBy = "film", cascade = CascadeType.ALL)
+    @JsonIgnore
     private Set<Participate> cast;
 
     @OneToMany(mappedBy = "film", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -69,5 +72,6 @@ public class Film{
     private List<Video> videos;
 
     @OneToOne(mappedBy = "film", cascade = CascadeType.ALL)
+    @JsonIgnore
     private Forum forum;
 }

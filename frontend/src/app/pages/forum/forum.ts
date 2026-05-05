@@ -9,15 +9,17 @@ import { ChatWindow } from '../../components/chat-window/chat-window';
   templateUrl: './forum.html',
   styleUrl: './forum.css'
 })
-
 export class Forum { 
-  currentTitle: string = 'Los juegos del hambre';
+  currentTitle: string = 'Selecciona un foro'; 
+  currentTopicId: number | null = null
   selectedForum: boolean = false;
 
-  seeChat(event: { title: string }) {
+  seeChat(event: { title: string, topicId: number }) {
     this.currentTitle = event.title;
+    this.currentTopicId = event.topicId; 
     this.selectedForum = true;
   }
+  
   returnToList() {
     this.selectedForum = false;
   }

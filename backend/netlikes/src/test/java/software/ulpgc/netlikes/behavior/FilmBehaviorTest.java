@@ -11,11 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+import software.ulpgc.netlikes.service.FilmService;
 
 import software.ulpgc.netlikes.dto.FilmResponseDTO;
 import software.ulpgc.netlikes.model.Film;
 import software.ulpgc.netlikes.repository.FilmRepository;
-import software.ulpgc.netlikes.service.FilmService;
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,

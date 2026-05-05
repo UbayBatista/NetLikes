@@ -13,6 +13,7 @@ import software.ulpgc.netlikes.repository.FollowRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
 import software.ulpgc.netlikes.service.FollowService;
 import software.ulpgc.netlikes.service.NotifyService;
+import software.ulpgc.netlikes.service.DiscourseService;
 
 import java.util.Optional;
 
@@ -33,29 +34,38 @@ public class FollowServiceTest {
     @Mock
     private NotifyService notifyService;
 
+    @Mock
+    private DiscourseService discourseService;
+
     @InjectMocks
     private FollowService followService;
 
+    private User paco;
     private User privateUser;
     private Follow pendingFollow;
 
     @BeforeEach
     void setUp() {
+        paco = new User();
+        paco.setEmail("paco@gmail.com");
+
         privateUser = new User();
         privateUser.setEmail("privado@gmail.com");
         privateUser.setAccountPrivacity(true);
 
-        pendingFollow = new Follow("paco@gmail.com", "privado@gmail.com", Follow.State.PENDING);
+        pendingFollow = new Follow(paco, privateUser, Follow.State.PENDING);
     }
 
     @Test
     void testRequestFollow_PrivateAccount_CreatesPendingAndNotifies() {
         when(userRepository.findById("privado@gmail.com")).thenReturn(Optional.of(privateUser));
+        when(userRepository.getReferenceById("paco@gmail.com")).thenReturn(paco);
         when(followRepository.save(any(Follow.class))).thenAnswer(i -> i.getArguments()[0]);
 
         Follow result = followService.requestFollow("paco@gmail.com", "privado@gmail.com");
 
         assertEquals(Follow.State.PENDING, result.getState());
+        assertEquals("paco@gmail.com", result.getFollower().getEmail());
         verify(followRepository, times(1)).save(any(Follow.class));
         verify(notifyService, times(1)).createFollowNotification("paco@gmail.com", "privado@gmail.com");
     }
@@ -86,6 +96,7 @@ public class FollowServiceTest {
         publicUser.setAccountPrivacity(false); 
 
         when(userRepository.findById("publico@gmail.com")).thenReturn(Optional.of(publicUser));
+        when(userRepository.getReferenceById("paco@gmail.com")).thenReturn(paco);
         when(followRepository.save(any(Follow.class))).thenAnswer(i -> i.getArguments()[0]);
 
         Follow result = followService.requestFollow("paco@gmail.com", "publico@gmail.com");

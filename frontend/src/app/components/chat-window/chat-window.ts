@@ -1,53 +1,114 @@
-import { Component, Output, EventEmitter, signal, Input } from '@angular/core';
+import { Component, Output, EventEmitter, Input, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MessageBubble } from '../message-bubble/message-bubble';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-chat-window',
   standalone: true,
-  imports: [FormsModule, MessageBubble],
+  imports: [FormsModule],
   templateUrl: './chat-window.html',
   styleUrl: './chat-window.css'
 })
 export class ChatWindow {
   @Output() return = new EventEmitter<void>();
 
-  ForumTitle = 'Los juegos del hambre';
-  newMessage = signal('');
+  ForumTitle = '';
+  forumId: number | null = null;
+  saveUrl: SafeResourceUrl | null = null;
+  activeForum = false;
+
+  private sanitizer = inject(DomSanitizer);
 
   @Input() set selectedForumTitle(value: string) {
     this.ForumTitle = value;
   }
 
-  messages = signal([
-    { text: '¡Hola a todos! ¿Cuál es vuestra escena favorita?', isMine: false, user: 'User123' },
-    { text: 'A mí me encanta cuando Katniss se ofrece como tributo en lugar de su hermana', isMine: true, user: 'Yo' },
-    { text: 'Totalmente de acuerdo', isMine: false, user: 'Cinefilo99' },
-    { text: 'Pues a mí me gusta la escena de las bayas', isMine: false, user: 'User123' },
-    { text: 'Siii, gracias a esa se inicia la rebelión', isMine: false, user: 'Cinefilo99' },
-    { text: 'A mí me gustaron las entrevistas a los tributos', isMine: false, user: 'User987' },
-    { text: 'Ojalá hubieran añadido todas, así conoceríamos mejor a los participantes', isMine: true, user: 'Yo' }
-  ]);
+  @Input() set selectedForumId(value: number | null ){
+      this.forumId = value
 
-  AdjustHeight(textarea: HTMLTextAreaElement) {
-    textarea.style.height = 'auto';
-    textarea.style.height = textarea.scrollHeight + 'px';
+      if (value !== null) {
+          this.activateForum();
+      } else {
+          this.saveUrl = null; 
+          this.activeForum = false;
+      }
+
   }
 
-  sendMessage(textarea: HTMLTextAreaElement) {
-    const text = this.newMessage().trim();
-    if (text) {
-      this.messages.update(prev => [...prev, {
-        text: text,
-        isMine: true,
-        user: 'Yo',
-        hour: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      }]);
-    }
-    this.newMessage.set('');
-    textarea.style.height = 'auto';
-    console.log('Mensaje enviado correctamente');
+  activateForum() {
+    if (this.forumId === null) return;
+
+    this.activeForum = true;
+    this.saveUrl = null;
+
+    const targetTopic = `/t/${this.forumId}`;
+    const ssoUrl = `https://netlikes.duckdns.org/session/sso?return_path=${encodeURIComponent(targetTopic)}`;
+    this.saveUrl = this.sanitizer.bypassSecurityTrustResourceUrl(ssoUrl);
+    
+    console.log("Cargando foro silenciosamente:", ssoUrl);
   }
+
+// Puedes borrar la función chargeForum() por completo, ya no la necesitamos.
+
+  // activateForum() {
+  //   if (this.activeForum && this.forumId !== null) {
+  //       this.chargeForum(this.forumId);
+  //       return;
+  //   }
+
+  //   if (localStorage.getItem('foro_sesion_activa') === 'true') {
+  //     this.activeForum = true;
+  //     this.chargeForum(this.forumId!);
+  //     return;
+  //   }
+
+  //   this.saveUrl = null;
+  //   this.activeForum = false;
+
+  //   const ssoUrl = 'https://netlikes.duckdns.org/session/sso?return_path=%2Flatest%3Fis_popup%3D1';
+  //   const popup = window.open(ssoUrl, 'ForoLogin', 'width=600,height=700');
+
+  //   if (!popup) {
+  //       alert("Por favor, permite las ventanas emergentes (pop-ups) en tu navegador.");
+  //       return; 
+  //   }
+
+  //   setTimeout(() => {
+  //       if (popup && !popup.closed) {
+  //           popup.close();
+  //       }
+  //   }, 6000);
+
+  //   const timer = setInterval(() => {
+  //     if (!popup || popup.closed) {
+  //           clearInterval(timer);
+            
+  //           localStorage.setItem('foro_sesion_activa', 'true');
+            
+  //           setTimeout(() => {
+  //               this.activeForum = true;
+  //               if (this.forumId !== null) {
+  //                   this.chargeForum(this.forumId);
+  //               }
+  //           }, 1000);
+  //     }
+  //   }, 1000);
+  // }
+
+  // chargeForum(forumId: number) {
+  //     const originalUrl = `https://netlikes.duckdns.org/t/${forumId}`;
+  //     console.log("Angular está intentando meter en el iframe exactamente esta URL:", originalUrl);
+  //     this.saveUrl = this.sanitizer.bypassSecurityTrustResourceUrl(originalUrl);
+  // }
+  
+  // @Input() set discourseTopicId(value: number | undefined) {
+  //   if (value) {
+  //     this.currentTopicId = value;
+  //     const url = `${environment.discourseUrl}/t/-/${value}`;
+  //     this.safeForumUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  //   }
+  // }
 
   goBack() {
     this.return.emit();

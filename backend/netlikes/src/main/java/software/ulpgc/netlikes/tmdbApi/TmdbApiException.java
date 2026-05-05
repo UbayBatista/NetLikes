@@ -1,4 +1,4 @@
-package software.ulpgc.netlikes.api;
+package software.ulpgc.netlikes.tmdbApi;
 
 public class TmdbApiException extends RuntimeException {
     public TmdbApiException(String message) {

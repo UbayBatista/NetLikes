@@ -4,16 +4,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-
 import jakarta.persistence.EntityManager;
-
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-
 import software.ulpgc.netlikes.model.*;
 import software.ulpgc.netlikes.repository.SubscriptionRepository;
-
 import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
@@ -22,7 +17,6 @@ import java.util.stream.Stream;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 class SubscriptionRepositoryIntegrationTest {
     @Autowired private SubscriptionRepository repository;
-    
     @Autowired private EntityManager entityManager;
     
     private User createUser(String userEmail) {
@@ -57,7 +51,7 @@ class SubscriptionRepositoryIntegrationTest {
     private Forum createForum(Film film) {
         Forum forum = new Forum();
         forum.setFilm(film); 
-        forum.setForumId("123456"); 
+        forum.setDiscourseTopicId(123456); 
         entityManager.persist(forum);
         return forum;
     }
@@ -80,18 +74,14 @@ class SubscriptionRepositoryIntegrationTest {
             return savedSub;
         })
         .toList();
-
         entityManager.flush();
-
         return subs;
     }
-
 
     @Test
     @DisplayName("Debe guardar una suscripción con sus dependencias en una BD real")
     void shouldSaveSubscription() {
         Subscription subscription = this.prepareSub(Stream.of("usuario@test.com")).get(0);
-
         assertThat(subscription).isNotNull();
         assertThat(subscription.getId().getEmail()).isEqualTo("usuario@test.com");
         assertThat(!(repository.getByUserEmail(subscription.getId().getEmail())).isEmpty()).isTrue();
@@ -102,9 +92,7 @@ class SubscriptionRepositoryIntegrationTest {
     @DisplayName("Debe eliminar la subscripción indicada a un foro")
     void shouldRemoveSubscription() {
         List<Subscription> subscriptions = this.prepareSub(Stream.of("usuario@test.com", "usuario2@test.com", "usuario3@test.com"));
-
         repository.delete(subscriptions.get(0));
-
         assertThat(repository.findAll().isEmpty()).isFalse();
         assertThat(repository.findAll()).isNotEqualTo(subscriptions);
         List<Subscription> subs = subscriptions.subList(1, 3);
@@ -115,9 +103,7 @@ class SubscriptionRepositoryIntegrationTest {
     @DisplayName("Debe eliminar la última subscripción a un foro")
     void shouldRemoveLastSubscription() {
         Subscription subscription = this.prepareSub(Stream.of("usuario@test.com")).get(0);
-
         repository.delete(subscription);
-
-        assertThat(repository.findAll()).isEmpty();
+        assertThat(repository.findAll().isEmpty());
     }   
 }

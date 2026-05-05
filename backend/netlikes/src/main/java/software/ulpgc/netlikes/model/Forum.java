@@ -8,10 +8,10 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class Forum {
+    
     @Id
-    private Integer id;
+    private Integer id; 
 
     @OneToOne
     @MapsId
@@ -19,5 +19,5 @@ public class Forum {
     private Film film;
 
     @Column(unique = true, nullable = false)
-    private String forumId;
+    private Integer discourseTopicId; 
 }

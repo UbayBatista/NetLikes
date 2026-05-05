@@ -1,4 +1,4 @@
-package software.ulpgc.netlikes.api;
+package software.ulpgc.netlikes.tmdbApi;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

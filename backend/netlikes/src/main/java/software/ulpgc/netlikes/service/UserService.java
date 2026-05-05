@@ -6,6 +6,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import software.ulpgc.netlikes.dto.FilmResponseDTO;
 import software.ulpgc.netlikes.dto.LoginRequestDTO;
@@ -34,14 +35,19 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final FollowService followService;
     private final MarkService markService;
+    private final DiscourseService discourseService;
 
-    public UserService(UserRepository userRepository, GenreRepository genreRepository, FollowRepository followRepository, PasswordEncoder passwordEncoder, FollowService followService, MarkService markService) {
+    public UserService(UserRepository userRepository, GenreRepository genreRepository, 
+                       FollowRepository followRepository, PasswordEncoder passwordEncoder, 
+                       FollowService followService, MarkService markService,
+                       DiscourseService discourseService ) {
         this.userRepository = userRepository;
         this.genreRepository = genreRepository;
         this.followRepository = followRepository;
         this.passwordEncoder = passwordEncoder;
         this.followService = followService; 
         this.markService = markService;
+        this.discourseService = discourseService;
     }
 
     public List<UserResponseDTO> getAllUsers() {
@@ -87,17 +93,8 @@ public class UserService {
         .isAccountPrivacity();
     }
 
-    public UserResponseDTO createUser(UserRequestDTO dto) {
-
-        User user = new User();
-        applyDtoToEntity(dto, user);
-
-        userRepository.save(user);
-        return toDTO(user);
-    }
-
+    @Transactional
     public UserResponseDTO updateUser(@NonNull String email, UserRequestDTO dto) {
-
         User user = userRepository.findById(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -106,12 +103,16 @@ public class UserService {
         }
 
         applyDtoToEntity(dto, user);
-
         userRepository.save(user);
         return toDTO(user);
     }
 
+    @Transactional
     public void deleteUser(@NonNull String email) {
+        if (!userRepository.existsById(email)) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+        
         userRepository.deleteById(email);
     }
 
@@ -126,6 +127,7 @@ public class UserService {
         return toDTO(user);
     }
 
+    @Transactional
     public UserResponseDTO register(RegisterRequestDTO request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("El email ya está registrado");
@@ -142,6 +144,12 @@ public class UserService {
         newUser.setSecurityQuestion(request.getSecurityQuestion());
         newUser.setAnswer(request.getAnswer());
         newUser.setBirthdate(request.getBirthdate());
+        
+        newUser.setAccountPrivacity(false);
+        newUser.setShowWatchedFilms(true);
+        newUser.setShowFilmsToWatchLater(true);
+        newUser.setShowRecommendedFilms(true);
+
         if (request.getFavoriteGenres() != null) {
             List<Integer> ids = request.getFavoriteGenres().stream()
                                     .map(g -> (int) g.getId()) 
@@ -150,7 +158,7 @@ public class UserService {
             List<Genre> genres = genreRepository.findAllById(ids);
             newUser.setFavoriteGenres(genres);
         }
-
+        
         User saved = userRepository.save(newUser);
         return toDTO(saved);
     }
@@ -175,8 +183,8 @@ public class UserService {
         return user.getAnswer().equals(answer);
     }
 
-    
-    public void changePassword(String email, String newPassword) {
+    @Transactional
+    public void changePassword(@NonNull String email, String newPassword) {
         User user = userRepository.findById(email)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
@@ -230,6 +238,7 @@ public class UserService {
         );
     }
 
+    @Transactional
     public void changePrivacy(@NonNull String email, Boolean isPrivate) {
         User user = userRepository.findById(email)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -237,18 +246,20 @@ public class UserService {
         userRepository.save(user);
 
         if (!isPrivate) {
-        followRepository.findByFollowedId(email).stream()
-            .filter(follow -> follow.getState() == Follow.State.PENDING)
-            .forEach(follow -> {
-                follow.setState(Follow.State.ACCEPTED);
-                followRepository.save(follow);
-            });
+            followRepository.findByFollowed_Email(email).stream()
+                .filter(follow -> follow.getState() == Follow.State.PENDING)
+                .forEach(follow -> {
+                    follow.setState(Follow.State.ACCEPTED);
+                    followRepository.save(follow);
+                });
         }
     }
 
     private void applyDtoToEntity(UserRequestDTO dto, User user) {
         user.setEmail(dto.getEmail());
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
         user.setSecurityQuestion(dto.getSecurityQuestion());
         user.setAnswer(dto.getAnswer());
         user.setName(dto.getName());
@@ -260,18 +271,41 @@ public class UserService {
         user.setProfilePicture(dto.getProfilePicture());
         user.setBio(dto.getBio());
 
-        List<Genre> genres = genreRepository.findAllById(dto.getFavoriteGenresIds());
-        user.setFavoriteGenres(genres);
+        if (dto.getFavoriteGenresIds() != null) {
+            List<Genre> genres = genreRepository.findAllById(dto.getFavoriteGenresIds());
+            user.setFavoriteGenres(genres);
+        }
     }
 
     private UserResponseDTO toDTO(User user) {
-
         UserResponseDTO dto = new UserResponseDTO();
         dto.setUserName(user.getName());
         dto.setEmail(user.getEmail());
         dto.setProfilePicture(user.getProfilePicture());
-
         return dto;
     }   
-}
+    
+    public boolean verifyPassword(@NonNull String email, String rawPassword) {
+        User user = userRepository.findById(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        
+        return passwordEncoder.matches(rawPassword, user.getPassword());
+    }
 
+    @Transactional
+    public String getCachedDiscourseId(User user) {
+        if (user.getDiscourseId() != null) {
+            return user.getDiscourseId();
+        }
+
+        Integer dId = discourseService.getDiscourseUserId(user.getName());
+
+        if (dId != null) {
+            user.setDiscourseId(String.valueOf(dId));
+            userRepository.save(user);
+            return user.getDiscourseId();
+        }
+
+        return null;
+    }
+}

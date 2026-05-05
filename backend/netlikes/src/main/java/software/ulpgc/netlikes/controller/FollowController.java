@@ -48,6 +48,14 @@ public class FollowController {
     public List<UserResponseDTO> getFollowsOf(@PathVariable String followerId) {
         return followService.getFollowsOf(followerId);
     }
+
+    @GetMapping("/blocked")
+    public ResponseEntity<List<UserResponseDTO>> getBlockedUsers(
+            @RequestHeader("X-User-Id") String myId) {
+        
+        List<UserResponseDTO> blockedUsers = followService.getBlockedUsers(myId);
+        return ResponseEntity.ok(blockedUsers);
+    }
     
     @PutMapping("/{id}")
     public Follow updateFollow(@PathVariable String id, @RequestBody Follow follow) {
@@ -87,6 +95,24 @@ public class FollowController {
         
         followService.deleteFollow(targetId, myId);
         
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{targetId}/block")
+    public ResponseEntity<Void> blockUser(
+            @NonNull @PathVariable String targetId,
+            @NonNull @RequestHeader("X-User-Id") String myId) {
+        
+        followService.blockUser(myId, targetId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{targetId}/unblock")
+    public ResponseEntity<Void> unblockUser(
+            @NonNull @PathVariable String targetId,
+            @NonNull @RequestHeader("X-User-Id") String myId) {
+        
+        followService.unblockUser(myId, targetId);
         return ResponseEntity.noContent().build();
     }
 }

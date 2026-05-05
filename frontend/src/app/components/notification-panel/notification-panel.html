@@ -29,7 +29,7 @@
         @for (notification of notifications; track $index) {
           <app-notification
             [image]="notification.senderProfilePicture || 'assets/ProfilePicture.jpg'"
-            [message]="notification.message">
+            [message]="notification.message" style="cursor: pointer;" (click)="goToProfile(notification.senderName)">
           </app-notification>
         }
       </div>

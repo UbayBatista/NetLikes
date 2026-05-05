@@ -8,20 +8,31 @@ import { ProfileBody } from "../../components/profile-components/profile-compone
 import { ProfileHeader } from "../../components/profile-header/profile-header";
 import { Film } from "../../components/film/film";
 import { SocialModal } from "../../components/social-modal/social-modal";
+import { PasswordVerifyModalComponent } from '../../components/password-ask-modal/password-ask-modal';
 
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
 import { FollowService } from "../../services/follow.service";
 import { MyProfile, UserProfile } from '../../models/user.models';
 import { ConfirmationModalComponent } from '../../components/confirmation-modal/confirmation-modal';
+import { BlockedUsersModalComponent } from '../../components/blocked-users/blocked-users';
+import { UserService } from "../../services/user.service";
 
 type SocialType = 'Seguidores' | 'Seguidos';
-type FollowStatus = 'NONE' | 'PENDING' | 'ACCEPTED';
+type FollowStatus = 'NONE' | 'PENDING' | 'ACCEPTED' | 'BLOCKED';
 
 @Component({
   selector: "app-profile-complete",
   standalone: true,
-  imports: [CommonModule, ProfileBody, ProfileHeader, Film, SocialModal, AsyncPipe, ConfirmationModalComponent],
+  imports: [CommonModule, 
+            ProfileBody, 
+            ProfileHeader, 
+            Film, 
+            SocialModal, 
+            AsyncPipe, 
+            ConfirmationModalComponent, 
+            BlockedUsersModalComponent,
+            PasswordVerifyModalComponent],
   templateUrl: "./profile-body.html",
   styleUrl: "./profile-body.css"
 })
@@ -31,6 +42,7 @@ export class ProfileComplete implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly authService = inject(AuthService);
   private readonly profileService = inject(ProfileService);
+  private readonly userService = inject(UserService);
   private readonly followService = inject(FollowService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -46,12 +58,14 @@ export class ProfileComplete implements OnInit {
   socialData: any[] = [];
   canScrollLeft = false;
   canScrollRight = true;
+  isBlockedModalOpen = false;
 
   private followStateSubject = new BehaviorSubject<FollowStatus>('NONE');
   followState$ = this.followStateSubject.asObservable();
 
   followButtonText$: Observable<string> = this.followState$.pipe(
     map(state => {
+      if (state === 'BLOCKED') return 'Bloqueado';
       if (state === 'PENDING') return 'Pendiente';
       if (state === 'ACCEPTED') return 'Siguiendo';
       return 'Seguir';
@@ -60,8 +74,11 @@ export class ProfileComplete implements OnInit {
 
   showConfirmModal = false;
   confirmModalMessage = '';
-  private userToFollow: string = '';
-  private actionToConfirm: 'UNFOLLOW' | 'REMOVE_FOLLOWER' = 'UNFOLLOW';
+  private actionUser: string = '';
+  private actionToConfirm: 'UNFOLLOW' | 'BLOCK' | 'DELETE' | 'REMOVE_FOLLOWER' = 'UNFOLLOW';
+
+  isPasswordModalOpen = false;
+  isDeleteConfirmModalOpen = false;
 
   ngOnInit() {
     this.route.params
@@ -74,16 +91,17 @@ export class ProfileComplete implements OnInit {
     this.profile$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(profile => {
+        const profileEmail = (profile as any)?.email;
 
-        this.followersCount$.next((profile as any)?.followers || 0);
-        this.followingCount$.next((profile as any)?.following || 0);
-
-        const profileEmail = (profile as any)?.email; 
-        
         if (profileEmail) {
           this.followService.checkFollowStatus(profileEmail).subscribe({
             next: (response) => {
               this.followStateSubject.next(response.state);
+
+              if (response.state !== 'BLOCKED') {
+                this.followersCount$.next((profile as any)?.followers || 0);
+                this.followingCount$.next((profile as any)?.following || 0);
+              }
             },
             error: (err) => console.error('Error al obtener estado de seguimiento', err)
           });
@@ -92,7 +110,7 @@ export class ProfileComplete implements OnInit {
   }
 
   onFollowRequest(userName: string, email: string) {
-    this.userToFollow = email;
+    this.actionUser = email;
 
     const currentState = this.followStateSubject.value;
 
@@ -102,23 +120,28 @@ export class ProfileComplete implements OnInit {
       this.showConfirmModal = true;
     } 
     else if (currentState === 'PENDING') {
-      this.executeUnfollow(this.userToFollow);
+      this.executeUnfollow(this.actionUser);
     } else {
-      this.executeFollow(this.userToFollow);
+      this.executeFollow(this.actionUser);
     }
   }
 
-  handleUnfollowConfirmation(confirmed: boolean) {
+  handleConfirmation(confirmed: boolean) {
     this.showConfirmModal = false;
 
-    if (confirmed && this.userToFollow) {
+    if (confirmed && this.actionUser) {
       if (this.actionToConfirm === 'UNFOLLOW' || this.actionToConfirm === 'REMOVE_FOLLOWER') {
-        this.executeSocialAction(this.userToFollow, this.actionToConfirm);
-      } else {
-        this.executeFollow(this.userToFollow);
+        this.executeSocialAction(this.actionUser, this.actionToConfirm);
+      } else if (this.actionToConfirm === 'BLOCK'){
+        this.executeBlock(this.actionUser);
+      } else if (this.actionToConfirm === 'DELETE'){
+        this.executeDelete();
+      }  
+      else {
+        this.executeFollow(this.actionUser);
       }
     } else {
-      this.userToFollow = '';
+      this.actionUser = '';
     }
   }
 
@@ -134,7 +157,7 @@ export class ProfileComplete implements OnInit {
       },
       error: (error) => console.error('Error al intentar seguir:', error),
       complete: () => {
-        this.userToFollow = ''; 
+        this.actionUser = ''; 
       }
     });
   }
@@ -146,14 +169,14 @@ export class ProfileComplete implements OnInit {
       },
       error: (error) => console.error('Error al dejar de seguir:', error),
       complete: () => {
-        this.userToFollow = ''; 
+        this.actionUser = ''; 
       }
     });
   }
 
   handleSocialAction(event: { user: any, type: 'Seguidores' | 'Seguidos' }) {
     const { user, type } = event;
-    this.userToFollow = user.email;
+    this.actionUser = user.email;
 
     if (type === 'Seguidores') {
       this.actionToConfirm = 'REMOVE_FOLLOWER';
@@ -196,7 +219,7 @@ export class ProfileComplete implements OnInit {
       },
       error: (err) => console.error(`Error al ejecutar ${type}:`, err),
       complete: () => {
-        this.userToFollow = '';
+        this.actionUser = '';
       }
     });
   }
@@ -257,5 +280,49 @@ export class ProfileComplete implements OnInit {
   logout() {
     this.authService.logout();
     this.router.navigate(['/']);
+  }
+
+  onBlockRequest(userMail: string, userName: string){
+    this.actionUser = userMail;
+    this.actionToConfirm = 'BLOCK';
+    this.confirmModalMessage = `¿Estás seguro de que quieres dejar de seguir a @${userName}?`;
+    this.showConfirmModal = true;
+  }
+
+  executeBlock(targetEmail: string) {
+    this.followService.blockUser(targetEmail).subscribe({
+      next: () => {
+        this.followStateSubject.next('BLOCKED');
+      },
+      error: (error) => console.error('Error al intentar bloquear:', error),
+      complete: () => {
+        this.actionUser = ''; 
+      }
+    });
+  }
+
+  startDeleteProcess(email: string) {
+    this.actionUser = email;
+    this.isPasswordModalOpen = true; 
+  }
+
+  onPasswordVerified() {
+    this.isPasswordModalOpen = false; 
+    this.actionToConfirm = 'DELETE';
+    this.confirmModalMessage = `¿Estás seguro de que deseas borrar permanentemente tu cuenta?`;
+    this.showConfirmModal = true;
+  }
+
+  executeDelete() {
+    this.userService.deleteUser().subscribe({
+      next: () => {
+        console.log('Cuenta eliminada con éxito en la base de datos.');
+        this.authService.logout();
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        console.error('Error eliminando la cuenta:', err);
+      }
+    });
   }
 }

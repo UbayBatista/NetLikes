@@ -4,6 +4,10 @@
   </aside>
 
   <main class="chat-main">
-    <app-chat-window [selectedForumTitle]="currentTitle" (return)="returnToList()"></app-chat-window>
+    <app-chat-window 
+      [selectedForumTitle]="currentTitle" 
+      [selectedForumId]="currentTopicId"
+      (return)="returnToList()">
+    </app-chat-window>
   </main>
 </div>

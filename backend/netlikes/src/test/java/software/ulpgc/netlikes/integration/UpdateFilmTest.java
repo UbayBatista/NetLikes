@@ -1,24 +1,25 @@
 package software.ulpgc.netlikes.integration;
 
-import software.ulpgc.netlikes.api.LoadService;
-import software.ulpgc.netlikes.api.TmdbApiClient;
-import software.ulpgc.netlikes.api.TmdbModels;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import org.springframework.transaction.annotation.Transactional;
 import software.ulpgc.netlikes.dto.FilmResponseDTO;
 import software.ulpgc.netlikes.model.Film;
 import software.ulpgc.netlikes.repository.FilmRepository;
 import software.ulpgc.netlikes.service.FilmService;
+import software.ulpgc.netlikes.tmdbApi.LoadService;
+import software.ulpgc.netlikes.tmdbApi.TmdbApiClient;
+import software.ulpgc.netlikes.tmdbApi.TmdbModels;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
