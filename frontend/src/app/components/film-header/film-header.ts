@@ -6,6 +6,7 @@ import { SubscriptionService } from '../../services/subscription.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { ForumService } from '../../services/forum.service';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-film-header',
@@ -178,7 +179,7 @@ export class FilmHeader implements OnInit {
 
     console.log('Botón de suscripción pulsado...');
 
-    this.authService.getCurrentUser().subscribe({
+    this.authService.getCurrentUser().pipe(take(1)).subscribe({
       next: (user) => {
         if (!user || !user.email) {
           return;
