@@ -31,7 +31,7 @@ export class App implements OnInit {
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
-      const noLayoutRoutes = ['/login', '/register'];
+      const noLayoutRoutes = ['/login', '/register', '/forum-sso'];
       const currentUrl = event.urlAfterRedirects.split('?')[0];
       this.showLayout.set(!noLayoutRoutes.includes(currentUrl));
     });
