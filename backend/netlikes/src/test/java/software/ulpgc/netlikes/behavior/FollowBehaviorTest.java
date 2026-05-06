@@ -5,19 +5,27 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean; 
 import org.springframework.transaction.annotation.Transactional;
 import software.ulpgc.netlikes.model.Follow;
 import software.ulpgc.netlikes.model.FollowId;
 import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.repository.FollowRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
+import software.ulpgc.netlikes.service.DiscourseService;
 import software.ulpgc.netlikes.service.FollowService;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"spring.profiles.active=test"}
+    properties = {
+        "spring.profiles.active=test",
+        "discourse.api.key=dummy-key",
+        "discourse.api.username=dummy-user",
+        "discourse.api.url=http://dummy-url.com",
+        "discourse.sso.secret=dummy-secret"
+    }
 )
 @ActiveProfiles("test")
 @Transactional
@@ -26,6 +34,8 @@ public class FollowBehaviorTest {
     @Autowired private FollowService followService;
     @Autowired private FollowRepository followRepository;
     @Autowired private UserRepository userRepository;
+
+    @MockitoBean private DiscourseService discourseService;
 
     @BeforeEach
     void setUp() {
@@ -87,5 +97,26 @@ public class FollowBehaviorTest {
 
         Follow follow = followRepository.findById(new FollowId("paco@gmail.com", "carlos@gmail.com")).orElseThrow();
         assertEquals(Follow.State.ACCEPTED, follow.getState(), "Si la cuenta es pública, pasa a ACCEPTED al instante.");
+    }
+
+    @Test
+    void testHU7_5_1_BlockUser() {
+        followService.blockUser("paco@gmail.com", "elena@gmail.com");
+
+        Follow follow = followRepository.findById(new FollowId("paco@gmail.com", "elena@gmail.com")).orElseThrow();
+        assertEquals(Follow.State.BLOCKED, follow.getState(), "El estado de la relación debe ser BLOCKED");
+        
+        String status = followService.checkStatus("elena@gmail.com", "paco@gmail.com");
+        assertEquals("BLOCKED", status, "Si Paco bloquea a Elena, a Elena le debe salir estado BLOCKED con respecto a Paco");
+    }
+
+    @Test
+    void testHU7_5_2_UnblockUser() {
+        followService.blockUser("paco@gmail.com", "elena@gmail.com");
+        
+        followService.unblockUser("paco@gmail.com", "elena@gmail.com");
+
+        boolean exists = followRepository.existsById(new FollowId("paco@gmail.com", "elena@gmail.com"));
+        assertFalse(exists, "Al desbloquear, el registro de follow debe eliminarse");
     }
 }

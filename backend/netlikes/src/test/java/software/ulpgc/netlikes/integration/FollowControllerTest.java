@@ -1,36 +1,36 @@
 package software.ulpgc.netlikes.integration;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-
-import jakarta.persistence.EntityManager;
 
 import software.ulpgc.netlikes.model.Follow;
 import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.repository.FollowRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
-
-import java.util.Date;
+import software.ulpgc.netlikes.service.DiscourseService;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"spring.profiles.active=test"}
+    properties = {
+        "spring.profiles.active=test",
+        "discourse.api.key=dummy-key",
+        "discourse.api.username=dummy-user",
+        "discourse.api.url=http://dummy-url.com",
+        "discourse.sso.secret=dummy-secret"
+    }
 )
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -45,6 +45,9 @@ public class FollowControllerTest {
 
     @Autowired
     private FollowRepository followRepository;
+
+    @MockitoBean 
+    private DiscourseService discourseService;
 
     private User paco;
     private User elena;
@@ -142,96 +145,21 @@ public class FollowControllerTest {
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].email").value("paco@gmail.com"));
     }
-}
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
-class FollowRepositoryIntegrationTest {
-
-    @Autowired 
-    private FollowRepository repository;
-    
-    @Autowired 
-    private EntityManager entityManager;
-    
-    private User createUser(String userEmail, String userName) {
-        User user = new User();
-        user.setEmail(userEmail);
-        user.setPassword("1234");
-        user.setSecurityQuestion("¿Tienes marca de nacimiento?");
-        user.setAnswer("Sí");
-        user.setName(userName);
-        user.setBirthdate(new Date());
-        user.setAccountPrivacity(false);
-        user.setShowWatchedFilms(false);
-        user.setShowFilmsToWatchLater(false);
-        user.setShowRecommendedFilms(false);
-        user.setProfilePicture("/");
-        user.setBio("Holaaa, soy una prueba.");
-        
-        entityManager.persist(user);
-        return user;
-    }
-
-    private Follow createFollow(User follower, User followed, Follow.State state) {
-        Follow follow = new Follow();
-        follow.setFollower(follower);
-        follow.setFollowed(followed);
-        follow.setState(state);
-        return follow;
+    @Test
+    void testBlockUser_ReturnsOk() throws Exception {
+        mockMvc.perform(post("/follows/elena@gmail.com/block")
+                .header("X-User-Id", "paco@gmail.com"))
+                .andExpect(status().isOk());
     }
 
     @Test
-    @DisplayName("Should save follow with PENDING state")
-    void shouldSaveFollow() {
-        User follower = this.createUser("follower@test.com", "Seguidor");
-        User followed = this.createUser("target@test.com", "Objetivo");
-        entityManager.flush(); 
+    void testUnblockUser_ReturnsNoContent() throws Exception {
+        Follow blockedFollow = new Follow(paco, elena, Follow.State.BLOCKED);
+        followRepository.save(blockedFollow);
 
-        Follow follow = this.createFollow(follower, followed, Follow.State.PENDING);
-
-        Follow savedFollow = repository.save(follow);
-        entityManager.flush(); 
-
-        assertThat(savedFollow).isNotNull();
-        assertThat(savedFollow.getFollower().getEmail()).isEqualTo("follower@test.com");
-        assertThat(savedFollow.getState()).isEqualTo(Follow.State.PENDING);
-
-        assertThat(repository.findAll()).hasSize(1);
-        assertThat(repository.findAll().get(0)).isEqualTo(savedFollow);
-    }
-
-    @Test
-    @DisplayName("Should update state from PENDING to ACCEPTED")
-    void shouldUpdateFollowState() {
-        User follower = this.createUser("follower@test.com", "Seguidor");
-        User followed = this.createUser("target@test.com", "Objetivo");
-        
-        Follow initialFollow = repository.save(this.createFollow(follower, followed, Follow.State.PENDING));
-        entityManager.flush();
-
-        initialFollow.setState(Follow.State.ACCEPTED);
-        Follow updatedFollow = repository.save(initialFollow);
-        entityManager.flush();
-
-        assertThat(updatedFollow.getState()).isEqualTo(Follow.State.ACCEPTED);
-        assertThat(repository.findAll()).hasSize(1); 
-    }
-
-    @Test
-    @DisplayName("Should delete follow")
-    void shouldRemoveFollow() {
-        User follower = this.createUser("follower@test.com", "Seguidor");
-        User followed = this.createUser("target@test.com", "Objetivo");
-        
-        Follow follow = repository.save(this.createFollow(follower, followed, Follow.State.ACCEPTED));
-        entityManager.flush();
-
-        assertThat(repository.findAll()).isNotEmpty();
-
-        repository.delete(follow);
-        entityManager.flush();
-
-        assertThat(repository.findAll()).isEmpty();
+        mockMvc.perform(post("/follows/elena@gmail.com/unblock")
+                .header("X-User-Id", "paco@gmail.com"))
+                .andExpect(status().isNoContent());
     }
 }

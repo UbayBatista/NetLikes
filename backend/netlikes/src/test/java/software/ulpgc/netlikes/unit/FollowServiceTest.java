@@ -20,6 +20,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -112,5 +113,46 @@ public class FollowServiceTest {
 
         verify(followRepository, times(1)).deleteById(new FollowId("paco@gmail.com", "privado@gmail.com"));
         verify(notifyService, times(1)).deleteFollowNotification("paco@gmail.com", "privado@gmail.com");
+    }
+
+    @Test
+    void testBlockUser_SavesBlockedStateAndIgnoresInDiscourse() {
+        when(userRepository.findById("paco@gmail.com")).thenReturn(Optional.of(paco));
+        when(userRepository.findById("privado@gmail.com")).thenReturn(Optional.of(privateUser));
+        
+        when(discourseService.getRealUsernameByEmail("paco@gmail.com")).thenReturn("PacoForo");
+        when(discourseService.getRealUsernameByEmail("privado@gmail.com")).thenReturn("PrivadoForo");
+
+        followService.blockUser("paco@gmail.com", "privado@gmail.com");
+
+        verify(discourseService, times(1)).ignoreDiscourseUser("PacoForo", "PrivadoForo");
+        
+        verify(followRepository, times(1)).save(argThat(follow -> 
+            follow.getFollower().getEmail().equals("paco@gmail.com") &&
+            follow.getFollowed().getEmail().equals("privado@gmail.com") &&
+            follow.getState() == Follow.State.BLOCKED
+        ));
+    }
+
+    @Test
+    void testBlockUser_ThrowsExceptionIfUserBlocksHimself() {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            followService.blockUser("paco@gmail.com", "paco@gmail.com");
+        });
+        
+        assertEquals("Un usuario no puede bloquearse a sí mismo.", exception.getMessage());
+        verify(followRepository, never()).save(any());
+    }
+
+    @Test
+    void testUnblockUser_DeletesRecordAndUnignoresInDiscourse() {
+        when(discourseService.getRealUsernameByEmail("paco@gmail.com")).thenReturn("PacoForo");
+        when(discourseService.getRealUsernameByEmail("privado@gmail.com")).thenReturn("PrivadoForo");
+
+        followService.unblockUser("paco@gmail.com", "privado@gmail.com");
+
+        verify(discourseService, times(1)).unignoreDiscourseUser("PacoForo", "PrivadoForo");
+
+        verify(followRepository, times(1)).deleteById(new FollowId("paco@gmail.com", "privado@gmail.com"));
     }
 }
