@@ -19,13 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {
-        "spring.profiles.active=test",
-        "discourse.api.key=dummy-key",
-        "discourse.api.username=dummy-user",
-        "discourse.api.url=http://dummy-url.com",
-        "discourse.sso.secret=dummy-secret"
-    }
+    properties = {"spring.profiles.active=test"}
 )
 @ActiveProfiles("test")
 @Transactional
