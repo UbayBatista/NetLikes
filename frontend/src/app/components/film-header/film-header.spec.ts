@@ -3,9 +3,9 @@ import { provideRouter } from '@angular/router';
 import { FilmHeader } from './film-header';
 import { UserInteractionService } from '../../services/user-interaction.service';
 import { of, throwError } from 'rxjs'
-import { vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-describe('FilmHeader', () => {
+describe('FilmHeader Component', () => {
   let component: FilmHeader;
   let fixture: ComponentFixture<FilmHeader>;
   let interactionServiceMock: any;
@@ -49,54 +49,56 @@ describe('FilmHeader', () => {
     vi.spyOn(component, 'extractColorFromImage').mockImplementation(() => {})
   });
 
-  it('debería mostrar el eslogan si existe (HU 2.1)', () => {
-    component.film = { ...mockFilm } as any;
-    
-    fixture.detectChanges(); 
+  describe('UI Rendering Logic', () => {
+    it('should display the tagline if it exists (US 2.1)', () => {
+      component.film = { ...mockFilm } as any;
+      
+      fixture.detectChanges(); 
 
-    const compiled = fixture.nativeElement;
-    expect(compiled.textContent).toContain('Un eslogan épico');
-    expect(compiled.querySelector('h5.fw-bold.mt-4')).toBeTruthy();
+      const compiled = fixture.nativeElement;
+      expect(compiled.textContent).toContain('Un eslogan épico');
+      expect(compiled.querySelector('h5.fw-bold.mt-4')).toBeTruthy();
+    });
+
+    it('should not display the Tagline section if film.tagLine is empty', () => {
+      component.film = { ...mockFilm, tagLine: '' } as any;
+      
+      fixture.detectChanges(); 
+      
+      const compiled = fixture.nativeElement;
+      const headers = Array.from(compiled.querySelectorAll('h5'));
+      const hasSlogan = headers.some((h: any) => h.textContent.includes('Eslogan'));
+      
+      expect(hasSlogan).toBeFalsy();
+    });
+
+    it('should not display the "Where to watch" section if there are no providers', () => {
+      component.film = { ...mockFilm, watchProviders: [] } as any;
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement;
+      const headers = Array.from(compiled.querySelectorAll('h5'));
+      const hasProviders = headers.some((h: any) => h.textContent.includes('Dónde ver'));
+      
+      expect(hasProviders).toBeFalsy();
+    });
+
+    it('should not display the "Description" header if film.overView is empty', () => {
+      component.film = { ...mockFilm, overView: '' } as any;
+      
+      fixture.detectChanges(); 
+      
+      const compiled = fixture.nativeElement;
+      const headers = Array.from(compiled.querySelectorAll('h5'));
+      const hasDescriptionHeader = headers.some((h: any) => h.textContent.includes('Descripción'));
+      
+      expect(hasDescriptionHeader).toBeFalsy();
+    });
   });
 
-  it('NO debería mostrar la sección de Eslogan si film.tagLine está vacío', () => {
-    component.film = { ...mockFilm, tagLine: '' } as any;
+  describe('Movie Tracking Logic (US 4.1)', () => {
     
-    fixture.detectChanges(); 
-    
-    const compiled = fixture.nativeElement;
-    const headers = Array.from(compiled.querySelectorAll('h5'));
-    const hasSlogan = headers.some((h: any) => h.textContent.includes('Eslogan'));
-    
-    expect(hasSlogan).toBeFalsy();
-  });
-
-  it('NO debería mostrar la sección "Dónde ver" si no hay proveedores', () => {
-    component.film = { ...mockFilm, watchProviders: [] } as any;
-    fixture.detectChanges();
-
-    const compiled = fixture.nativeElement;
-    const headers = Array.from(compiled.querySelectorAll('h5'));
-    const hasProviders = headers.some((h: any) => h.textContent.includes('Dónde ver'));
-    
-    expect(hasProviders).toBeFalsy();
-  });
-
-  it('NO debería mostrar el encabezado de "Descripción" si film.overView está vacío', () => {
-    component.film = { ...mockFilm, overView: '' } as any;
-    
-    fixture.detectChanges(); 
-    
-    const compiled = fixture.nativeElement;
-    const headers = Array.from(compiled.querySelectorAll('h5'));
-    const hasDescriptionHeader = headers.some((h: any) => h.textContent.includes('Descripción'));
-    
-    expect(hasDescriptionHeader).toBeFalsy();
-  });
-
-  describe('HU4.1: Seguimiento de películas (Listas)', () => {
-    
-    it('debería añadir a "Vistas" y marcar isWatched como true', () => {
+    it('should add to "Watched" and set isWatched to true', () => {
       component.film = { ...mockFilm } as any;
       fixture.detectChanges(); 
       
@@ -107,7 +109,7 @@ describe('FilmHeader', () => {
       expect(interactionServiceMock.toggleMark).toHaveBeenCalledWith(1, 'SEEN');
     });
 
-    it('debería eliminar de "Ver más tarde" si se añade a "Vistas" (Listas cruzadas)', () => {
+    it('should remove from "Watch Later" if added to "Watched" (Cross-list logic)', () => {
       component.film = { ...mockFilm } as any;
       fixture.detectChanges();
       
@@ -118,7 +120,7 @@ describe('FilmHeader', () => {
       expect(component.isWatchLater).toBe(false);
     });
 
-    it('debería eliminar de "Vistas" y borrar la valoración si se añade a "Ver más tarde"', () => {
+    it('should remove from "Watched" and clear rating if added to "Watch Later"', () => {
       component.film = { ...mockFilm } as any;
       fixture.detectChanges();
       
@@ -131,7 +133,7 @@ describe('FilmHeader', () => {
       expect(component.currentRating).toBeNull();
     });
 
-    it('debería revertir el cambio de "Vistas" si el servidor da error', () => {
+    it('should revert the "Watched" change if the server throws an error', () => {
       component.film = { ...mockFilm } as any;
       fixture.detectChanges();
       
@@ -144,9 +146,9 @@ describe('FilmHeader', () => {
     });
   });
 
-  describe('HU9.1: Valorar película vista', () => {
+  describe('Movie Rating Logic (US 9.1)', () => {
 
-    it('NO debería permitir valorar si la película no está vista', () => {
+    it('should not allow rating if the movie is not watched', () => {
       component.film = { ...mockFilm } as any;
       fixture.detectChanges();
       
@@ -157,7 +159,7 @@ describe('FilmHeader', () => {
       expect(interactionServiceMock.toggleRate).not.toHaveBeenCalled();
     });
 
-    it('debería aplicar la valoración si la película está vista', () => {
+    it('should apply the rating if the movie is watched', () => {
       component.film = { ...mockFilm } as any;
       fixture.detectChanges();
       
@@ -168,7 +170,7 @@ describe('FilmHeader', () => {
       expect(interactionServiceMock.toggleRate).toHaveBeenCalledWith(1, 'like');
     });
 
-    it('debería eliminar la valoración si se pulsa la misma que ya estaba', () => {
+    it('should remove the rating if the same active rating is clicked', () => {
       component.film = { ...mockFilm } as any;
       fixture.detectChanges();
       
@@ -180,7 +182,7 @@ describe('FilmHeader', () => {
       expect(interactionServiceMock.toggleRate).toHaveBeenCalledWith(1, 'love');
     });
 
-    it('debería modificar la valoración si se pulsa un botón diferente', () => {
+    it('should modify the rating if a different button is clicked', () => {
       component.film = { ...mockFilm } as any;
       fixture.detectChanges();
       

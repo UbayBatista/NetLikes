@@ -1,6 +1,8 @@
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+
 import { GenreService } from './genre.service';
 import { Genre } from '../models/genre.models';
 import { environment } from '../../environments/environment';
@@ -32,12 +34,12 @@ describe('GenreService', () => {
     httpMock.verify();
   });
 
-  it('should be created', () => {
+  it('should be created successfully', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('getAllGenres', () => {
-    it('debe obtener la lista de géneros mediante una petición GET', () => {
+  describe('getAllGenres() method', () => {
+    it('should fetch a list of genres via a GET request', () => {
       service.getAllGenres().subscribe((genres) => {
         expect(genres.length).toBe(3);
         expect(genres).toEqual(mockGenres);
@@ -50,12 +52,14 @@ describe('GenreService', () => {
       req.flush(mockGenres);
     });
 
-    it('debe manejar una lista vacía de géneros', () => {
+    it('should handle an empty list of genres correctly', () => {
       service.getAllGenres().subscribe((genres) => {
         expect(genres.length).toBe(0);
+        expect(genres).toEqual([]);
       });
 
       const req = httpMock.expectOne(apiUrl);
+      expect(req.request.method).toBe('GET');
       req.flush([]);
     });
   });

@@ -1,33 +1,33 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { SocialModal } from './social-modal';
 
-describe('HU7.2 - Acceder al perfil de otro usuario', () => {
-  describe('SocialModal - Navegación desde lista de seguidores/seguidos', () => {
-    let component: SocialModal;
-    let fixture: ComponentFixture<SocialModal>;
-    let routerMock: any;
+describe('SocialModal Component (US 7.2)', () => {
+  let component: SocialModal;
+  let fixture: ComponentFixture<SocialModal>;
+  let routerMock: any;
 
-    beforeEach(async () => {
-      routerMock = { navigate: vi.fn() };
+  beforeEach(async () => {
+    routerMock = { navigate: vi.fn() };
 
-      await TestBed.configureTestingModule({
-        imports: [SocialModal],
-        providers: [
-          provideRouter([]),
-          { provide: Router, useValue: routerMock },
-          { provide: ActivatedRoute, useValue: { params: of({}) } }
-        ]
-      }).compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [SocialModal],
+      providers: [
+        provideRouter([]),
+        { provide: Router, useValue: routerMock },
+        { provide: ActivatedRoute, useValue: { params: of({}) } }
+      ]
+    }).compileComponents();
 
-      fixture = TestBed.createComponent(SocialModal);
-      component = fixture.componentInstance;
-    });
+    fixture = TestBed.createComponent(SocialModal);
+    component = fixture.componentInstance;
+  });
 
-    it('HU7.2 - Desde seguidores: debe navegar al perfil del usuario pulsado', () => {
+  describe('Profile Navigation', () => {
+    it('should navigate to the clicked user profile from the followers list', () => {
       component.title = 'Seguidores';
       component.users = [{ name: 'ana', avatar: '' }];
       fixture.detectChanges();
@@ -37,7 +37,7 @@ describe('HU7.2 - Acceder al perfil de otro usuario', () => {
       expect(routerMock.navigate).toHaveBeenCalledWith(['/profile', 'ana']);
     });
 
-    it('HU7.2 - Desde seguidores: debe cerrar el modal al navegar al perfil', () => {
+    it('should close the modal when navigating to a profile from the followers list', () => {
       component.title = 'Seguidores';
       component.users = [];
       fixture.detectChanges();
@@ -48,7 +48,7 @@ describe('HU7.2 - Acceder al perfil de otro usuario', () => {
       expect(closeSpy).toHaveBeenCalled();
     });
 
-    it('HU7.2 - Desde seguidos: debe navegar al perfil del usuario pulsado', () => {
+    it('should navigate to the clicked user profile from the following list', () => {
       component.title = 'Seguidos';
       component.users = [{ name: 'carlos', avatar: '' }];
       fixture.detectChanges();
@@ -58,7 +58,7 @@ describe('HU7.2 - Acceder al perfil de otro usuario', () => {
       expect(routerMock.navigate).toHaveBeenCalledWith(['/profile', 'carlos']);
     });
 
-    it('HU7.2 - Desde seguidos: debe cerrar el modal al navegar al perfil', () => {
+    it('should close the modal when navigating to a profile from the following list', () => {
       component.title = 'Seguidos';
       component.users = [];
       fixture.detectChanges();
@@ -68,8 +68,10 @@ describe('HU7.2 - Acceder al perfil de otro usuario', () => {
 
       expect(closeSpy).toHaveBeenCalled();
     });
+  });
 
-    it('HU7.2 - changeTab debe cambiar entre Seguidores y Seguidos y emitir el evento', () => {
+  describe('Tab Switching Logic', () => {
+    it('should switch between Seguidores and Seguidos tabs and emit the tabChange event', () => {
       component.title = 'Seguidores';
       component.users = [];
       fixture.detectChanges();
@@ -81,7 +83,7 @@ describe('HU7.2 - Acceder al perfil de otro usuario', () => {
       expect(tabChangeSpy).toHaveBeenCalledWith('Seguidos');
     });
 
-    it('HU7.2 - changeTab no debe emitir si la pestaña ya está activa', () => {
+    it('should not emit tabChange event if the target tab is already active', () => {
       component.title = 'Seguidores';
       component.users = [];
       fixture.detectChanges();

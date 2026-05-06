@@ -6,7 +6,7 @@ import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
 
-describe('Step1', () => {
+describe('Step1 Component', () => {
   let component: Step1;
   let fixture: ComponentFixture<Step1>;
   let mockAuthService: any;
@@ -32,85 +32,93 @@ describe('Step1', () => {
     fixture.detectChanges();
   });
 
-  it('debería iniciar con un formulario inválido', () => {
-    expect(component.form.valid).toBe(false);
-  });
-
-  it('debería validar que el usuario tenga al menos 16 años', () => {
-    const today = new Date();
-    const year15Ago = today.getFullYear() - 15;
-
-    component.form.patchValue({
-      userName: 'TestUser',
-      email: 'test@test.com',
-      day: today.getDate(),
-      month: today.getMonth() + 1,
-      year: year15Ago
+  describe('Initialization and State Recovery', () => {
+    it('should initiate with an invalid form', () => {
+      expect(component.form.valid).toBe(false);
     });
 
-    expect(component.form.errors?.['validateAge']).toBe(true);
-    expect(component.form.valid).toBe(false);
-  });
+    it('should recover initial data on load including birthdate parsing', () => {
+      component.initialData = {
+        userName: 'Marta',
+        email: 'marta@test.com',
+        birthdate: '1995-05-10'
+      };
 
-  it('debería marcar el error si el email ya existe en la BD', () => {
-    mockAuthService.checkEmailExists.mockReturnValue(of(true));
-    
-    component.form.patchValue({
-      userName: 'TestUser',
-      email: 'existente@test.com',
-      day: 1, month: 1, year: 1990
-    });
+      component.ngOnInit();
 
-    component.notifyNext();
-
-    expect(component.emailExists).toBe(true);
-    expect(component.form.get('email')?.hasError('alreadyExists')).toBe(true);
-  });
-
-  it('debería marcar el error si el nombre de usuario ya existe en la BD', () => {
-    mockAuthService.checkNameExists.mockReturnValue(of(true));
-    
-    component.form.patchValue({
-      userName: 'Cogido',
-      email: 'nuevo@test.com',
-      day: 1, month: 1, year: 1990
-    });
-
-    component.notifyNext();
-
-    expect(component.nameExists).toBe(true);
-    expect(component.form.get('userName')?.hasError('alreadyExists')).toBe(true);
-  });
-
-  it('debería emitir los datos y avanzar si el formulario es válido y el email no existe', () => {
-    const spyEmit = vi.spyOn(component.toNext, 'emit');
-    
-    component.form.patchValue({
-      userName: 'Alicia',
-      email: 'nueva@test.com',
-      day: 23, month: 4, year: 2000
-    });
-
-    component.notifyNext();
-
-    expect(mockAuthService.checkEmailExists).toHaveBeenCalledWith('nueva@test.com');
-    expect(spyEmit).toHaveBeenCalledWith({
-      userName: 'Alicia',
-      email: 'nueva@test.com',
-      birthdate: '2000-04-23'
+      expect(component.form.get('userName')?.value).toBe('Marta');
+      expect(component.form.get('year')?.value).toBe(1995);
     });
   });
 
-  it('debería recuperar los datos iniciales al cargar (Persistencia)', () => {
-    component.initialData = {
-      userName: 'Marta',
-      email: 'marta@test.com',
-      birthdate: '1995-05-10'
-    };
+  describe('Synchronous Form Validation', () => {
+    it('should fail validation if the user is under 16 years old', () => {
+      const today = new Date();
+      const year15Ago = today.getFullYear() - 15;
 
-    component.ngOnInit();
+      component.form.patchValue({
+        userName: 'TestUser',
+        email: 'test@test.com',
+        day: today.getDate(),
+        month: today.getMonth() + 1,
+        year: year15Ago
+      });
 
-    expect(component.form.get('userName')?.value).toBe('Marta');
-    expect(component.form.get('year')?.value).toBe(1995);
+      expect(component.form.errors?.['validateAge']).toBe(true);
+      expect(component.form.valid).toBe(false);
+    });
+  });
+
+  describe('Asynchronous Validation (API Checks)', () => {
+    it('should set an error if the email already exists in the database', () => {
+      mockAuthService.checkEmailExists.mockReturnValue(of(true));
+      
+      component.form.patchValue({
+        userName: 'TestUser',
+        email: 'existente@test.com',
+        day: 1, month: 1, year: 1990
+      });
+ 
+      component.notifyNext();
+
+      expect(component.emailExists).toBe(true);
+      expect(component.form.get('email')?.hasError('alreadyExists')).toBe(true);
+    });
+
+    it('should set an error if the username already exists in the database', () => {
+      mockAuthService.checkNameExists.mockReturnValue(of(true));
+      
+      component.form.patchValue({
+        userName: 'Cogido',
+        email: 'nuevo@test.com',
+        day: 1, month: 1, year: 1990
+      });
+
+      component.notifyNext();
+
+      expect(component.nameExists).toBe(true);
+      expect(component.form.get('userName')?.hasError('alreadyExists')).toBe(true);
+    });
+  });
+
+  describe('Navigation and Event Emitters', () => {
+    it('should emit formatted data and proceed if the form is valid and credentials do not exist', () => {
+      const spyEmit = vi.spyOn(component.toNext, 'emit');
+      
+      component.form.patchValue({
+        userName: 'Alicia',
+        email: 'nueva@test.com',
+        day: 23, month: 4, year: 2000
+      });
+
+      component.notifyNext();
+
+      expect(mockAuthService.checkEmailExists).toHaveBeenCalledWith('nueva@test.com');
+      expect(spyEmit).toHaveBeenCalledWith({
+        userName: 'Alicia',
+        email: 'nueva@test.com',
+        birthdate: '2000-04-23'
+      });
+    });
   });
 });

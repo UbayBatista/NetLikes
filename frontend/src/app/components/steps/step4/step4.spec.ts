@@ -6,7 +6,7 @@ import { of } from 'rxjs';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 
-describe('Step4', () => {
+describe('Step4 Component', () => {
   let component: Step4;
   let fixture: ComponentFixture<Step4>;
   let genreService: GenreService;
@@ -35,34 +35,44 @@ describe('Step4', () => {
     fixture.detectChanges(); 
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  describe('Initialization', () => {
+    it('should create the component successfully', () => {
+      expect(component).toBeTruthy();
+    });
+
+    it('should load genres and add the selected property initialized to false', () => {
+      expect(component.generos().length).toBe(2);
+      expect(component.generos()[0].selected).toBe(false);
+    });
   });
 
-  it('debería cargar los géneros y añadir la propiedad selected: false', () => {
-    expect(component.generos().length).toBe(2);
-    expect(component.generos()[0].selected).toBe(false);
+  describe('Genre Selection Logic', () => {
+    it('should toggle the selected state of a genre when toggleGenero is called', () => {
+      component.toggleGenero(0);
+      expect(component.generos()[0].selected).toBe(true);
+      
+      component.toggleGenero(0);
+      expect(component.generos()[0].selected).toBe(false);
+    });
+
+    it('should calculate totalSelected correctly based on selected genres', () => {
+      expect(component.totalSelected).toBe(0);
+      
+      component.toggleGenero(0);
+      component.toggleGenero(1);
+      
+      expect(component.totalSelected).toBe(2);
+    });
   });
 
-  it('should toggle a genre selection', () => {
-    component.toggleGenero(0);
-    expect(component.generos()[0].selected).toBe(true);
-    
-    component.toggleGenero(0);
-    expect(component.generos()[0].selected).toBe(false);
-  });
-
-  it('should calculate totalSelected correctly', () => {
-    expect(component.totalSelected).toBe(0);
-    component.toggleGenero(0);
-    component.toggleGenero(1);
-    expect(component.totalSelected).toBe(2);
-  });
-
-  it('debería emitir los IDs seleccionados al llamar a handleEnd', () => {
-    const emitSpy = vi.spyOn(component.toEnd, 'emit');
-    component.toggleGenero(0); 
-    component.handleEnd();
-    expect(emitSpy).toHaveBeenCalledWith([1]);
+  describe('Event Emitters', () => {
+    it('should emit the selected genre IDs when handleEnd is called', () => {
+      const emitSpy = vi.spyOn(component.toEnd, 'emit');
+      
+      component.toggleGenero(0);
+      component.handleEnd();
+      
+      expect(emitSpy).toHaveBeenCalledWith([1]);
+    });
   });
 });

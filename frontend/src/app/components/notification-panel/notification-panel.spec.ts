@@ -41,31 +41,34 @@ describe('NotificationPanel Component', () => {
     fixture.detectChanges();
   });
 
-
-  it('debería cargar las solicitudes pendientes al cambiar a la vista de solicitudes', () => {
-    component.showRequests();
-    expect(followServiceMock.getPendingRequests).toHaveBeenCalled();
-    expect(component.pendingRequests.length).toBe(2);
+  describe('View Switching Logic', () => {
+    it('should load pending requests when switching to the requests view', () => {
+      component.showRequests();
+      
+      expect(followServiceMock.getPendingRequests).toHaveBeenCalled();
+      expect(component.pendingRequests.length).toBe(2);
+    });
   });
 
-  it('HU 7.4: Al pulsar "Aceptar", debería llamar a acceptFollow y quitar al usuario de la lista', () => {
-    component.pendingRequests = [...mockRequests];
-    
-    component.accept('paco@gmail.com');
+  describe('Follow Requests Logic (US 7.4)', () => {
+    it('should call acceptFollow and remove the user from the list when "Accept" is clicked', () => {
+      component.pendingRequests = [...mockRequests];
+      
+      component.accept('paco@gmail.com');
 
-    expect(followServiceMock.acceptFollow).toHaveBeenCalledWith('paco@gmail.com');
-    
-    expect(component.pendingRequests.length).toBe(1);
-    expect(component.pendingRequests[0].email).toBe('elena@gmail.com');
-  });
+      expect(followServiceMock.acceptFollow).toHaveBeenCalledWith('paco@gmail.com');
+      expect(component.pendingRequests.length).toBe(1);
+      expect(component.pendingRequests[0].email).toBe('elena@gmail.com');
+    });
 
-  it('HU 7.4: Al pulsar "Rechazar", debería llamar a rejectFollow y quitar al usuario de la lista', () => {
-    component.pendingRequests = [...mockRequests];
-    
-    component.reject('paco@gmail.com');
+    it('should call rejectFollow and remove the user from the list when "Reject" is clicked', () => {
+      component.pendingRequests = [...mockRequests];
+      
+      component.reject('paco@gmail.com');
 
-    expect(followServiceMock.rejectFollow).toHaveBeenCalledWith('paco@gmail.com');
-    expect(component.pendingRequests.length).toBe(1);
-    expect(component.pendingRequests[0].email).toBe('elena@gmail.com');
+      expect(followServiceMock.rejectFollow).toHaveBeenCalledWith('paco@gmail.com');
+      expect(component.pendingRequests.length).toBe(1);
+      expect(component.pendingRequests[0].email).toBe('elena@gmail.com');
+    });
   });
 });

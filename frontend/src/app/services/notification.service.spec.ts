@@ -32,24 +32,30 @@ describe('NotificationService', () => {
     httpMock.verify();
   });
 
-  it('debería marcar todas como leídas y poner el contador a 0', () => {
-    const mockNotifs: any[] = [{ read: false }, { read: false }];
-    (service as any).notificationsSubject.next(mockNotifs);
-    (service as any).unreadCountSubject.next(2);
+  it('should be created successfully', () => {
+    expect(service).toBeTruthy();
+  });
 
-    service.markAllAsRead();
+  describe('Notification Management', () => {
+    it('should mark all notifications as read, set unread count to 0, and send a PUT request when markAllAsRead is called', () => {
+      const mockNotifs: any[] = [{ read: false }, { read: false }];
+      (service as any).notificationsSubject.next(mockNotifs);
+      (service as any).unreadCountSubject.next(2);
 
-    const req = httpMock.expectOne('https://api-db.duckdns.org/notifications/test@test.com/read-all');
-    expect(req.request.method).toBe('PUT');
-    
-    req.flush({}); 
+      service.markAllAsRead();
 
-    let currentCount = 0;
-    service.unreadCount$.subscribe(c => currentCount = c);
-    expect(currentCount).toBe(0);
+      const req = httpMock.expectOne('https://api-db.duckdns.org/notifications/test@test.com/read-all');
+      expect(req.request.method).toBe('PUT');
+      
+      req.flush({}); 
 
-    let currentNotifs: any[] = [];
-    service.notifications$.subscribe(n => currentNotifs = n);
-    expect(currentNotifs.every(n => n.read === true)).toBe(true);
+      let currentCount = 0;
+      service.unreadCount$.subscribe(c => currentCount = c);
+      expect(currentCount).toBe(0);
+
+      let currentNotifs: any[] = [];
+      service.notifications$.subscribe(n => currentNotifs = n);
+      expect(currentNotifs.every(n => n.read === true)).toBe(true);
+    });
   });
 });

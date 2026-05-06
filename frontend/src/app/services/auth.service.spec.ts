@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient, HttpClient } from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+
 import { AuthService } from './auth.service';
-import { User, RegisterData, Credentials} from '../models/user.models';
+import { User, RegisterData, Credentials } from '../models/user.models';
 import { environment } from '../../environments/environment';
 
 describe('AuthService', () => {
@@ -18,8 +19,8 @@ describe('AuthService', () => {
   };
 
   beforeEach(() => {
-    
     localStorage.clear();
+    
     TestBed.configureTestingModule({
       providers: [
         AuthService,
@@ -27,6 +28,7 @@ describe('AuthService', () => {
         provideHttpClientTesting(),
       ]
     });
+    
     service = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
 
@@ -40,191 +42,193 @@ describe('AuthService', () => {
     httpMock.verify();
   });
 
-  it('debe enviar una petición POST en register y guardar en local', () => {
-    const registerData: RegisterData = {
-      userName: 'Juan', email: 'j@test.com', birthdate: '2000-01-01',
-      password: '123', securityQuestion: '?', answer: '!', favoriteGenres: []
-    };
+  describe('Authentication Flow', () => {
+    it('should send a POST request on register and save user to localStorage', () => {
+      const registerData: RegisterData = {
+        userName: 'Juan', email: 'j@test.com', birthdate: '2000-01-01',
+        password: '123', securityQuestion: '?', answer: '!', favoriteGenres: []
+      };
 
-    service.register(registerData).subscribe(user => {
-      expect(user).toEqual(mockUser);
-      expect(localStorage.getItem('user')).toBeTruthy();
+      service.register(registerData).subscribe(user => {
+        expect(user).toEqual(mockUser);
+        expect(localStorage.getItem('user')).toBeTruthy();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/register`);
+      expect(req.request.method).toBe('POST');
+      req.flush(mockUser);
     });
 
-    const req = httpMock.expectOne(`${apiUrl}/register`);
-    expect(req.request.method).toBe('POST');
-    req.flush(mockUser);
-  });
+    it('should send a POST request on login and save user to localStorage', () => {
+      const credentials: Credentials = { email: 'test@test.com', password: '123' };
 
-  it('checkEmailExists debe llamar a la URL correcta (/exists/email)', () => {
-    const email = 'test@test.com';
-    service.checkEmailExists(email).subscribe(exists => {
-      expect(exists).toBe(true);
+      service.login(credentials).subscribe(user => {
+        expect(user).toEqual(mockUser);
+        expect(localStorage.getItem('user')).toBe(JSON.stringify(mockUser));
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/login`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(credentials);
+      req.flush(mockUser);
     });
 
-    const reqs = httpMock.match(`${apiUrl}/exists/${email}`);
-    expect(reqs.length).toBeGreaterThan(0);
-    expect(reqs[0].request.method).toBe('GET');
-    reqs.forEach(req => req.flush(true));
-  });
+    it('should remove user from localStorage and clear currentUser$ on logout', () => {
+      localStorage.setItem('user', JSON.stringify(mockUser));
+      service['currentUser$'].next(mockUser);
 
-  it('checkNameExists debe llamar a la URL correcta (/existsName/name)', () => {
-    const name = 'UsuarioTest';
-    service.checkNameExists(name).subscribe(exists => {
-      expect(exists).toBe(true);
-    });
+      service.logout();
 
-    const reqs = httpMock.match(`${apiUrl}/existsName/${name}`);
-    expect(reqs.length).toBeGreaterThan(0);
-    expect(reqs[0].request.method).toBe('GET');
-    reqs.forEach(req => req.flush(true));
-  });
-
-  it('getSecurityQuestion debe devolver texto plano', () => {
-    const email = 'test@test.com';
-    const question = '¿Perro o gato?';
-
-    service.getSecurityQuestion(email).subscribe(q => {
-      expect(q).toBe(question);
-    });
-
-    const req = httpMock.expectOne(`${apiUrl}/securityQuestion/${email}`);
-    req.flush(question);
-  });
-
-  it('login debe enviar POST y guardar usuario en localStorage', () => {
-    const credentials: Credentials = { email: 'test@test.com', password: '123' };
-
-    service.login(credentials).subscribe(user => {
-      expect(user).toEqual(mockUser);
-      expect(localStorage.getItem('user')).toBe(JSON.stringify(mockUser));
-    });
-
-    const req = httpMock.expectOne(`${apiUrl}/login`);
-    expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual(credentials);
-    req.flush(mockUser);
-  });
-
-  it('logout debe eliminar el usuario de localStorage y limpiar currentUser$', () => {
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    service['currentUser$'].next(mockUser);
-
-    service.logout();
-
-    expect(localStorage.getItem('user')).toBeNull();
-    service.getCurrentUser().subscribe(user => {
-      expect(user).toBeNull();
+      expect(localStorage.getItem('user')).toBeNull();
+      service.getCurrentUser().subscribe(user => {
+        expect(user).toBeNull();
+      });
     });
   });
 
-  it('isAuthenticated debe retornar true cuando hay usuario logueado', () => {
-    service['currentUser$'].next(mockUser);
+  describe('Validation & Password Recovery', () => {
+    it('should call the correct URL via GET to check if email exists', () => {
+      const email = 'test@test.com';
+      service.checkEmailExists(email).subscribe(exists => {
+        expect(exists).toBe(true);
+      });
 
-    expect(service.isAuthenticated()).toBe(true);
-  });
+      const reqs = httpMock.match(`${apiUrl}/exists/${email}`);
+      expect(reqs.length).toBeGreaterThan(0);
+      expect(reqs[0].request.method).toBe('GET');
+      reqs.forEach(req => req.flush(true));
+    });
 
-  it('isAuthenticated debe retornar false cuando no hay usuario', () => {
-    service['currentUser$'].next(null);
+    it('should call the correct URL via GET to check if username exists', () => {
+      const name = 'UsuarioTest';
+      service.checkNameExists(name).subscribe(exists => {
+        expect(exists).toBe(true);
+      });
 
-    expect(service.isAuthenticated()).toBe(false);
-  });
+      const reqs = httpMock.match(`${apiUrl}/existsName/${name}`);
+      expect(reqs.length).toBeGreaterThan(0);
+      expect(reqs[0].request.method).toBe('GET');
+      reqs.forEach(req => req.flush(true));
+    });
 
-  it('getCurrentUser debe emitir el usuario actual', () => {
-    service['currentUser$'].next(mockUser);
+    it('should return plain text when fetching security question', () => {
+      const email = 'test@test.com';
+      const question = '¿Perro o gato?';
 
-    service.getCurrentUser().subscribe(user => {
-      expect(user).toEqual(mockUser);
+      service.getSecurityQuestion(email).subscribe(q => {
+        expect(q).toBe(question);
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/securityQuestion/${email}`);
+      req.flush(question);
+    });
+
+    it('should send a POST request with email and answer to validate security answer', () => {
+      service.isValidAnswer('test@test.com', 'Firulais').subscribe(result => {
+        expect(result).toBe(true);
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/isValidAnswer`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ email: 'test@test.com', answer: 'Firulais' });
+      req.flush(true);
+    });
+
+    it('should send a PATCH request with email and new password to change password', () => {
+      service.changePassword('test@test.com', 'nuevaPass123').subscribe();
+
+      const req = httpMock.expectOne(`${apiUrl}/changePassword`);
+      expect(req.request.method).toBe('PATCH');
+      expect(req.request.body).toEqual({ email: 'test@test.com', newPassword: 'nuevaPass123' });
+      req.flush(null);
     });
   });
 
-  it('getCurrentUserEmail debe retornar el email del usuario logueado', () => {
-    service['currentUser$'].next(mockUser);
-
-    expect(service.getCurrentUserEmail()).toBe('test@test.com');
-  });
-
-  it('getCurrentUserEmail debe retornar null si no hay usuario', () => {
-    service['currentUser$'].next(null);
-
-    expect(service.getCurrentUserEmail()).toBeNull();
-  });
-
-  it('isValidAnswer debe enviar POST con email y answer', () => {
-    service.isValidAnswer('test@test.com', 'Firulais').subscribe(result => {
-      expect(result).toBe(true);
+  describe('Session State Management', () => {
+    it('should return true from isAuthenticated when a user is logged in', () => {
+      service['currentUser$'].next(mockUser);
+      expect(service.isAuthenticated()).toBe(true);
     });
 
-    const req = httpMock.expectOne(`${apiUrl}/isValidAnswer`);
-    expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ email: 'test@test.com', answer: 'Firulais' });
-    req.flush(true);
-  });
-
-  it('changePassword debe enviar PATCH con email y nueva contraseña', () => {
-    service.changePassword('test@test.com', 'nuevaPass123').subscribe();
-
-    const req = httpMock.expectOne(`${apiUrl}/changePassword`);
-    expect(req.request.method).toBe('PATCH');
-    expect(req.request.body).toEqual({ email: 'test@test.com', newPassword: 'nuevaPass123' });
-    req.flush(null);
-  });
-
-  it('loadUserFromStorage debe restaurar el usuario si el email existe', () => {
-    
-    TestBed.resetTestingModule();
-    localStorage.setItem('user', JSON.stringify(mockUser));
-
-    TestBed.configureTestingModule({
-      providers: [
-        AuthService,
-        provideHttpClient(),
-        provideHttpClientTesting()
-      ]
+    it('should return false from isAuthenticated when no user is logged in', () => {
+      service['currentUser$'].next(null);
+      expect(service.isAuthenticated()).toBe(false);
     });
 
-    service = TestBed.inject(AuthService);
-    httpMock = TestBed.inject(HttpTestingController);
-
-    const req = httpMock.expectOne(`${apiUrl}/exists/${mockUser.email}`);
-    req.flush(true);
-
-    service.getCurrentUser().subscribe(user => {
-      expect(user).toEqual(mockUser);
+    it('should emit the current user when getCurrentUser is called', () => {
+      service['currentUser$'].next(mockUser);
+      service.getCurrentUser().subscribe(user => {
+        expect(user).toEqual(mockUser);
+      });
     });
 
-    httpMock.verify();
+    it('should return the email of the logged-in user when getCurrentUserEmail is called', () => {
+      service['currentUser$'].next(mockUser);
+      expect(service.getCurrentUserEmail()).toBe('test@test.com');
+    });
+
+    it('should return null from getCurrentUserEmail if no user is logged in', () => {
+      service['currentUser$'].next(null);
+      expect(service.getCurrentUserEmail()).toBeNull();
+    });
   });
 
-  it('loadUserFromStorage debe limpiar localStorage si el email no existe', () => {
-    TestBed.resetTestingModule();
-    localStorage.setItem('user', JSON.stringify(mockUser));
+  describe('Service Initialization', () => {
+    it('should restore the user from localStorage if the email exists in DB', () => {
+      TestBed.resetTestingModule();
+      localStorage.setItem('user', JSON.stringify(mockUser));
 
-    TestBed.configureTestingModule({
-      providers: [
-        AuthService,
-        provideHttpClient(),
-        provideHttpClientTesting()
-      ]
+      TestBed.configureTestingModule({
+        providers: [
+          AuthService,
+          provideHttpClient(),
+          provideHttpClientTesting()
+        ]
+      });
+
+      service = TestBed.inject(AuthService);
+      httpMock = TestBed.inject(HttpTestingController);
+
+      const req = httpMock.expectOne(`${apiUrl}/exists/${mockUser.email}`);
+      req.flush(true);
+
+      service.getCurrentUser().subscribe(user => {
+        expect(user).toEqual(mockUser);
+      });
+
+      httpMock.verify();
     });
 
-    service = TestBed.inject(AuthService);
-    httpMock = TestBed.inject(HttpTestingController);
+    it('should clear localStorage and user state if the stored email does not exist in DB', () => {
+      TestBed.resetTestingModule();
+      localStorage.setItem('user', JSON.stringify(mockUser));
 
-    const req = httpMock.expectOne(`${apiUrl}/exists/${mockUser.email}`);
-    req.flush(false);
+      TestBed.configureTestingModule({
+        providers: [
+          AuthService,
+          provideHttpClient(),
+          provideHttpClientTesting()
+        ]
+      });
 
-    expect(localStorage.getItem('user')).toBeNull();
-    service.getCurrentUser().subscribe(user => {
-      expect(user).toBeNull();
+      service = TestBed.inject(AuthService);
+      httpMock = TestBed.inject(HttpTestingController);
+
+      const req = httpMock.expectOne(`${apiUrl}/exists/${mockUser.email}`);
+      req.flush(false);
+
+      expect(localStorage.getItem('user')).toBeNull();
+      service.getCurrentUser().subscribe(user => {
+        expect(user).toBeNull();
+      });
+
+      httpMock.verify();
     });
 
-    httpMock.verify();
-  });
-
-  it('isLoading debe emitir false tras inicializar sin usuario en localStorage', () => {
-    service.isLoading().subscribe(loading => {
-      expect(loading).toBe(false);
+    it('should emit false on isLoading after initializing without a user in localStorage', () => {
+      service.isLoading().subscribe(loading => {
+        expect(loading).toBe(false);
+      });
     });
   });
 });

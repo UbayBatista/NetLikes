@@ -1,8 +1,9 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { FilmDetail } from './film-detail';
 
-describe('FilmDetail', () => {
+describe('FilmDetail Component', () => {
   let component: FilmDetail;
   let fixture: ComponentFixture<FilmDetail>;
 
@@ -28,13 +29,22 @@ describe('FilmDetail', () => {
     component = fixture.componentInstance;
   });
 
-  it('debería pasar los vídeos correctamente al componente hijo de trailers', async () => {
-    const videoKeys = ['video1', 'video2'];
-    component.filmData = { ...mockFilm, videos: videoKeys } as any;
-    fixture.detectChanges();
-    await fixture.whenStable();
+  describe('Initialization', () => {
+    it('should create the component successfully', () => {
+      expect(component).toBeTruthy();
+    });
+  });
 
-    const trailersComponent = fixture.nativeElement.querySelector('app-film-trailers');
-    expect(trailersComponent).toBeTruthy();
+  describe('Child Components Rendering', () => {
+    it('should render the app-film-trailers child component when videos are provided', async () => {
+      const videoKeys = ['video1', 'video2'];
+      component.filmData = { ...mockFilm, videos: videoKeys } as any;
+      
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const trailersComponent = fixture.nativeElement.querySelector('app-film-trailers');
+      expect(trailersComponent).toBeTruthy();
+    });
   });
 });

@@ -31,12 +31,12 @@ describe('UserInteractionService', () => {
     httpMock.verify();
   });
 
-  it('debería crearse correctamente', () => {
+  it('should be created successfully', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('Gestión de Marcas (Marks)', () => {
-    it('debería hacer un POST correcto al hacer toggleMark', () => {
+  describe('Marks Management', () => {
+    it('should make a POST request when calling toggleMark', () => {
       service.toggleMark(123, 'SEEN').subscribe();
 
       const req = httpMock.expectOne('http://localhost:8080/marks/test@correo.com/toggle/123?type=SEEN');
@@ -44,7 +44,7 @@ describe('UserInteractionService', () => {
       req.flush({ status: 'added' });
     });
 
-    it('debería lanzar un error si se hace toggleMark sin un email válido', () => {
+    it('should throw an error when calling toggleMark without a valid email', () => {
       authServiceMock.getCurrentUserEmail.mockReturnValue(null);
       
       expect(() => {
@@ -52,7 +52,7 @@ describe('UserInteractionService', () => {
       }).toThrowError('No hay email');
     });
 
-    it('debería hacer un GET correcto al recuperar el estado (getMarkStatus)', () => {
+    it('should make a GET request when calling getMarkStatus', () => {
       service.getMarkStatus(123).subscribe();
 
       const req = httpMock.expectOne('http://localhost:8080/marks/test@correo.com/status/123');
@@ -61,8 +61,8 @@ describe('UserInteractionService', () => {
     });
   });
 
-  describe('Gestión de Valoraciones (Rates)', () => {
-    it('debería hacer un POST enviando el score en MAYÚSCULAS', () => {
+  describe('Rates Management', () => {
+    it('should make a POST request sending the score in UPPERCASE when calling toggleRate', () => {
       service.toggleRate(123, 'love').subscribe();
 
       const req = httpMock.expectOne('http://localhost:8080/rates/test@correo.com/123?score=LOVE');
@@ -70,7 +70,7 @@ describe('UserInteractionService', () => {
       req.flush({ score: 'LOVE' });
     });
 
-    it('debería devolver un observable con null si no hay email al hacer getRateStatus', () => {
+    it('should return an observable with null when calling getRateStatus without a valid email', () => {
       authServiceMock.getCurrentUserEmail.mockReturnValue(null);
       
       service.getRateStatus(123).subscribe(result => {

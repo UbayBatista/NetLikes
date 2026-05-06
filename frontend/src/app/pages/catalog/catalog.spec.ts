@@ -2,10 +2,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Catalog } from './catalog';
 import { FilmService } from '../../services/film.service';
 import { of } from 'rxjs';
-import { vi } from 'vitest'; 
+import { vi, describe, it, expect, beforeEach } from 'vitest'; 
 import { provideRouter } from '@angular/router';
 
-describe('Catalog', () => {
+describe('Catalog Component', () => {
   let component: Catalog;
   let fixture: ComponentFixture<Catalog>;
   let filmServiceMock: any;
@@ -55,29 +55,38 @@ describe('Catalog', () => {
     fixture.detectChanges(); 
   });
 
-  it('debería cargar los géneros al iniciar (HU Catálogo)', () => {
-    expect(filmServiceMock.getFilmsByGenre).toHaveBeenCalled();
-    expect(component.genres.length).toBe(2);
-    expect(component.genres[0].name).toBe('Acción');
+  it('should create the component successfully', () => {
+    expect(component).toBeTruthy();
   });
 
-  it('debería llamar al servicio de búsqueda cuando se ejecuta filters()', () => {
-    component.filters('Matrix');
-    
-    expect(component.isSearching).toBeDefined();
+  describe('Initialization', () => {
+    it('should load genres on initialization (US Catalog)', () => {
+      expect(filmServiceMock.getFilmsByGenre).toHaveBeenCalled();
+      expect(component.genres.length).toBe(2);
+      expect(component.genres[0].name).toBe('Acción');
+    });
   });
 
-  it('debería actualizar searchResults cuando el servicio de búsqueda responde', () => {
-    component.searchResults = mockSearchResults;
-    component.isSearching = true;
+  describe('Search and Filtering Logic', () => {
+    it('should call the search service when filters() is executed', () => {
+      component.filters('Matrix');
+      
+      expect(component.isSearching).toBeDefined();
+    });
 
-    expect(component.searchResults.length).toBe(1);
-    expect(component.searchResults[0].title).toBe('Matrix');
-  });
+    it('should update searchResults when the search service responds', () => {
+      component.searchResults = mockSearchResults;
+      component.isSearching = true;
 
-  it('debería resetear isSearching si la búsqueda es vacía', () => {
-    component.filters('');
-    fixture.detectChanges();
-    expect(component.isSearching).toBe(false);
+      expect(component.searchResults.length).toBe(1);
+      expect(component.searchResults[0].title).toBe('Matrix');
+    });
+
+    it('should reset isSearching to false when the search query is empty', () => {
+      component.filters('');
+      fixture.detectChanges();
+      
+      expect(component.isSearching).toBe(false);
+    });
   });
 });

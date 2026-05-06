@@ -52,53 +52,61 @@ describe('Header Component', () => {
     fixture.detectChanges();
   });
 
-  it('debería inicializar las notificaciones al arrancar', () => {
-    expect(notificationServiceMock.initNotifications).toHaveBeenCalled();
+  describe('Initialization', () => {
+    it('should initialize notifications on startup', () => {
+      expect(notificationServiceMock.initNotifications).toHaveBeenCalled();
+    });
   });
 
-  it('HU 8.2: NO debería mostrar la burbuja roja si unreadCount es 0', () => {
-    unreadCountSubject.next(0);
-    fixture.detectChanges();
+  describe('Notifications UI (US 8.2)', () => {
+    it('should not display the red badge if unreadCount is 0', () => {
+      unreadCountSubject.next(0);
+      fixture.detectChanges();
 
-    const badge = fixture.nativeElement.querySelector('.badge.bg-danger');
-    expect(badge).toBeNull();
+      const badge = fixture.nativeElement.querySelector('.badge.bg-danger');
+      expect(badge).toBeNull();
+    });
+
+    it('should display the red badge with the correct number when unreadCount > 0', () => {
+      unreadCountSubject.next(3);
+      fixture.detectChanges();
+
+      const badge = fixture.nativeElement.querySelector('.badge.bg-danger');
+      expect(badge).toBeTruthy();
+      expect(badge?.textContent?.trim()).toBe('3');
+    });
   });
 
-  it('HU 8.2: Debería mostrar la burbuja roja con el número correcto cuando unreadCount > 0', () => {
-    unreadCountSubject.next(3);
-    fixture.detectChanges();
+  describe('User Profile UI', () => {
+    it('should show user profile picture when user is logged in', () => {
+      fixture.detectChanges();
 
-    const badge = fixture.nativeElement.querySelector('.badge.bg-danger');
-    expect(badge).toBeTruthy();
-    expect(badge?.textContent?.trim()).toBe('3');
+      const img = fixture.nativeElement.querySelector('img');
+      expect(img?.src).toContain('assets/custom.jpg');
+    });
+
+    it('should show default profile picture when user has no picture', () => {
+      authServiceMock.getCurrentUser.mockReturnValue(
+        of({ ...mockUser, profilePicture: null })
+      );
+
+      fixture = TestBed.createComponent(Header);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+
+      const img = fixture.nativeElement.querySelector('img');
+      expect(img?.src).toContain('assets/ProfilePicture.jpg');
+    });
   });
 
-  it('should show user profile picture when user is logged in', () => {
-    fixture.detectChanges();
+  describe('Navigation Logic', () => {
+    it('should navigate to /profile/:userName when goToProfile is called', () => {
+      const navigateSpy = vi.spyOn(router, 'navigate');
+      component.userName = 'my-profile';
 
-    const img = fixture.nativeElement.querySelector('img');
-    expect(img?.src).toContain('assets/custom.jpg');
-  });
+      component.goToProfile();
 
-  it('should show default profile picture when user has no picture', () => {
-    authServiceMock.getCurrentUser.mockReturnValue(
-      of({ ...mockUser, profilePicture: null })
-    );
-
-    fixture = TestBed.createComponent(Header);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-
-    const img = fixture.nativeElement.querySelector('img');
-    expect(img?.src).toContain('assets/ProfilePicture.jpg');
-  });
-
-  it('goToProfile() should navigate to /profile/:userName', () => {
-    const navigateSpy = vi.spyOn(router, 'navigate');
-    component.userName = 'my-profile';
-
-    component.goToProfile();
-
-    expect(navigateSpy).toHaveBeenCalledWith(['/profile', 'my-profile']);
+      expect(navigateSpy).toHaveBeenCalledWith(['/profile', 'my-profile']);
+    });
   });
 });
