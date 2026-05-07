@@ -56,7 +56,7 @@ export class ProfileHeader {
   }
 
   logout() {
-      this.logOut.emit()
+    this.logOut.emit();
   }
 
   applyBlock() {

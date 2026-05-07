@@ -11,17 +11,14 @@ export class ForumSsoComponent implements OnInit {
   constructor(private route: ActivatedRoute, private http: HttpClient) {}
 
   ngOnInit() {
-    // 1. Capturamos los parámetros que nos manda Discourse por la URL
     this.route.queryParams.subscribe(params => {
       const sso = params['sso'];
       const sig = params['sig'];
       
-      // 2. Sacamos a nuestro usuario del localStorage
       const userString = localStorage.getItem('user');
       if (sso && sig && userString) {
         const user = JSON.parse(userString);
         
-        // 3. Le enviamos TODO a Spring Boot
         const payload = {
           sso: sso,
           sig: sig,
@@ -29,11 +26,9 @@ export class ForumSsoComponent implements OnInit {
           username: user.username || user.email.split('@')[0]
         };
 
-        // Cambia esta URL por la de tu backend real
         this.http.post('https://api-db.duckdns.org/auth/sso/process', payload)
           .subscribe({
             next: (response: any) => {
-              // 4. Spring Boot nos da la URL final, ¡redirigimos el iframe hacia allá!
               window.location.href = response.redirectUrl;
             },
             error: (err) => console.error("Error en el SSO:", err)

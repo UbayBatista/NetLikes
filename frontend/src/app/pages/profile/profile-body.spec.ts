@@ -255,4 +255,51 @@ describe('ProfileComplete Component', () => {
       expect(profileService.updatePrivacy).toHaveBeenCalledWith(false);
     });
   });
+
+  describe('Account Deletion Logic', () => {
+    const userEmail = 'test@test.com';
+
+    it('should open password verification modal when delete process starts', () => {
+      component.startDeleteProcess(userEmail);
+
+      expect(component.isPasswordModalOpen).toBe(true);
+      expect(component['actionUser']).toBe(userEmail);
+    });
+
+    it('should transition to confirmation modal when password is successfully verified', () => {
+      component['actionUser'] = userEmail;
+      
+      component.onPasswordVerified();
+
+      expect(component.isPasswordModalOpen).toBe(false);
+      expect(component['actionToConfirm']).toBe('DELETE');
+      expect(component.showConfirmModal).toBe(true);
+      expect(component.confirmModalMessage).toContain('borrar permanentemente tu cuenta');
+    });
+
+    it('should call userService.deleteUser, logout and navigate to home when deletion is confirmed', () => {
+    const navigateSpy = vi.spyOn(router, 'navigate');
+    userService.deleteUser.mockReturnValue(of({})); 
+
+    component['actionToConfirm'] = 'DELETE';
+    component['actionUser'] = 'test@test.com';
+
+    component.handleConfirmation(true);
+
+    expect(userService.deleteUser).toHaveBeenCalled();
+    expect(authService.logout).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(['/']);
+    });
+
+    it('should reset actionUser and close modal if deletion is cancelled', () => {
+      component['actionToConfirm'] = 'DELETE';
+      component['actionUser'] = userEmail;
+
+      component.handleConfirmation(false);
+
+      expect(component.showConfirmModal).toBe(false);
+      expect(userService.deleteUser).not.toHaveBeenCalled();
+      expect(component['actionUser']).toBe('');
+    });
+  });
 });
