@@ -12,6 +12,7 @@ import software.ulpgc.netlikes.service.UserService;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
@@ -271,5 +272,21 @@ class UserServiceTest {
         assertThrows(RuntimeException.class, () -> 
             userService.changePassword("noexiste@email.com", "anyPassword")
         );
+    }
+
+    @Test
+    void deleteUser_shouldDeleteUser_whenUserExists() {
+        when(userRepository.existsById("juan@email.com")).thenReturn(true);
+
+        userService.deleteUser("juan@email.com");
+
+        verify(userRepository).deleteById("juan@email.com");
+    }
+
+    @Test
+    void deleteUser_shouldThrowException_whenUserNotFound() {
+        when(userRepository.existsById("noexiste@email.com")).thenReturn(false);
+
+        assertThrows(RuntimeException.class, () -> userService.deleteUser("noexiste@email.com"));
     }
 }

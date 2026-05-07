@@ -10,6 +10,7 @@ import software.ulpgc.netlikes.repository.GenreRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -26,6 +27,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.servlet.ServletException;
 
 import java.sql.Date;
 import java.util.List;
@@ -427,5 +430,25 @@ class UserControllerTest {
             .andExpect(jsonPath("$.userName").value("Publico"))
             .andExpect(jsonPath("$.watchedFilms").isArray())
             .andExpect(jsonPath("$.laterFilms").isArray());
+    }
+
+    @Test
+    void deleteUser_shouldReturn200_whenUserExists() throws Exception {
+        createAndSaveUser("juan@email.com");
+
+        mockMvc.perform(delete("/users")
+            .header("X-User-Id", "juan@email.com"))
+            .andExpect(status().isOk());
+
+        assertFalse(userRepository.existsById("juan@email.com"));
+    }
+
+    @Test
+    void deleteUser_shouldReturn500_whenUserNotFound() throws Exception {
+        assertThrows(ServletException.class, () ->
+            mockMvc.perform(delete("/users")
+                .header("X-User-Id", "noexiste@email.com"))
+                .andReturn()
+        );
     }
 }

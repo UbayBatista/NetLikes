@@ -12,10 +12,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
-import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
