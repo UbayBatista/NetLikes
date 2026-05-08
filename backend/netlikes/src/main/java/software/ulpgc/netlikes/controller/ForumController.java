@@ -26,20 +26,7 @@ public class ForumController {
     public List<Forum> getAll(){
         return this.forumService.getAllForums();
     }
-
-    // @PostMapping("/film/{filmId}")
-    // public ResponseEntity<Forum> create(@PathVariable Integer filmId){
-    //     try {
-    //         Forum createdForum = this.forumService.createForumForFilmId(filmId);
-    //         return ResponseEntity.ok(createdForum);
-    //     } catch (RuntimeException e) {
-    //         if (e.getMessage().equals("FilmNotFound")) {
-    //             return ResponseEntity.notFound().build();
-    //         }
-    //         return ResponseEntity.internalServerError().build();
-    //     }
-    // }
-
+    
     @PostMapping("/film/{filmId}")
     public ResponseEntity<?> subscribeToFilmForum(@PathVariable Integer filmId, @RequestBody Map<String, String> payload) {
         String filmTitle = payload.get("title");

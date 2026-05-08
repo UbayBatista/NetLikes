@@ -118,17 +118,14 @@ public class NotifyService {
 
     @Transactional
     public void deleteFollowNotification(String senderEmail, String receiverEmail) {
-        // 1. Borramos de la base de datos
         notifyRepository.deleteByUserSenderEmailAndUserReceiverEmailAndType(
             senderEmail, 
             receiverEmail, 
             Notify.Type.FOLLOWREQUEST
         );
 
-        // 2. Avisamos al frontend por SSE
         List<SseEmitter> userEmitters = emitters.get(receiverEmail);
         if (userEmitters != null) {
-            // Enviamos un objeto simple con los datos necesarios para identificar qué borrar
             Map<String, String> data = new HashMap<>();
             data.put("senderEmail", senderEmail);
             data.put("type", Notify.Type.FOLLOWREQUEST.name());
@@ -136,7 +133,7 @@ public class NotifyService {
             for (SseEmitter emitter : userEmitters) {
                 try {
                     emitter.send(SseEmitter.event()
-                        .name("DELETE_NOTIFICATION") // Nombre del evento que escuchará Angular
+                        .name("DELETE_NOTIFICATION") 
                         .data(data));
                 } catch (Exception e) {
                     removeEmitter(receiverEmail, emitter);
