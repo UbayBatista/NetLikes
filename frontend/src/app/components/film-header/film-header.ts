@@ -6,7 +6,6 @@ import { SubscriptionService } from '../../services/subscription.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { ForumService } from '../../services/forum.service';
-import { take } from 'rxjs';
 
 @Component({
   selector: 'app-film-header',
@@ -179,9 +178,10 @@ export class FilmHeader implements OnInit {
 
     console.log('Botón de suscripción pulsado...');
 
-    this.authService.getCurrentUser().pipe(take(1)).subscribe({
+    this.authService.getCurrentUser().subscribe({
       next: (user) => {
         if (!user || !user.email) {
+          alert('¡Debes iniciar sesión para poder suscribirte a un foro!');
           return;
         }
 
@@ -260,6 +260,7 @@ export class FilmHeader implements OnInit {
     this.authService.getCurrentUser().subscribe(user => { 
 
         if (!user || !user.email) {
+          alert('¡Debes iniciar sesión para poder suscribirte a un foro!');
           return; 
         }
       

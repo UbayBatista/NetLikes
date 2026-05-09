@@ -43,7 +43,6 @@ public class SubscriptionService {
         User user = userRepository.findById(email)
                 .orElseThrow(() -> new RuntimeException("UserNotFound"));
 
-        // Forum forum = forumService.getOrCreateForum(filmId, filmTitle);
         Forum forum = forumRepository.findById(filmId)
             .orElseThrow(() -> new RuntimeException("Foro no encontrado para la película con ID: " + filmId));
 

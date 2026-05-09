@@ -212,7 +212,7 @@ public class UserService {
     }
 
     public UserProfileDTO userProfile(String userName, String requesterEmail) {
-        User target = userRepository.findByName(userName)
+        User target = userRepository.findByNameIgnoreCase(userName)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         boolean isOwnProfile = target.getEmail().equals(requesterEmail);

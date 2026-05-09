@@ -23,7 +23,8 @@ export class ForumSsoComponent implements OnInit {
           sso: sso,
           sig: sig,
           email: user.email,
-          username: user.username || user.email.split('@')[0]
+          username: user.username,
+          name: user.username
         };
 
         this.http.post('https://api-db.duckdns.org/auth/sso/process', payload)

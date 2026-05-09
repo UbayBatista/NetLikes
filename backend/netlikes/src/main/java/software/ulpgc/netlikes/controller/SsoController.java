@@ -46,29 +46,22 @@ public class SsoController {
     @PostMapping("/sso/process")
     public ResponseEntity<?> processSso(@RequestBody SsoPayload payload) {
         try {
-            // Log para ver qué nos llega (mira la consola de tu servidor)
             System.out.println("SSO recibido: " + payload.getSso());
 
-            // 1. Validar firma
             String calculatedSig = calculateHmacSha256(payload.getSso(), ssoSecret);
             if (!calculatedSig.equalsIgnoreCase(payload.getSig())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Firma inválida");
             }
 
-            // 2. Decodificar y extraer nonce
             String decodedSso = new String(Base64.getDecoder().decode(URLDecoder.decode(payload.getSso(), StandardCharsets.UTF_8)));
             String nonce = extractParam(decodedSso, "nonce");
             
             if (nonce == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No se encontró el nonce en el payload");
             }
-
-            // 3. Datos reales de Angular
             String email = payload.getEmail();
             String username = payload.getUsername();
             String externalId = email; 
-
-            // 4. Firmar respuesta
             String reply = "nonce=" + nonce + "&email=" + email + "&external_id=" + externalId + "&username=" + username;
             String base64Reply = Base64.getEncoder().encodeToString(reply.getBytes(StandardCharsets.UTF_8));
             String signature = calculateHmacSha256(base64Reply, ssoSecret);
@@ -81,10 +74,7 @@ public class SsoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno: " + e.getMessage());
         }
     }
-
-    /**
-     * Mantenemos el GET antiguo por si acaso, pero el importante ahora es el POST
-     */
+    
     @GetMapping("/sso")
     public ResponseEntity<Void> sso(@RequestParam String sso, @RequestParam String sig) {
         String calculatedSig = calculateHmacSha256(sso, ssoSecret);
