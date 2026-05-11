@@ -39,4 +39,6 @@ public class User {
         inverseJoinColumns = @JoinColumn(name = "genreId")
     )
     private List<Genre> favoriteGenres;
+
+    private String vector;
 }
