@@ -59,11 +59,10 @@ public class MarkService {
     }
 
     public List<FilmResponseDTO> getFilmsByMarkType(String email, Mark.Type type) {
-        return markRepository.findAll().stream()
-                .filter(m -> m.getUser().getEmail().equals(email) && m.getType() == type)
-                .map(Mark::getFilm)
-                .map(this::toFilmDTO)
-                .toList();
+    return markRepository.findByUserEmailAndType(email, type).stream() // Mucho más rápido
+            .map(Mark::getFilm)
+            .map(this::toFilmDTO)
+            .toList();
     }
 
     private FilmResponseDTO toFilmDTO(Film film) {

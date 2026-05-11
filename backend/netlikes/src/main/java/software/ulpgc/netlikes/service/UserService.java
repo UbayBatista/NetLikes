@@ -198,6 +198,7 @@ public class UserService {
         
         List<FilmResponseDTO> watchedFilms = markService.getFilmsByMarkType(email, Mark.Type.SEEN);
         List<FilmResponseDTO> watchLaterFilms = markService.getFilmsByMarkType(email, Mark.Type.WATCHLATER);
+        List<FilmResponseDTO> recommendedFilms = markService.getFilmsByMarkType(email, Mark.Type.RECOMMENDED);
 
         return new UserProfileDTO(
             user.getEmail(),
@@ -207,7 +208,8 @@ public class UserService {
             followService.countFollowersOf(user.getEmail()),
             followService.countFollowsOf(user.getEmail()),
             watchedFilms, 
-            watchLaterFilms
+            watchLaterFilms,
+            recommendedFilms
         );
     }
 
@@ -226,6 +228,9 @@ public class UserService {
         List<FilmResponseDTO> later = canSeeContent ? 
             markService.getFilmsByMarkType(target.getEmail(), Mark.Type.WATCHLATER) : new ArrayList<>();
 
+        List<FilmResponseDTO> recommended = canSeeContent ? 
+        markService.getFilmsByMarkType(target.getEmail(), Mark.Type.RECOMMENDED) : new ArrayList<>();
+
         return new UserProfileDTO(
             target.getEmail(),
             target.getName(),
@@ -234,7 +239,8 @@ public class UserService {
             followService.countFollowersOf(target.getEmail()),
             followService.countFollowsOf(target.getEmail()),
             canSeeContent ? watched : null,
-            canSeeContent ? later : null
+            canSeeContent ? later : null,
+            canSeeContent ? recommended : null
         );
     }
 

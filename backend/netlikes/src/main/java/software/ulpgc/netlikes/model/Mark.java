@@ -36,6 +36,7 @@ public class Mark {
 
     public enum Type {
         SEEN,
-        WATCHLATER
+        WATCHLATER,
+        RECOMMENDED
     } 
 }
