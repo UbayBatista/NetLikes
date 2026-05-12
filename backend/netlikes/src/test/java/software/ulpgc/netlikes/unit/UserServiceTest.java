@@ -289,4 +289,26 @@ class UserServiceTest {
 
         assertThrows(RuntimeException.class, () -> userService.deleteUser("noexiste@email.com"));
     }
+
+    @Test
+    void updateBio_shouldSaveBio_whenUserExists() {
+        User user = new User();
+        user.setEmail("juan@email.com");
+        user.setBio("Bio antigua");
+
+        when(userRepository.findById("juan@email.com")).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+
+        userService.updateBio("juan@email.com", "Nueva bio");
+
+        assertThat(user.getBio()).isEqualTo("Nueva bio");
+        org.mockito.Mockito.verify(userRepository).save(user);
+    }
+
+    @Test
+    void updateBio_shouldThrowException_whenUserNotFound() {
+        when(userRepository.findById("noexiste@email.com")).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> userService.updateBio("noexiste@email.com", "Bio"));
+    }
 }

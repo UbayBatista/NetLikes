@@ -308,4 +308,11 @@ public class UserService {
 
         return null;
     }
+
+    public void updateBio(@NonNull String email, String bio) {
+        User user = userRepository.findById(email)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        user.setBio(bio);
+        userRepository.save(user);
+    }
 }

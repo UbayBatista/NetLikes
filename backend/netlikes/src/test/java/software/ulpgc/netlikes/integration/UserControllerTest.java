@@ -451,4 +451,70 @@ class UserControllerTest {
                 .andReturn()
         );
     }
+
+    @Test
+    void updateBio_shouldReturn200_whenUserExistsAndBioIsValid() throws Exception {
+        createAndSaveUser("juan@email.com");
+
+        String body = "{\"bio\": \"Esta es mi nueva bio\"}";
+
+        mockMvc.perform(patch("/users/myProfile/juan@email.com/bio")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isOk());
+
+        User updated = userRepository.findById("juan@email.com").get();
+        assertTrue(updated.getBio().equals("Esta es mi nueva bio"));
+    }
+
+    @Test
+    void updateBio_shouldReturn400_whenBioExceeds60Characters() throws Exception {
+        createAndSaveUser("juan@email.com");
+
+        String bioLarga = "a".repeat(61);
+        String body = "{\"bio\": \"" + bioLarga + "\"}";
+
+        mockMvc.perform(patch("/users/myProfile/juan@email.com/bio")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void updateBio_shouldReturn200_whenBioIsExactly60Characters() throws Exception {
+        createAndSaveUser("juan@email.com");
+
+        String bioJusta = "a".repeat(60);
+        String body = "{\"bio\": \"" + bioJusta + "\"}";
+
+        mockMvc.perform(patch("/users/myProfile/juan@email.com/bio")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void updateBio_shouldReturn404_whenUserNotFound() throws Exception {
+        String body = "{\"bio\": \"Bio de nadie\"}";
+
+        mockMvc.perform(patch("/users/myProfile/noexiste@email.com/bio")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updateBio_shouldReturn200_whenBioIsEmpty() throws Exception {
+        createAndSaveUser("juan@email.com");
+
+        String body = "{\"bio\": \"\"}";
+
+        mockMvc.perform(patch("/users/myProfile/juan@email.com/bio")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isOk());
+
+        User updated = userRepository.findById("juan@email.com").get();
+        assertTrue(updated.getBio().isEmpty());
+    }
 }
