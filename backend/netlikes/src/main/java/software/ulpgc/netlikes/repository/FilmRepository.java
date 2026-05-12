@@ -12,13 +12,10 @@ public interface FilmRepository extends JpaRepository<Film, Integer>{
     @Query(value = """
         SELECT f.* FROM film f
         WHERE f.id NOT IN (
-            -- Excluir películas que el usuario ha marcado (vistas/ver más tarde)
             SELECT m.filmid FROM mark m WHERE m.email = :userEmail
             UNION
-            -- Excluir películas que el usuario ya ha valorado
             SELECT r.film_id FROM rate r WHERE r.user_email = :userEmail
         )
-        -- Transformamos el TEXTO en VECTOR al vuelo para calcular la distancia
         ORDER BY CAST(f.vector AS vector) <-> CAST(:userVector AS vector)
         LIMIT 50
         """, 

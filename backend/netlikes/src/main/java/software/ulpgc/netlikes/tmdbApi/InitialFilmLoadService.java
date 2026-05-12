@@ -19,7 +19,7 @@ public class InitialFilmLoadService implements LoadService {
     private final FilmService filmService;
     private final HuggingFaceService huggingFaceService;
 
-    @Value("${tmdb.load.max-films:40}")
+    @Value("${tmdb.load.max-films:10}")
     private int maxFilms;
 
     @Override

@@ -40,5 +40,6 @@ public class User {
     )
     private List<Genre> favoriteGenres;
 
+    @Column(columnDefinition = "TEXT", nullable=false)
     private String vector;
 }
