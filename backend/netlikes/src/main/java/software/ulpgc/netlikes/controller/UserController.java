@@ -8,6 +8,7 @@ import software.ulpgc.netlikes.dto.UserProfileDTO;
 import software.ulpgc.netlikes.dto.PrivacyRequestDTO;
 import software.ulpgc.netlikes.dto.RegisterRequestDTO;
 import software.ulpgc.netlikes.dto.ValidAnswerRequestDTO;
+import software.ulpgc.netlikes.service.DiscourseService;
 import software.ulpgc.netlikes.service.UserService;
 
 import org.springframework.http.HttpStatus;
@@ -24,9 +25,11 @@ import java.util.Objects;
 public class UserController {
 
     private final UserService userService;
+    private final DiscourseService discourseService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, DiscourseService discourseService) {
         this.userService = userService;
+        this.discourseService = discourseService;
     }
 
     @GetMapping
@@ -149,4 +152,14 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("valid", false));
         }
     }
+    
+    @GetMapping("/chat/id")
+    public ResponseEntity<Integer> getChatId(
+            @RequestParam String myUser, 
+            @RequestParam String userFriend) {
+            
+        Integer chatId = discourseService.getPrivateChatId(myUser, userFriend);
+        return ResponseEntity.ok(chatId);
+    }
+
 }

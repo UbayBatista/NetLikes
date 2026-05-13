@@ -1,5 +1,8 @@
 import { Component, Input, Output, EventEmitter, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { HttpClient } from "@angular/common/http";
+import { Router } from "@angular/router";
+import { AuthService } from "../../services/auth.service";
 
 @Component({
   selector: "app-profile-header",
@@ -34,6 +37,12 @@ export class ProfileHeader {
   @Output() delete = new EventEmitter<void>();
   
   openMenu: boolean = false;
+
+  constructor(
+    private http: HttpClient, 
+    private router: Router, 
+    private authService: AuthService
+  ) {}
 
   toggleMenu() {
     this.openMenu = !this.openMenu;
@@ -73,4 +82,23 @@ export class ProfileHeader {
     this.delete.emit();
     this.toggleMenu();
   }
+
+  starChat() {
+  const myUser = this.authService.getCurrentUser(); 
+  const userFriend = this.userName;
+
+  this.http.get<number>(`https://api-db.duckdns.org/api/chat/id?miUsuario=${myUser}&otroUsuario=${userFriend}`)
+    .subscribe({
+      next: (chatId) => {
+        this.router.navigate(['/social/chats'], { 
+          queryParams: { 
+            chatWith: userFriend, 
+            chatId: chatId 
+          } 
+        });
+      },
+      error: (err) => console.error("Error al obtener/crear el chat", err)
+    });
+}
+
 }

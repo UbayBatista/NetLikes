@@ -313,4 +313,23 @@ public class DiscourseService {
         }
     }
 
+    public Integer getPrivateChatId(String user1, String user2) {
+        String url = "https://netlikes.duckdns.org/chat/direct_messages/create.json";
+
+        HttpHeaders headers = setHeaders();
+        String body = "{\"usernames\": \"" + user1 + "," + user2 + "\"}";
+
+        HttpEntity<String> request = new HttpEntity<>(body, headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
+            Map<String, Object> responseBody = response.getBody();
+            Map<String, Object> chatChannel = (Map<String, Object>) responseBody.get("chat_channel");
+            return (Integer) chatChannel.get("id");
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener el chat de Discourse: " + e.getMessage());
+        }
+    }
+
 }

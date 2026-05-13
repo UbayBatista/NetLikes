@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, signal} from "@angular/core";
+import { Component, Output, EventEmitter, signal, computed, ChangeDetectorRef, inject} from "@angular/core";
 import { FormsModule } from '@angular/forms';
 import { SearchBarComponent } from "../../search-bar/search-bar";
 
@@ -13,34 +13,42 @@ export class Users{
    
     @Output() clickedUser = new EventEmitter<{user: string}>(); 
 
-    search = signal('');
-    
-    Friends = [
-        { name: 'Messi', active: true },
-        { name: 'Luis Suarez', active: false },
-        { name: 'Benzema', active: false },
-        { name: 'La Roca', active: false }
-    ];
+    private cdr = inject(ChangeDetectorRef);
 
-    searchText = '';
+    friends = signal<any[]>([]);
+    searchText = signal('');
+
+
+    filteredUsers = computed(() => {
+        const searchLow = (this.searchText() || '').toLowerCase();
+        return this.friends().filter(user => 
+        (user.name || '').toLowerCase().includes(searchLow)
+        );
+    });
 
     handleSearch(text: string) {
-        this.searchText = text.toLowerCase();
+        this.searchText.set(text.toLowerCase());
     }
 
-    get filteredUsers(){
-        const searchLow = this.searchText.toLowerCase();
-        return this.Friends.filter(user => 
-            user.name.toLowerCase().includes(searchLow)
-        );
-    }
 
     selectUser(index: number) {
-        this.filteredUsers.forEach(p => p.active = false);
-        this.filteredUsers[index].active = true;
+        const currentUser = this.friends();
+        currentUser.forEach(p => p.active = false);
+
+        const selected = this.filteredUsers()[index];
+        if (selected) {
+        selected.active = true;
+        this.clickedUser.emit({ 
+            user: selected.name,
+            //chatId: selected.forumTopicId
+        });
+        console.log('Cambiando al chat de:', selected.name, "con ID: ", selected.chatID);
+        }
         
-        this.clickedUser.emit({ user: this.filteredUsers[index].name });
+        this.friends.set([...currentUser]);
+        this.cdr.detectChanges(); 
     }
+
 
 
 }

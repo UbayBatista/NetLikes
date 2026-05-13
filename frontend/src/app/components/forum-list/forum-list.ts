@@ -56,30 +56,6 @@ export class ForumList implements OnInit{
   ngOnInit() {
     this.authService.getCurrentUser().subscribe(user => { 
 
-      // if (!user || !user.email) {
-      //   alert('¡Debes iniciar sesión para poder suscribirte a un foro!');
-      //   return; 
-      // }
-      // console.log('Usuario detectado:', user.email, 'Enviando petición a Spring Boot...')
-
-      // this.subscriptionService.getUserSubscription(user.email).subscribe({
-      //   next: (data) => {
-      //     // "data" es el array que nos devuelve Spring Boot con todo el árbol (Suscripcion -> Foro -> Pelicula)
-          
-      //     this.filmsForum = data.map((sub, index) => {
-      //       return {
-      //         title: sub.forum.film.title,      
-      //         active: index === 0,         
-              
-      //         forumTopicId: sub.forum.forumId,
-      //         filmId: sub.forum.film.id
-      //       };
-      //     });
-
-      //     this.cdr.detectChanges()
-
-      //     console.log('Foros cargados desde la base de datos:', this.filmsForum);
-
       if (!user || !user.email) return; 
 
       console.log('Usuario detectado:', user.email, 'Pidiendo foros a Spring Boot...');

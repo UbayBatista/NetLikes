@@ -62,6 +62,10 @@
              [src]="userPicture" 
              alt="Perfil">
 
+        <button class="btn btn-outline-dark" (click)="startChat()">
+            <i class="bi bi-send"></i>  
+        </button>         
+
         <div class="ig-stats">
             <div class="stat-item" (click)="openSocial('Seguidores')">
                 <span class="d-block fw-bold lh-1 stat-number">{{ followers }}</span>
