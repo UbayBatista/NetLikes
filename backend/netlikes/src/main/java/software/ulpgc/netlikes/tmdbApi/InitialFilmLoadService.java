@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 import software.ulpgc.netlikes.service.FilmService;
+import software.ulpgc.netlikes.service.HuggingFaceService;
 import software.ulpgc.netlikes.dto.FilmRequestDTO;
 import java.util.List;
 
@@ -16,8 +17,9 @@ public class InitialFilmLoadService implements LoadService {
     private final TmdbApiClient apiClient;
     private final FilmAssembler filmAssembler;
     private final FilmService filmService;
+    private final HuggingFaceService huggingFaceService;
 
-    @Value("${tmdb.load.max-films:40}")
+    @Value("${tmdb.load.max-films:450}")
     private int maxFilms;
 
     @Override
@@ -36,8 +38,24 @@ public class InitialFilmLoadService implements LoadService {
         for (int filmId : ids) {
             try {
                 FilmRequestDTO dto = filmAssembler.toFilmRequestDTO(filmId);
-                filmService.saveFilm(dto);
-                success++;
+                
+                String textoParaVectorizar = String.format("Película: %s. Géneros: %s. Sinopsis: %s", 
+                        dto.getTitle(), dto.getGenres(), dto.getOverView());
+
+                String vector = huggingFaceService.generateVector(textoParaVectorizar);
+                
+                if (vector != null) {
+                    dto.setVector(vector);
+                    filmService.saveFilm(dto);
+                    success++;
+                    log.info("Película cargada y vectorizada con éxito: {}", dto.getTitle());
+                } else {
+                    log.warn("Se omitió la película {} porque falló la vectorización", filmId);
+                    failed++;
+                }
+
+                Thread.sleep(500);
+
             } catch (Exception e) {
                 log.error("Error inesperado con película {}: {}", filmId, e.getMessage());
                 failed++;

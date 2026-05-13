@@ -3,6 +3,7 @@ import { Genre } from '../../components/genre/genre';
 import { FilmService } from '../../services/film.service';
 import { Film } from '../../components/film/film';
 import { FilmListItem, GenreGroup } from '../../models/film.models';
+import { Recommendations } from '../../services/recommendations';
 
 @Component({
   selector: 'app-home',
@@ -16,7 +17,7 @@ export class Home implements OnInit {
   forYouFilms: GenreGroup[] = [];
   users_films: FilmListItem[] = [];
   
-  constructor(private filmService: FilmService, private cdr: ChangeDetectorRef) {}
+  constructor(private filmService: FilmService, private cdr: ChangeDetectorRef, private recommendationsService: Recommendations) {}
 
   ngOnInit() {
     this.loadFilms();
@@ -32,12 +33,12 @@ export class Home implements OnInit {
         console.error('Error fetching films:', error);
       }
     });
-    this.filmService.getFilmsByGenre().subscribe({
-      next: (data) => {
-        this.forYouFilms = data.slice(9,30);
+    this.recommendationsService.getRecommendations().subscribe({
+      next: (data: GenreGroup[]) => {
+        this.forYouFilms = data;
         this.cdr.detectChanges();
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error fetching films by genre:', error);
       }
     });

@@ -74,4 +74,7 @@ public class Film{
     @OneToOne(mappedBy = "film", cascade = CascadeType.ALL)
     @JsonIgnore
     private Forum forum;
+
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String vector;
 }

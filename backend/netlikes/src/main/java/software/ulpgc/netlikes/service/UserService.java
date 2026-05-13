@@ -36,11 +36,12 @@ public class UserService {
     private final FollowService followService;
     private final MarkService markService;
     private final DiscourseService discourseService;
+    private final HuggingFaceService huggingFaceService;
 
     public UserService(UserRepository userRepository, GenreRepository genreRepository, 
                        FollowRepository followRepository, PasswordEncoder passwordEncoder, 
                        FollowService followService, MarkService markService,
-                       DiscourseService discourseService ) {
+                       DiscourseService discourseService, HuggingFaceService huggingFaceService ) {
         this.userRepository = userRepository;
         this.genreRepository = genreRepository;
         this.followRepository = followRepository;
@@ -48,6 +49,7 @@ public class UserService {
         this.followService = followService; 
         this.markService = markService;
         this.discourseService = discourseService;
+        this.huggingFaceService = huggingFaceService;
     }
 
     public List<UserResponseDTO> getAllUsers() {
@@ -158,6 +160,11 @@ public class UserService {
             List<Genre> genres = genreRepository.findAllById(ids);
             newUser.setFavoriteGenres(genres);
         }
+
+        newUser.setVector(huggingFaceService.generateVector(
+            String.format("Usuario interesado en películas de géneros: %s.", 
+                        String.join(", ", newUser.getFavoriteGenres().stream().map(Genre::getName).toList())))
+        );
         
         User saved = userRepository.save(newUser);
         return toDTO(saved);
