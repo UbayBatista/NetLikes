@@ -16,6 +16,7 @@ import { FollowService } from "../../services/follow.service";
 import { MyProfile, UserProfile } from '../../models/user.models';
 import { ConfirmationModalComponent } from '../../components/confirmation-modal/confirmation-modal';
 import { BlockedUsersModalComponent } from '../../components/blocked-users/blocked-users';
+import { BioComponent } from "../../components/bio-component/bio-component";
 import { UserService } from "../../services/user.service";
 
 type SocialType = 'Seguidores' | 'Seguidos';
@@ -32,7 +33,8 @@ type FollowStatus = 'NONE' | 'PENDING' | 'ACCEPTED' | 'BLOCKED';
             AsyncPipe, 
             ConfirmationModalComponent, 
             BlockedUsersModalComponent,
-            PasswordVerifyModalComponent],
+            PasswordVerifyModalComponent,
+            BioComponent],
   templateUrl: "./profile-body.html",
   styleUrl: "./profile-body.css"
 })
@@ -54,14 +56,18 @@ export class ProfileComplete implements OnInit {
 
   isEditing = false;
   isSocialModalOpen = false;
+  thereIsChanges = false;
   socialType: SocialType = 'Seguidores';
   socialData: any[] = [];
   canScrollLeft = false;
   canScrollRight = true;
   isBlockedModalOpen = false;
+  pendingBio: string = '';
+  showSaveModal: boolean = false;
 
   private followStateSubject = new BehaviorSubject<FollowStatus>('NONE');
   followState$ = this.followStateSubject.asObservable();
+  @ViewChild('bioComponent') bioComponent!: BioComponent;
 
   followButtonText$: Observable<string> = this.followState$.pipe(
     map(state => {
@@ -270,7 +276,12 @@ export class ProfileComplete implements OnInit {
   }
 
   toggleEdit() {
-    this.isEditing = !this.isEditing;
+    if (this.isEditing && this.thereIsChanges) {
+      this.showSaveModal = true;
+    } else{
+      this.isEditing = !this.isEditing;
+    }
+    
   }
 
   onPrivacyChange(isPrivate: boolean): void {
@@ -311,6 +322,24 @@ export class ProfileComplete implements OnInit {
     this.actionToConfirm = 'DELETE';
     this.confirmModalMessage = `¿Estás seguro de que deseas borrar permanentemente tu cuenta?`;
     this.showConfirmModal = true;
+  }
+
+  onBioSave(event: { bio: string, hasChanges: boolean }) {
+    this.pendingBio = event.bio;
+    this.thereIsChanges = event.hasChanges;
+  }
+
+  handleSaveConfirmation(confirmed: boolean) {
+    this.showSaveModal = false;
+    if (confirmed && this.pendingBio) {
+      this.profileService.updateBio(this.pendingBio);
+      this.bioComponent?.updateOriginalBio(this.pendingBio);
+    } else {
+      this.bioComponent?.discardChanges();
+    }
+    this.pendingBio = '';
+    this.thereIsChanges = false;
+    this.isEditing = false;
   }
 
   executeDelete() {

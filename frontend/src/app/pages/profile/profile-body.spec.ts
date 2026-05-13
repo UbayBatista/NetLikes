@@ -23,6 +23,7 @@ describe('ProfileComplete Component', () => {
       getProfile: vi.fn().mockReturnValue(of({ userName: 'TestUser', email: 'test@test.com', followers: 10, following: 5 })),
       isMyProfile: vi.fn().mockReturnValue(of(true)),
       loadProfile: vi.fn(),
+      updateBio: vi.fn(),
       updatePrivacy: vi.fn()
     };
 
@@ -300,6 +301,66 @@ describe('ProfileComplete Component', () => {
       expect(component.showConfirmModal).toBe(false);
       expect(userService.deleteUser).not.toHaveBeenCalled();
       expect(component['actionUser']).toBe('');
+    });
+  });
+
+  describe('Bio Edit Logic', () => {
+    it('should show save modal when toggleEdit is called with pending changes', () => {
+      component.isEditing = true;
+      component.thereIsChanges = true;
+
+      component.toggleEdit();
+
+      expect(component.showSaveModal).toBe(true);
+      expect(component.isEditing).toBe(true);
+    });
+
+    it('should toggle isEditing when there are no pending changes', () => {
+      component.isEditing = false;
+      component.thereIsChanges = false;
+
+      component.toggleEdit();
+
+      expect(component.isEditing).toBe(true);
+      expect(component.showSaveModal).toBe(false);
+    });
+
+    it('should update pendingBio and thereIsChanges when onBioSave is called with changes', () => {
+      component.onBioSave({ bio: 'Nueva bio', hasChanges: true });
+
+      expect(component.pendingBio).toBe('Nueva bio');
+      expect(component.thereIsChanges).toBe(true);
+    });
+
+    it('should update pendingBio and set thereIsChanges false when onBioSave has no changes', () => {
+      component.onBioSave({ bio: 'Bio original', hasChanges: false });
+
+      expect(component.pendingBio).toBe('Bio original');
+      expect(component.thereIsChanges).toBe(false);
+    });
+
+    it('should call updateBio and loadProfile when save is confirmed', () => {
+      component.pendingBio = 'Nueva bio';
+
+      component.handleSaveConfirmation(true);
+
+      expect(profileService.updateBio).toHaveBeenCalledWith('Nueva bio');
+      expect(profileService.loadProfile).toHaveBeenCalledWith('TestUser');
+      expect(component.isEditing).toBe(false);
+      expect(component.thereIsChanges).toBe(false);
+      expect(component.pendingBio).toBe('');
+    });
+
+    it('should not call updateBio and should reset state when save is cancelled', () => {
+      component.pendingBio = 'Nueva bio';
+      component.thereIsChanges = true;
+
+      component.handleSaveConfirmation(false);
+
+      expect(profileService.updateBio).not.toHaveBeenCalled();
+      expect(component.isEditing).toBe(false);
+      expect(component.thereIsChanges).toBe(false);
+      expect(component.pendingBio).toBe('');
     });
   });
 });

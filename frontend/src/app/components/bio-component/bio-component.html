@@ -1,0 +1,35 @@
+<div class="custom-section mb-4 shadow-sm position-relative">
+  <div class="p-3 p-md-4">
+    <h5 class="section-title fw-bold mb-3 pb-2">Bio</h5>
+
+    @if (isEditing && !isEditingBio) {
+      <button 
+        class="btn btn-edit position-absolute top-0 end-0 m-3 rounded-circle shadow-sm p-0" 
+        style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; z-index: 20;"
+        (click)="toggleBioEdit()">
+        <i class="bi bi-pencil fs-5"></i>
+      </button>
+    } @else if (isEditing && isEditingBio) {
+      <button 
+        class="btn btn-success position-absolute top-0 end-0 m-3 rounded-circle shadow-sm p-0" 
+        style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; z-index: 20;"
+        (click)="toggleBioEdit()">
+        <i class="bi bi-check fs-5"></i>
+      </button>
+    }
+
+    @if (isEditing && isEditingBio) {
+      <textarea
+        class="form-control mb-1"
+        rows="3"
+        maxlength="60"
+        [value]="editableBio"
+        (input)="onBioInput($any($event.target).value)"
+        placeholder="Escribe tu bio...">
+      </textarea>
+      <small class="text-muted">{{ editableBio.length }}/60</small>
+    } @else {
+      <p class="mb-0" style="color: #262626;">{{ pendingBio }}</p>
+    }
+  </div>
+</div>

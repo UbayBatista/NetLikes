@@ -4,7 +4,7 @@
     @if ((followState$ | async) === 'BLOCKED') {
       <div class="d-flex flex-column align-items-center justify-content-center py-5 mt-5 gap-3">
         <h3 class="fw-bold mb-0 text-dark">Usuario no encontrado</h3>
-        <p class="text-muted mb-0 text-center">Vaya, parece que tienes a este usuario bloqueado o el te tiene bloqueado a ti.</p>
+        <p class="text-muted mb-0 text-center">Vaya, parece que tienes a este usuario bloqueado o él te tiene bloqueado a ti.</p>
       </div>
     }
     @else{
@@ -16,7 +16,7 @@
       [isPrivate]="profile.isPrivate"
       
       [type]="(itsMe$ | async) 
-                ? (isEditing ? 'Continuar' : 'Editar Perfil') 
+                ? (isEditing ? 'Dejar de editar' : 'Editar Perfil') 
                 : ((followButtonText$ | async) ?? 'Seguir')" 
 
       [otherUser]="(itsMe$ | async) ? false : true"
@@ -31,9 +31,13 @@
       (privacyChange)="onPrivacyChange($event)">
     </app-profile-header>
 
-    <app-profile-components title="Bio" [isEditing]="isEditing">
-      <p>{{profile.bio}}</p>
-    </app-profile-components>
+    <app-bio-component
+    #bioComponent
+    [bio]="profile.bio || ''"
+    [isEditing]="isEditing"
+    (bioSave)="onBioSave($event)">
+    </app-bio-component>
+
     @if ((itsMe$ | async) || profile.watchedFilms !== null) {
       @for (section of [
         { title: 'Películas Vistas', data: profile.watchedFilms },
@@ -93,5 +97,12 @@
       (close)="isPasswordModalOpen = false"
       (verified)="onPasswordVerified()">
     </app-password-verify-modal>
+  }
+  @if (showSaveModal) {
+    <app-confirmation-modal 
+      [title]="'Guardar cambios'"
+      [message]="'¿Quieres guardar los cambios realizados?'"
+      (result)="handleSaveConfirmation($event)">
+    </app-confirmation-modal>
   }
 </div>
