@@ -28,7 +28,7 @@ export class Menssages implements OnInit{
     @Input() person: string = "";
     @Output() return = new EventEmitter<void>();
 
-    @Input() set selectedUserChat(value: number) {
+    @Input() set selectedUserChat(value: number | null) {
         this.chatID = value;
 
         if (value !== null) {

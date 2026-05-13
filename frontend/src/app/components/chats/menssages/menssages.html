@@ -5,7 +5,7 @@
   </header>
 
   
-  @if (saveUrl && ...) {
+  @if (saveUrl) {
     <iframe 
       [src]="saveUrl" 
       width="100%" 
@@ -13,7 +13,7 @@
       frameborder="0"
       allowfullscreen>
     </iframe>
-  }@else if(...){
+  }@else if(!saveUrl){
     <p>Conectando con el chat privado...</p>
     <div class="spinner"></div>
   }

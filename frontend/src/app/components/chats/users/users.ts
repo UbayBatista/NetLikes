@@ -11,7 +11,7 @@ import { SearchBarComponent } from "../../search-bar/search-bar";
 })
 export class Users{
    
-    @Output() clickedUser = new EventEmitter<{user: string}>(); 
+    @Output() clickedUser = new EventEmitter<{user: string, chatId: number}>(); 
 
     private cdr = inject(ChangeDetectorRef);
 
@@ -40,7 +40,7 @@ export class Users{
         selected.active = true;
         this.clickedUser.emit({ 
             user: selected.name,
-            //chatId: selected.forumTopicId
+            chatId: selected.forumTopicId
         });
         console.log('Cambiando al chat de:', selected.name, "con ID: ", selected.chatID);
         }

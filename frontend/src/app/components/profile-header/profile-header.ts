@@ -83,7 +83,7 @@ export class ProfileHeader {
     this.toggleMenu();
   }
 
-  starChat() {
+  startChat() {
   const myUser = this.authService.getCurrentUser(); 
   const userFriend = this.userName;
 

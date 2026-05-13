@@ -12,7 +12,8 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class Chats{
 
-    currentUser: string = 'Messi';
+    currentUser: string = '';
+    userFriend: string = '';
     selectedChat: boolean = false;
     chatId: number | null = null;
 
