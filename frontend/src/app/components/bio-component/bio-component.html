@@ -22,12 +22,12 @@
       <textarea
         class="form-control mb-1"
         rows="3"
-        maxlength="60"
+        maxlength="120"
         [value]="editableBio"
         (input)="onBioInput($any($event.target).value)"
         placeholder="Escribe tu bio...">
       </textarea>
-      <small class="text-muted">{{ editableBio.length }}/60</small>
+      <small class="text-muted">{{ editableBio.length }}/120</small>
     } @else {
       <p class="mb-0" style="color: #262626;">{{ pendingBio }}</p>
     }

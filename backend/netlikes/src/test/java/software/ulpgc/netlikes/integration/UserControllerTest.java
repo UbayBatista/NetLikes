@@ -468,10 +468,10 @@ class UserControllerTest {
     }
 
     @Test
-    void updateBio_shouldReturn400_whenBioExceeds60Characters() throws Exception {
+    void updateBio_shouldReturn400_whenBioExceeds120Characters() throws Exception {
         createAndSaveUser("juan@email.com");
 
-        String bioLarga = "a".repeat(61);
+        String bioLarga = "a".repeat(121);
         String body = "{\"bio\": \"" + bioLarga + "\"}";
 
         mockMvc.perform(patch("/users/myProfile/juan@email.com/bio")
@@ -481,10 +481,10 @@ class UserControllerTest {
     }
 
     @Test
-    void updateBio_shouldReturn200_whenBioIsExactly60Characters() throws Exception {
+    void updateBio_shouldReturn200_whenBioIsExactly120Characters() throws Exception {
         createAndSaveUser("juan@email.com");
 
-        String bioJusta = "a".repeat(60);
+        String bioJusta = "a".repeat(120);
         String body = "{\"bio\": \"" + bioJusta + "\"}";
 
         mockMvc.perform(patch("/users/myProfile/juan@email.com/bio")

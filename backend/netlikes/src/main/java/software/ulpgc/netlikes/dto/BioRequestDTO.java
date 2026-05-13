@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class BioRequestDTO {
-    @Size(max = 60, message = "La bio no puede superar los 60 caracteres")
+    @Size(max = 120, message = "La bio no puede superar los 120 caracteres")
     private String bio;
 }
