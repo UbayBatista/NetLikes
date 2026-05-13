@@ -4,14 +4,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import software.ulpgc.netlikes.model.Mark;
 import software.ulpgc.netlikes.service.MarkService;
-import lombok.RequiredArgsConstructor;
-import software.ulpgc.netlikes.dto.FilmResponseDTO;
 import software.ulpgc.netlikes.service.RateService;
+import software.ulpgc.netlikes.dto.FilmResponseDTO;
+import lombok.RequiredArgsConstructor;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/marks")
@@ -21,19 +20,6 @@ public class MarkController {
     private final MarkService markService;
     private final RateService rateService;
 
-    @PostMapping("/{email}/mark/{filmId}")
-    public Mark typePelicula(
-            @PathVariable String email, 
-            @PathVariable Integer filmId, 
-            @RequestBody Mark.Type type) {
-            
-        return markService.typeFilm(email, filmId, type);
-    }
-
-    @DeleteMapping("/{email}/mark/{filmId}")
-    public void deleteRelation(@PathVariable String email, @PathVariable Integer filmId) {
-        markService.deletetype(email, filmId);
-    }
 
     @PostMapping("/{email}/toggle/{filmId}")
     public ResponseEntity<?> toggleMark(
@@ -42,49 +28,34 @@ public class MarkController {
             @RequestParam("type") String type) {
         
         Mark.Type newType = Mark.Type.valueOf(type.toUpperCase());
-        Optional<Mark> currentMark = markService.getMark(email, filmId);
+        
+        String result = markService.toggleMarkLogic(email, filmId, newType);
 
-        if (currentMark.isPresent()) {
-            if (currentMark.get().getType() == newType) {
-                markService.deletetype(email, filmId);
-                rateService.deleteRateDirectly(email, filmId); 
-                
-                return ResponseEntity.ok("{\"status\": \"removed\"}");
-            } else {
-                markService.typeFilm(email, filmId, newType);
-                if (newType == Mark.Type.WATCHLATER) {
-                    rateService.deleteRateDirectly(email, filmId);
-                }
-                
-                return ResponseEntity.ok("{\"status\": \"updated\"}");
-            }
-        } else {
-            markService.typeFilm(email, filmId, newType);
-            return ResponseEntity.ok("{\"status\": \"added\"}");
+        if ((result.equals("added") && newType == Mark.Type.WATCHLATER) || 
+            (result.equals("removed") && newType == Mark.Type.SEEN)) {
+            rateService.deleteRateDirectly(email, filmId); 
         }
+        
+        return ResponseEntity.ok("{\"status\": \"" + result + "\"}");
     }
 
     @GetMapping("/{email}/status/{filmId}")
     public ResponseEntity<?> getMarkStatus(@PathVariable String email, @PathVariable Integer filmId) {
-        return markService.getMark(email, filmId)
-            .map(mark -> {
-                Map<String, Object> response = new HashMap<>();
-                response.put("email", email);
-                response.put("filmId", filmId);
-                response.put("type", mark.getType().toString());
-                return ResponseEntity.ok((Object) response);
-            })
-            .orElseGet(() -> {
-                Map<String, Object> noMark = new HashMap<>();
-                noMark.put("type", "NONE");
-                return ResponseEntity.ok(noMark);
-            });
+        List<Mark.Type> types = markService.getMarkTypesForFilm(email, filmId);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("email", email);
+        response.put("filmId", filmId);
+        response.put("types", types); 
+        
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{email}/films")
     public ResponseEntity<List<FilmResponseDTO>> getMarkedFilms(
             @PathVariable String email, 
             @RequestParam Mark.Type type) {
+        
         return ResponseEntity.ok(markService.getFilmsByMarkType(email, type));
     }
 }

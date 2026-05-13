@@ -7,11 +7,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Embeddable
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class MarkId implements Serializable {
-    private String email;
-    private Integer filmId;
+    private String user;
+    private Integer film;
+    private Mark.Type type;
 }

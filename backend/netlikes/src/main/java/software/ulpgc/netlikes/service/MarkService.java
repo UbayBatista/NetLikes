@@ -3,16 +3,14 @@ package software.ulpgc.netlikes.service;
 import software.ulpgc.netlikes.model.Film;
 import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.model.Mark;
-import software.ulpgc.netlikes.model.MarkId;
 import software.ulpgc.netlikes.repository.FilmRepository;
 import software.ulpgc.netlikes.repository.MarkRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
 import software.ulpgc.netlikes.dto.FilmResponseDTO;
 
 import java.util.List;
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.*;
 
 @Service
@@ -22,47 +20,44 @@ public class MarkService {
     private final MarkRepository markRepository;
     private final UserRepository userRepository;
     private final FilmRepository filmRepository;
-    
-    public Mark typeFilm(String email, Integer filmId, Mark.Type type) {
-    MarkId id = new MarkId(email, filmId);
 
-    return markRepository.findById(id)
-        .map(relationExists -> {
-            relationExists.setType(type);
-            return markRepository.save(relationExists);
-        })
-        .orElseGet(() -> {
-            User user = userRepository.findById(email).orElseThrow();
-            Film film = filmRepository.findById(filmId).orElseThrow();
+    @Transactional 
+    public String toggleMarkLogic(String email, Integer filmId, Mark.Type newType) {
+        User user = userRepository.findById(email).orElseThrow();
+        Film film = filmRepository.findById(filmId).orElseThrow();
 
-            Mark relation = new Mark();
-            relation.setId(id); 
-            relation.setUser(user);
-            relation.setFilm(film);
-            relation.setType(type);
+        boolean alreadyExists = markRepository.existsByUserEmailAndFilmIdAndType(email, filmId, newType);
 
-            return markRepository.save(relation);
-        });
+        if (alreadyExists) {
+            markRepository.deleteByUserEmailAndFilmIdAndType(email, filmId, newType);
+            return "removed";
+        } else {
+            if (newType == Mark.Type.WATCHLATER) {
+                markRepository.deleteByUserEmailAndFilmIdAndType(email, filmId, Mark.Type.SEEN);
+            } else if (newType == Mark.Type.SEEN) {
+                markRepository.deleteByUserEmailAndFilmIdAndType(email, filmId, Mark.Type.WATCHLATER);
+            }
+            saveMark(user, film, newType);
+            return "added";
+        }
     }
 
-    public void deletetype(String email, Integer filmId) {
-        MarkId id = new MarkId(email, filmId);
-        markRepository.deleteById(id);
+    private void saveMark(User user, Film film, Mark.Type type) {
+        Mark mark = new Mark();
+        mark.setUser(user);
+        mark.setFilm(film);
+        mark.setType(type);
+        markRepository.save(mark);
     }
 
-    public boolean exists(String email, Integer filmId) {
-        return markRepository.existsById(new MarkId(email, filmId));
-    }
-
-    public Optional<Mark> getMark(String email, Integer filmId) {
-        return markRepository.findById(new MarkId(email, filmId));
+    public List<Mark.Type> getMarkTypesForFilm(String email, Integer filmId) {
+        return markRepository.findTypesByUserEmailAndFilmId(email, filmId);
     }
 
     public List<FilmResponseDTO> getFilmsByMarkType(String email, Mark.Type type) {
-    return markRepository.findByUserEmailAndType(email, type).stream() // Mucho más rápido
-            .map(Mark::getFilm)
-            .map(this::toFilmDTO)
-            .toList();
+        return markRepository.findFilmsByUserEmailAndType(email, type).stream() 
+                .map(this::toFilmDTO)
+                .toList();
     }
 
     private FilmResponseDTO toFilmDTO(Film film) {

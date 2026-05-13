@@ -9,27 +9,26 @@ import lombok.*;
 
 @Entity 
 @Table(name = "mark")
+@IdClass(MarkId.class)
 @Data
 @NoArgsConstructor
 
 public class Mark {
 
-    @EmbeddedId
-    private MarkId id;
-
+    @Id
     @ManyToOne
-    @MapsId("email")
     @JoinColumn(name = "email")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonIgnore
     private User user;
 
+    @Id
     @ManyToOne
-    @MapsId("filmId")
     @JoinColumn(name = "filmid")
     @JsonIgnore
     private Film film;
 
+    @Id
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Type type;

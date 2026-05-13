@@ -38,17 +38,21 @@ public class MarkControllerTest {
         user.setEmail("test@test.com");
         user.setPassword("123");
         user.setName("test");
+        user.setSecurityQuestion("Q");
+        user.setAnswer("A");
+        user.setBirthdate(java.sql.Date.valueOf("2000-01-01"));
         savedUser = userRepository.save(user);
 
         Film film = new Film();
         film.setId(1);
         film.setTitle("Matrix");
+        film.setOverView("Test");
+        film.setPosterPath("path");
         savedFilm = filmRepository.save(film);
     }
 
     private Mark createAndSaveMark(Mark.Type type) {
         Mark mark = new Mark();
-        mark.setId(new MarkId(savedUser.getEmail(), savedFilm.getId()));
         mark.setUser(savedUser);
         mark.setFilm(savedFilm);
         mark.setType(type);
