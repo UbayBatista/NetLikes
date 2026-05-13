@@ -6,6 +6,7 @@ import software.ulpgc.netlikes.dto.ChangePasswordDTO;
 import software.ulpgc.netlikes.dto.LoginRequestDTO;
 import software.ulpgc.netlikes.dto.UserProfileDTO;
 import software.ulpgc.netlikes.dto.PrivacyRequestDTO;
+import software.ulpgc.netlikes.dto.BioRequestDTO;
 import software.ulpgc.netlikes.dto.RegisterRequestDTO;
 import software.ulpgc.netlikes.dto.ValidAnswerRequestDTO;
 import software.ulpgc.netlikes.service.UserService;
@@ -147,6 +148,18 @@ public class UserController {
             return ResponseEntity.ok(Map.of("valid", true));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("valid", false));
+        }
+    }
+
+    @PatchMapping("/myProfile/{email}/bio")
+    public ResponseEntity<?> updateBio(
+            @NonNull @PathVariable String email,
+            @Valid @RequestBody BioRequestDTO request) {
+        try {
+            userService.updateBio(email, request.getBio());
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
         }
     }
 }

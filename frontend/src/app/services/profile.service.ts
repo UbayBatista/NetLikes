@@ -48,4 +48,13 @@ export class ProfileService {
     isMyProfile(): Observable<boolean> {
         return this.itsMe$.asObservable();
     }
+
+    updateBio(bio: string): void {
+        this.profile$.pipe(take(1)).subscribe(profile => {
+            if (!profile) return;
+            this.userService.updateBio(profile.email, bio).subscribe(() => {
+            this.profile$.next({ ...profile, bio });
+            });
+        });
+    }
 }

@@ -93,5 +93,9 @@ export class UserService {
       { headers: this.getHeaders() }
     );
   }
+
+  updateBio(email: string, bio: string): Observable<void> {
+    return this.http.patch<void>(`${this.dbUrl}/myProfile/${email}/bio`, { bio });
+  }
 }
 
