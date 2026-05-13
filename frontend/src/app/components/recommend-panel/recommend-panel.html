@@ -1,0 +1,58 @@
+@if (isOpen) {
+  <div class="overlay" (click)="close()"></div>
+
+  <div class="panel-modal bg-white d-flex flex-column rounded shadow-lg">
+    
+    <div class="d-flex justify-content-end p-2 border-bottom">
+      <button type="button" class="btn-close" aria-label="Close" (click)="close()"></button>
+    </div>
+
+    <div class="p-3 border-bottom">
+      <app-search-bar 
+        placeholderText="Buscar seguidor..." 
+        (searchEvent)="handleSearch($event)">
+      </app-search-bar>
+    </div>
+
+    <div class="list-container flex-grow-1 overflow-y-auto">
+      
+      <div class="list-item d-flex align-items-center justify-content-center p-4 border-bottom position-relative cursor-pointer transition-hover"
+           (click)="toggleMyRecommendation()"
+           [class.bg-light]="addToProfile">
+        <span class="fs-5 text-dark">Añadir a mis recomendaciones</span>
+        @if (addToProfile) {
+          <i class="bi bi-check-circle-fill text-dark position-absolute end-0 me-4 fs-5"></i>
+        }
+      </div>
+
+      @for (user of filteredFollowers; track user.name) {
+        <div class="list-item d-flex align-items-center p-3 border-bottom position-relative cursor-pointer transition-hover"
+             (click)="toggleUser(user.name)">
+             
+          <img [src]="user.pic || 'assets/ProfilePicture.jpg'" class="rounded-circle border me-4" width="60" height="60" style="object-fit: cover;">
+          
+          <span class="fs-5 text-dark">{{ user.name }}</span>
+          
+          @if (selectedUsers.includes(user.name)) {
+            <i class="bi bi-check-circle-fill text-dark position-absolute end-0 me-4 fs-5"></i>
+          }
+        </div>
+      }
+      
+      @if (filteredFollowers.length === 0) {
+        <div class="p-4 text-center text-muted">
+          No se encontró ningún usuario seguido.
+        </div>
+      }
+    </div>
+
+    <div class="p-3 d-flex justify-content-end align-items-center bg-white rounded-bottom">
+      <button class="btn btn-dark rounded-pill px-4 fw-medium text-white custom-confirm-btn" 
+        [disabled]="addToProfile === initialRecommended && selectedUsers.length === 0"
+        (click)="submitRecommendation()">
+        {{ initialRecommended && !addToProfile ? 'Quitar' : 'Confirmar' }}
+      </button>
+    </div>
+
+  </div>
+}

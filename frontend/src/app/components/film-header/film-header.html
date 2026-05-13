@@ -139,3 +139,11 @@
     </div>
   </div>
 </div>
+
+<app-recommend-panel 
+  [isOpen]="isRecommendPanelOpen" 
+  [filmId]="film.id"
+  [initialRecommended]="isRecommendedProfile" 
+  (closed)="closeRecommendPanel()"
+  (recommendedStatusChanged)="updateRecommendationStatus($event)">
+</app-recommend-panel>

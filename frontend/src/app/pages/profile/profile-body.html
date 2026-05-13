@@ -37,7 +37,8 @@
     @if ((itsMe$ | async) || profile.watchedFilms !== null) {
       @for (section of [
         { title: 'Películas Vistas', data: profile.watchedFilms },
-        { title: 'Ver más tarde', data: profile.laterFilms }
+        { title: 'Ver más tarde', data: profile.laterFilms },
+        { title: 'Películas Recomendadas', data: profile.recommendedFilms }
       ]; track section.title) {
         
         <app-profile-components [title]="section.title" [isEditing]="isEditing">
