@@ -15,20 +15,20 @@ import lombok.*;
 
 public class Mark {
 
-    @Id
+    @EmbeddedId
+    private MarkId id;
+
     @ManyToOne
     @JoinColumn(name = "email")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonIgnore
     private User user;
 
-    @Id
     @ManyToOne
     @JoinColumn(name = "filmid")
     @JsonIgnore
     private Film film;
 
-    @Id
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Type type;
