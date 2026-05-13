@@ -13,7 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension; 
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Optional;
 
@@ -23,6 +25,7 @@ public class RateServiceTest {
     @Mock private RateRepository rateRepository;
     @Mock private UserRepository userRepository;
     @Mock private FilmRepository filmRepository;
+    @Mock private ObjectMapper objectMapper;
 
     @InjectMocks private RateService rateService;
 
@@ -31,8 +34,12 @@ public class RateServiceTest {
 
     @BeforeEach
     void setUp() {
-        mockUser = new User(); mockUser.setEmail("test@test.com");
-        mockFilm = new Film(); mockFilm.setId(1);
+        mockUser = new User(); 
+        mockUser.setEmail("test@test.com");
+        mockUser.setVector("[0.0, 0.0, 0.0]");
+        mockFilm = new Film(); 
+        mockFilm.setId(1);
+        mockFilm.setVector("[0.0, 0.0, 0.0]");
     }
 
     @Test

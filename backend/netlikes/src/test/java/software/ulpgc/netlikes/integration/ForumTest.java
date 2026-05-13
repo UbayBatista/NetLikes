@@ -27,6 +27,7 @@ class ForumRepositoryIntegrationTest {
         film.setTitle("Esta abuela es un peligro");
         film.setAdult(false);
         film.setPosterPath("poster/path");
+        film.setVector("");
         entityManager.persist(film);
         return film;
     }

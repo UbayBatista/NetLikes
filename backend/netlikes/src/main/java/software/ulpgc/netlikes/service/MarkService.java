@@ -52,6 +52,7 @@ public class MarkService {
 
     private void saveMark(User user, Film film, Mark.Type type) {
         Mark mark = new Mark();
+        mark.setId(new MarkId(user.getEmail(), film.getId(), type));
         mark.setUser(user);
         mark.setFilm(film);
         mark.setType(type);

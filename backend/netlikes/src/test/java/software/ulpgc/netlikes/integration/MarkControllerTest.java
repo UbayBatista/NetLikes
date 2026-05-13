@@ -41,6 +41,7 @@ public class MarkControllerTest {
         user.setSecurityQuestion("Q");
         user.setAnswer("A");
         user.setBirthdate(java.sql.Date.valueOf("2000-01-01"));
+        user.setVector("");
         savedUser = userRepository.save(user);
 
         Film film = new Film();
@@ -48,11 +49,13 @@ public class MarkControllerTest {
         film.setTitle("Matrix");
         film.setOverView("Test");
         film.setPosterPath("path");
+        film.setVector("");
         savedFilm = filmRepository.save(film);
     }
 
     private Mark createAndSaveMark(Mark.Type type) {
         Mark mark = new Mark();
+        mark.setId(new MarkId(savedUser.getEmail(), savedFilm.getId(), type));
         mark.setUser(savedUser);
         mark.setFilm(savedFilm);
         mark.setType(type);

@@ -7,6 +7,7 @@ import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.model.Genre;
 import software.ulpgc.netlikes.repository.GenreRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
+import software.ulpgc.netlikes.service.HuggingFaceService;
 import software.ulpgc.netlikes.service.UserService;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,6 +38,9 @@ class UserServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private HuggingFaceService huggingFaceService;
 
     @InjectMocks
     private UserService userService;
@@ -131,6 +135,7 @@ class UserServiceTest {
         user.setEmail("juan@email.com");
         user.setName("Juan");
         user.setPassword("hashedPassword");
+        user.setVector("");
 
         when(userRepository.findById("juan@email.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("SuperMan23", "hashedPassword")).thenReturn(true);
@@ -147,6 +152,7 @@ class UserServiceTest {
         User user = new User();
         user.setEmail("juan@email.com");
         user.setPassword("hashedPassword");
+        user.setVector("");
 
         when(userRepository.findById("juan@email.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrongPassword", "hashedPassword")).thenReturn(false);
@@ -198,6 +204,7 @@ class UserServiceTest {
         User user = new User();
         user.setEmail("juan@email.com");
         user.setSecurityQuestion("¿Nombre de tu mascota?");
+        user.setVector("");
 
         when(userRepository.findById("juan@email.com")).thenReturn(Optional.of(user));
 
@@ -218,6 +225,7 @@ class UserServiceTest {
         User user = new User();
         user.setEmail("juan@email.com");
         user.setAnswer("Firulais");
+        user.setVector("");
 
         when(userRepository.findById("juan@email.com")).thenReturn(Optional.of(user));
 
@@ -231,6 +239,7 @@ class UserServiceTest {
         User user = new User();
         user.setEmail("juan@email.com");
         user.setAnswer("Firulais");
+        user.setVector("");
 
         when(userRepository.findById("juan@email.com")).thenReturn(Optional.of(user));
 
@@ -255,6 +264,7 @@ class UserServiceTest {
         User user = new User();
         user.setEmail(email);
         user.setPassword("oldHashedPassword");
+        user.setVector("");
 
         when(userRepository.findById(email)).thenReturn(Optional.of(user));
         when(passwordEncoder.encode(newPassword)).thenReturn("newHashedPassword");
@@ -295,6 +305,7 @@ class UserServiceTest {
         User user = new User();
         user.setEmail("juan@email.com");
         user.setBio("Bio antigua");
+        user.setVector("");
 
         when(userRepository.findById("juan@email.com")).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
