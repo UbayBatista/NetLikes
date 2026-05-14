@@ -84,21 +84,26 @@ export class ProfileHeader {
   }
 
   startChat() {
-  const myUser = this.authService.getCurrentUser(); 
-  const userFriend = this.userName;
+    this.authService.getCurrentUser().subscribe(user => { 
 
-  this.http.get<number>(`https://api-db.duckdns.org/api/chat/id?miUsuario=${myUser}&otroUsuario=${userFriend}`)
-    .subscribe({
-      next: (chatId) => {
-        this.router.navigate(['/social/chats'], { 
-          queryParams: { 
-            chatWith: userFriend, 
-            chatId: chatId 
-          } 
+      if (!user) return;
+      
+      const myUser = user.userName
+      const userFriend = this.userName;
+
+      this.http.get<number>(`https://api-db.duckdns.org/api/chat/id?miUsuario=${myUser}&otroUsuario=${userFriend}`)
+        .subscribe({
+          next: (chatId) => {
+            this.router.navigate(['/social/chats'], { 
+              queryParams: { 
+                chatWith: userFriend, 
+                chatId: chatId 
+              } 
+            });
+          },
+          error: (err) => console.error("Error al obtener/crear el chat", err)
         });
-      },
-      error: (err) => console.error("Error al obtener/crear el chat", err)
     });
-}
+  }
 
 }
