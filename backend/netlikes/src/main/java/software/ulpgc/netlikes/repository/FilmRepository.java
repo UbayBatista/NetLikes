@@ -12,7 +12,7 @@ public interface FilmRepository extends JpaRepository<Film, Integer>{
     @Query(value = """
         SELECT f.* FROM film f
         WHERE f.id NOT IN (
-            SELECT m.filmid FROM mark m WHERE m.email = :userEmail
+            SELECT m.film_id FROM mark m WHERE m.email = :userEmail
             UNION
             SELECT r.film_id FROM rate r WHERE r.user_email = :userEmail
         )
