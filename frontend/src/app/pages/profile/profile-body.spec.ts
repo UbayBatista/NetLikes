@@ -304,6 +304,30 @@ describe('ProfileComplete Component', () => {
     });
   });
 
+  describe('Profile Sections Rendering (US 10.2)', () => {
+    it('should display the "Películas Recomendadas" section if the profile has recommended films', () => {
+      profileService.getProfile.mockReturnValue(of({
+        userName: 'TestUser',
+        email: 'test@test.com',
+        followers: 10,
+        following: 5,
+        watchedFilms: [],
+        laterFilms: [],
+        recommendedFilms: [{ id: 1, title: 'Inception', posterPath: '/inception.jpg' }]
+      }));
+      profileService.isMyProfile.mockReturnValue(of(true));
+
+      fixture = TestBed.createComponent(ProfileComplete);
+      component = fixture.componentInstance;
+      
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      
+      expect(compiled.textContent).toContain('Películas Recomendadas');
+    });
+  });
+
   describe('Bio Edit Logic', () => {
     it('should show save modal when toggleEdit is called with pending changes', () => {
       component.isEditing = true;
