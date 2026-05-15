@@ -50,6 +50,7 @@ public class NotifyControllerTest {
         paco.setBirthdate(dummyDate);
         paco.setPassword("123456"); 
         paco.setSecurityQuestion("¿?"); paco.setAnswer("!");
+        paco.setVector("");
         userRepository.save(paco);
 
         User elena = new User();
@@ -57,7 +58,9 @@ public class NotifyControllerTest {
         elena.setName("Elena");
         elena.setBirthdate(dummyDate);
         elena.setPassword("123456"); 
-        elena.setSecurityQuestion("¿?"); elena.setAnswer("!");
+        elena.setSecurityQuestion("¿?"); 
+        elena.setAnswer("!");
+        elena.setVector("");
         userRepository.save(elena);
 
         Notify notification = new Notify();

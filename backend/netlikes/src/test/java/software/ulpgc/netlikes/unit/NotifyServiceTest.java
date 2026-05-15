@@ -44,8 +44,14 @@ public class NotifyServiceTest {
 
     @Test
     void testCreateFollowNotification_SavesNotificationCorrectly() {
-        User paco = new User(); paco.setEmail("paco@gmail.com"); paco.setName("Paco");
-        User elena = new User(); elena.setEmail("elena@gmail.com"); elena.setName("Elena");
+        User paco = new User(); 
+        paco.setEmail("paco@gmail.com"); 
+        paco.setName("Paco"); 
+        paco.setVector("");
+        User elena = new User(); 
+        elena.setEmail("elena@gmail.com"); 
+        elena.setName("Elena");
+        elena.setVector("");
 
         when(userRepository.findById("paco@gmail.com")).thenReturn(java.util.Optional.of(paco));
         when(userRepository.findById("elena@gmail.com")).thenReturn(java.util.Optional.of(elena));

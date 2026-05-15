@@ -6,11 +6,12 @@ import { SubscriptionService } from '../../services/subscription.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { ForumService } from '../../services/forum.service';
+import { RecommendPanel } from '../recommend-panel/recommend-panel';
 
 @Component({
   selector: 'app-film-header',
   standalone: true,
-  imports: [DatePipe], 
+  imports: [DatePipe, RecommendPanel], 
   templateUrl: './film-header.html',
   styleUrl: './film-header.css',
 })
@@ -25,6 +26,8 @@ export class FilmHeader implements OnInit {
   isWatchLater = false;
   currentRating: string | null = null; 
   isSubscribed = false;
+  isRecommendPanelOpen = false;
+  isRecommendedProfile = false;
 
   private cdr = inject(ChangeDetectorRef);
   private interactionService = inject(UserInteractionService);
@@ -46,13 +49,15 @@ export class FilmHeader implements OnInit {
   private loadInitialMarkStatus() {
     if (!this.film?.id) return;
     this.interactionService.getMarkStatus(this.film.id).subscribe({
-      next: (mark) => {
-        if (mark) {
-          this.isWatched = (mark.type === 'SEEN');
-          this.isWatchLater = (mark.type === 'WATCHLATER');
+      next: (response) => {
+        if (response && response.types) {
+          this.isWatched = response.types.includes('SEEN');
+          this.isWatchLater = response.types.includes('WATCHLATER');
+          this.isRecommendedProfile = response.types.includes('RECOMMENDED');
         } else {
           this.isWatched = false;
           this.isWatchLater = false;
+          this.isRecommendedProfile = false;
         }
         this.cdr.detectChanges();
       },
@@ -162,10 +167,6 @@ export class FilmHeader implements OnInit {
             this.cdr.detectChanges();
         }
     });
-  }
-
-  shareFilm() { 
-    //TODO: Compartir = Recomendar (en tu perfil y en chat).
   }
 
   toggleSubscription() {
@@ -284,5 +285,18 @@ export class FilmHeader implements OnInit {
     
     });
 
+  }
+
+  shareFilm() { 
+    this.isRecommendPanelOpen = true; 
+  }
+
+  closeRecommendPanel() {
+    this.isRecommendPanelOpen = false;
+  }
+
+  updateRecommendationStatus(newState: boolean) {
+    this.isRecommendedProfile = newState;
+    this.cdr.detectChanges();
   }
 }

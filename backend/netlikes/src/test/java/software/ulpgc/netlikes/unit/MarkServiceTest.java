@@ -26,16 +26,58 @@ public class MarkServiceTest {
     @InjectMocks private MarkService markService;
 
     @Test
-    void typeFilm_CambiaDeEstadoCorrectamente() {
-        Mark existingMark = new Mark();
-        existingMark.setType(Mark.Type.WATCHLATER);
+    void toggleMarkLogic_CambiaDeWatchLaterASeen_Correctamente() {
+        String email = "test@test.com";
+        Integer filmId = 1;
+        User mockUser = new User();
+        Film mockFilm = new Film();
+
+        when(userRepository.findById(email)).thenReturn(Optional.of(mockUser));
+        when(filmRepository.findById(filmId)).thenReturn(Optional.of(mockFilm));
         
-        when(markRepository.findById(any())).thenReturn(Optional.of(existingMark));
-        when(markRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
+        when(markRepository.existsByUserEmailAndFilmIdAndType(email, filmId, Mark.Type.SEEN)).thenReturn(false);
 
-        Mark result = markService.typeFilm("test@test.com", 1, Mark.Type.SEEN);
+        String result = markService.toggleMarkLogic(email, filmId, Mark.Type.SEEN);
 
-        assertEquals(Mark.Type.SEEN, result.getType());
-        verify(markRepository, times(1)).save(existingMark);
+        assertEquals("added", result);
+        
+        verify(markRepository, times(1)).deleteByUserEmailAndFilmIdAndType(email, filmId, Mark.Type.WATCHLATER);
+        
+        verify(markRepository, times(1)).save(any(Mark.class));
+    }
+
+    @Test
+    void toggleMarkLogic_AgregaRecomendacion_Correctamente() {
+        String email = "test@test.com";
+        Integer filmId = 1;
+        User mockUser = new User();
+        Film mockFilm = new Film();
+
+        when(userRepository.findById(email)).thenReturn(Optional.of(mockUser));
+        when(filmRepository.findById(filmId)).thenReturn(Optional.of(mockFilm));
+        when(markRepository.existsByUserEmailAndFilmIdAndType(email, filmId, Mark.Type.RECOMMENDED)).thenReturn(false);
+
+        String result = markService.toggleMarkLogic(email, filmId, Mark.Type.RECOMMENDED);
+
+        assertEquals("added", result);
+        verify(markRepository, times(1)).save(any(Mark.class));
+    }
+
+    @Test
+    void toggleMarkLogic_EliminaRecomendacion_SiYaExiste() {
+        String email = "test@test.com";
+        Integer filmId = 1;
+        User mockUser = new User();
+        Film mockFilm = new Film();
+
+        when(userRepository.findById(email)).thenReturn(Optional.of(mockUser));
+        when(filmRepository.findById(filmId)).thenReturn(Optional.of(mockFilm));
+        when(markRepository.existsByUserEmailAndFilmIdAndType(email, filmId, Mark.Type.RECOMMENDED)).thenReturn(true);
+
+        String result = markService.toggleMarkLogic(email, filmId, Mark.Type.RECOMMENDED);
+
+        assertEquals("removed", result);
+        verify(markRepository, times(1)).deleteByUserEmailAndFilmIdAndType(email, filmId, Mark.Type.RECOMMENDED);
+        verify(markRepository, never()).save(any(Mark.class));
     }
 }

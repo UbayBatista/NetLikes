@@ -20,4 +20,5 @@ public class UserProfileDTO {
     private int following;
     private List<FilmResponseDTO> watchedFilms;
     private List<FilmResponseDTO> laterFilms;
+    private List<FilmResponseDTO> recommendedFilms;
 }

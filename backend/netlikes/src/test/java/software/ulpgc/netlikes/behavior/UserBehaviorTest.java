@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,12 +16,15 @@ import software.ulpgc.netlikes.model.Genre;
 import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.repository.GenreRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
+import software.ulpgc.netlikes.service.HuggingFaceService;
 import software.ulpgc.netlikes.service.UserService;
 
 import java.sql.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -38,8 +42,13 @@ public class UserBehaviorTest {
     private Genre comedia;
     private Genre drama;
 
+    @MockBean 
+    private HuggingFaceService huggingFaceService;
+
     @BeforeEach
     void setUp() {
+        when(huggingFaceService.generateVector(anyString())).thenReturn("[0.0, 0.0]");
+
         accion = new Genre(); 
         accion.setId(1); 
         accion.setName("Acción");
@@ -62,6 +71,7 @@ public class UserBehaviorTest {
         existingUser.setBirthdate(new Date(System.currentTimeMillis()));
         existingUser.setSecurityQuestion("¿Mascota?");
         existingUser.setAnswer("Toby");
+        existingUser.setVector("[0.0, 0.0]");
         userRepository.save(existingUser);
     }
 

@@ -46,6 +46,7 @@ public class FilmControllerTest {
         film.setGenres(List.of());
         film.setCast(new HashSet<>());
         film.setVideos(List.of());
+        film.setVector("");
         return filmRepository.save(film);
     }
 

@@ -36,6 +36,7 @@ export interface MyProfile {
   following: number;
   watchedFilms: FilmListItem[];
   laterFilms: FilmListItem[];
+  recommendedFilms: FilmListItem[];
 }
 
 export interface UserProfile {
@@ -48,4 +49,5 @@ export interface UserProfile {
   following: number;
   watchedFilms: FilmListItem[] | null;
   laterFilms: FilmListItem[] | null;
+  recommendedFilms: FilmListItem[] | null;
 }

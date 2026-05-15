@@ -169,6 +169,8 @@ public class FilmService {
             })
             .toList();
         film.setVideos(videos);
+
+        film.setVector(dto.getVector());
     }
 
 

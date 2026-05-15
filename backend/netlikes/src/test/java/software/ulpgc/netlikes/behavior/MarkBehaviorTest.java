@@ -47,6 +47,7 @@ public class MarkBehaviorTest {
         testUser.setShowWatchedFilms(false);
         testUser.setShowFilmsToWatchLater(false);
         testUser.setShowRecommendedFilms(false);
+        testUser.setVector("");
         userRepository.save(testUser);
 
         testFilm = new Film();
@@ -60,17 +61,18 @@ public class MarkBehaviorTest {
         testFilm.setGenres(List.of());
         testFilm.setCast(new HashSet<>());
         testFilm.setVideos(List.of());
+        testFilm.setVector("");
         filmRepository.save(testFilm);
     }
 
     @Test
     @DisplayName("HU 4.1: Añadir a Vistas")
     void shouldAddFilmToSeenList() {
-        assertThat(markRepository.existsById(new MarkId(testUser.getEmail(), testFilm.getId()))).isFalse();
+        assertThat(markRepository.existsById(new MarkId(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN))).isFalse();
 
-        markService.typeFilm(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN);
+        markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN);
 
-        Optional<Mark> savedMark = markRepository.findById(new MarkId(testUser.getEmail(), testFilm.getId()));
+        Optional<Mark> savedMark = markRepository.findById(new MarkId(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN));
         assertThat(savedMark).isPresent();
         assertThat(savedMark.get().getType()).isEqualTo(Mark.Type.SEEN);
     }
@@ -78,19 +80,44 @@ public class MarkBehaviorTest {
     @Test
     @DisplayName("HU 4.1: Cambiar de Ver más tarde a Vistas")
     void shouldChangeFromWatchLaterToSeen() {
-        markService.typeFilm(testUser.getEmail(), testFilm.getId(), Mark.Type.WATCHLATER);
-        markService.typeFilm(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN);
+        markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.WATCHLATER);
+        markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN);
 
-        Mark updatedMark = markRepository.findById(new MarkId(testUser.getEmail(), testFilm.getId())).get();
-        assertThat(updatedMark.getType()).isEqualTo(Mark.Type.SEEN);
+        boolean existsSeen = markRepository.existsById(new MarkId(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN));
+        assertThat(existsSeen).isTrue();
+
+        boolean existsWatchLater = markRepository.existsById(new MarkId(testUser.getEmail(), testFilm.getId(), Mark.Type.WATCHLATER));
+        assertThat(existsWatchLater).isFalse();
     }
 
     @Test
     @DisplayName("HU 4.1: Retirar de Vistas")
     void shouldRemoveFromSeenList() {
-        markService.typeFilm(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN);
-        markService.deletetype(testUser.getEmail(), testFilm.getId());
+        markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN);
+        markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN);
 
-        assertThat(markRepository.existsById(new MarkId(testUser.getEmail(), testFilm.getId()))).isFalse();
+        assertThat(markRepository.existsById(new MarkId(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN))).isFalse();
+    }
+
+    @Test
+    @DisplayName("HU 10.2: Añadir a Recomendaciones")
+    void shouldAddFilmToRecommendedList() {
+        assertThat(markRepository.existsById(new MarkId(testUser.getEmail(), testFilm.getId(), Mark.Type.RECOMMENDED))).isFalse();
+
+        markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.RECOMMENDED);
+
+        Optional<Mark> savedMark = markRepository.findById(new MarkId(testUser.getEmail(), testFilm.getId(), Mark.Type.RECOMMENDED));
+        assertThat(savedMark).isPresent();
+        assertThat(savedMark.get().getType()).isEqualTo(Mark.Type.RECOMMENDED);
+    }
+
+    @Test
+    @DisplayName("HU 10.2: Retirar de Recomendaciones")
+    void shouldRemoveFromRecommendedList() {
+        markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.RECOMMENDED);
+
+        markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.RECOMMENDED);
+
+        assertThat(markRepository.existsById(new MarkId(testUser.getEmail(), testFilm.getId(), Mark.Type.RECOMMENDED))).isFalse();
     }
 }

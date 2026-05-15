@@ -38,17 +38,24 @@ public class MarkControllerTest {
         user.setEmail("test@test.com");
         user.setPassword("123");
         user.setName("test");
+        user.setSecurityQuestion("Q");
+        user.setAnswer("A");
+        user.setBirthdate(java.sql.Date.valueOf("2000-01-01"));
+        user.setVector("");
         savedUser = userRepository.save(user);
 
         Film film = new Film();
         film.setId(1);
         film.setTitle("Matrix");
+        film.setOverView("Test");
+        film.setPosterPath("path");
+        film.setVector("");
         savedFilm = filmRepository.save(film);
     }
 
     private Mark createAndSaveMark(Mark.Type type) {
         Mark mark = new Mark();
-        mark.setId(new MarkId(savedUser.getEmail(), savedFilm.getId()));
+        mark.setId(new MarkId(savedUser.getEmail(), savedFilm.getId(), type));
         mark.setUser(savedUser);
         mark.setFilm(savedFilm);
         mark.setType(type);
@@ -69,6 +76,23 @@ public class MarkControllerTest {
 
         mockMvc.perform(post("/marks/test@test.com/toggle/1")
             .param("type", "SEEN"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("removed"));
+    }
+
+    @Test
+    void toggleMark_AddRecommendedList_ReturnsAdded() throws Exception {
+        mockMvc.perform(post("/marks/test@test.com/toggle/1")
+            .param("type", "RECOMMENDED"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("added"));
+    }
+
+    @Test
+    void toggleMark_AlreadyRecommended_ReturnsRemoved() throws Exception {
+        createAndSaveMark(Mark.Type.RECOMMENDED);
+        mockMvc.perform(post("/marks/test@test.com/toggle/1")
+            .param("type", "RECOMMENDED"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("removed"));
     }
