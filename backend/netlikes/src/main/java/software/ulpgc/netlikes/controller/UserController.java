@@ -158,12 +158,18 @@ public class UserController {
     }
     
     @GetMapping("/chat/id")
-    public ResponseEntity<Integer> getChatId(
+    public ResponseEntity<?> getChatId(
             @RequestParam String myUser, 
             @RequestParam String userFriend) {
             
-        Integer chatId = discourseService.getPrivateChatId(myUser, userFriend);
-        return ResponseEntity.ok(chatId);
+
+        try {
+            Integer chatId = discourseService.getPrivateChatId(myUser, userFriend);
+            return ResponseEntity.ok(chatId);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("Este usuario aún no ha entrado al foro, no puedes chatear con él todavía.");
+        }
     }
 
 }

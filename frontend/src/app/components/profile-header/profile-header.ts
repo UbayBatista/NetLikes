@@ -101,7 +101,13 @@ export class ProfileHeader {
               } 
             });
           },
-          error: (err) => console.error("Error al obtener/crear el chat", err)
+          error: (err) => {
+            if (err.status === 404) {
+                alert("Este amigo aún no ha activado su chat. ¡Dile que entre al foro una vez para poder hablarle!");
+            } else {
+                console.error("Error desconocido al crear el chat", err);
+            }
+          }
         });
     });
   }

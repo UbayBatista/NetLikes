@@ -317,7 +317,11 @@ public class DiscourseService {
         String url = "https://netlikes.duckdns.org/chat/direct_messages/create.json";
 
         HttpHeaders headers = setHeaders();
-        String body = "{\"usernames\": \"" + user1 + "," + user2 + "\"}";
+
+        String u1 = user1.toLowerCase();
+        String u2 = user2.toLowerCase();
+
+        String body = "{\"usernames\": \"" + u1 + "," + u2 + "\"}";
 
         HttpEntity<String> request = new HttpEntity<>(body, headers);
 
