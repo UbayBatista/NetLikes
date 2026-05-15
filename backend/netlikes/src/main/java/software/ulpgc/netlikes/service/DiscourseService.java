@@ -332,4 +332,20 @@ public class DiscourseService {
         }
     }
 
+    public void anonymizeUser(String discourseUserId) {
+        if (discourseUserId == null) return;
+
+        String url = "https://netlikes.duckdns.org/admin/users/" + discourseUserId + "/anonymize.json";
+
+        HttpHeaders headers = setHeaders();
+        HttpEntity<String> request = new HttpEntity<>("", headers);
+
+        try {
+            restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
+            System.out.println("Usuario anonimizado en Discourse con éxito: " + discourseUserId);
+        } catch (Exception e) {
+            System.err.println("Error al anonimizar usuario en Discourse: " + e.getMessage());
+        }
+    }
+
 }

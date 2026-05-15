@@ -20,7 +20,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-@CrossOrigin(origins = "*")
+@CrossOrigin(
+    origins = { "https://net-likes-bay.vercel.app", "http://localhost:4200" }, 
+    allowCredentials = "true"
+)
 @RestController
 @RequestMapping("/users")
 public class UserController {
