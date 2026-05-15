@@ -79,4 +79,21 @@ public class MarkControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("removed"));
     }
+
+    @Test
+    void toggleMark_AddRecommendedList_ReturnsAdded() throws Exception {
+        mockMvc.perform(post("/marks/test@test.com/toggle/1")
+            .param("type", "RECOMMENDED"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("added"));
+    }
+
+    @Test
+    void toggleMark_AlreadyRecommended_ReturnsRemoved() throws Exception {
+        createAndSaveMark(Mark.Type.RECOMMENDED);
+        mockMvc.perform(post("/marks/test@test.com/toggle/1")
+            .param("type", "RECOMMENDED"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("removed"));
+    }
 }

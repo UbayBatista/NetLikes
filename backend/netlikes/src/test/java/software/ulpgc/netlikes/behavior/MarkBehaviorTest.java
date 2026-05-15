@@ -98,4 +98,26 @@ public class MarkBehaviorTest {
 
         assertThat(markRepository.existsById(new MarkId(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN))).isFalse();
     }
+
+    @Test
+    @DisplayName("HU 10.2: Añadir a Recomendaciones")
+    void shouldAddFilmToRecommendedList() {
+        assertThat(markRepository.existsById(new MarkId(testUser.getEmail(), testFilm.getId(), Mark.Type.RECOMMENDED))).isFalse();
+
+        markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.RECOMMENDED);
+
+        Optional<Mark> savedMark = markRepository.findById(new MarkId(testUser.getEmail(), testFilm.getId(), Mark.Type.RECOMMENDED));
+        assertThat(savedMark).isPresent();
+        assertThat(savedMark.get().getType()).isEqualTo(Mark.Type.RECOMMENDED);
+    }
+
+    @Test
+    @DisplayName("HU 10.2: Retirar de Recomendaciones")
+    void shouldRemoveFromRecommendedList() {
+        markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.RECOMMENDED);
+
+        markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.RECOMMENDED);
+
+        assertThat(markRepository.existsById(new MarkId(testUser.getEmail(), testFilm.getId(), Mark.Type.RECOMMENDED))).isFalse();
+    }
 }
