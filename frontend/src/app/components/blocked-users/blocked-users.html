@@ -18,7 +18,9 @@
           @for (user of blockedUsers; track user.email) {
             <div class="user-item">
               <div class="user-info">
-                <img [src]="user.profilePicture || 'assets/ProfilePicture.jpg'" alt="Avatar" class="user-avatar">
+                <img [src]="user.profilePicture == null 
+                        ? 'assets/ProfilePicture.jpg'
+                        : `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${user.profilePicture}`" alt="Avatar" class="user-avatar">
                 <span class="user-name fw-semibold">{{ user.userName }}</span>
               </div>
               <button class="btn btn-dark btn-sm" (click)="unblock(user)">

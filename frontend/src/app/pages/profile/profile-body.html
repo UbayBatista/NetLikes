@@ -10,10 +10,13 @@
     @else{
       <app-profile-header 
       [userName]="profile.userName" 
-      [userPicture]="profile.profilePicture"
+      [userPicture]="pendingAvatar 
+      ? pendingAvatar 
+      : profile.profilePicture"
       [followers]="(followersCount$ | async) ?? 0"
       [following]="(followingCount$ | async) ?? 0"
       [isPrivate]="profile.isPrivate"
+      [isEditing]="isEditing"
       
       [type]="(itsMe$ | async) 
                 ? (isEditing ? 'Dejar de editar' : 'Editar Perfil') 
@@ -28,6 +31,7 @@
       (block)="onBlockRequest(profile.email, profile.userName)"
       (delete)="startDeleteProcess(profile.email)"
       (openSocialModal)="showSocial($event)"
+      (changeAvatar)="isAvatarModalOpen = true"
       (privacyChange)="onPrivacyChange($event)">
     </app-profile-header>
 
@@ -98,6 +102,12 @@
       (close)="isPasswordModalOpen = false"
       (verified)="onPasswordVerified()">
     </app-password-verify-modal>
+  }
+  @if (isAvatarModalOpen) {
+    <app-avatar-modal
+      (close)="isAvatarModalOpen = false"
+      (avatarSelected)="onAvatarSelected($event)">
+    </app-avatar-modal>
   }
   @if (showSaveModal) {
     <app-confirmation-modal 

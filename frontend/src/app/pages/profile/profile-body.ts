@@ -18,6 +18,7 @@ import { ConfirmationModalComponent } from '../../components/confirmation-modal/
 import { BlockedUsersModalComponent } from '../../components/blocked-users/blocked-users';
 import { BioComponent } from "../../components/bio-component/bio-component";
 import { UserService } from "../../services/user.service";
+import { AvatarModal } from "../../components/avatar-modal/avatar-modal";
 
 type SocialType = 'Seguidores' | 'Seguidos';
 type FollowStatus = 'NONE' | 'PENDING' | 'ACCEPTED' | 'BLOCKED';
@@ -25,16 +26,16 @@ type FollowStatus = 'NONE' | 'PENDING' | 'ACCEPTED' | 'BLOCKED';
 @Component({
   selector: "app-profile-complete",
   standalone: true,
-  imports: [CommonModule, 
-            ProfileBody, 
-            ProfileHeader, 
-            Film, 
-            SocialModal, 
-            AsyncPipe, 
-            ConfirmationModalComponent, 
-            BlockedUsersModalComponent,
-            PasswordVerifyModalComponent,
-            BioComponent],
+  imports: [CommonModule,
+    ProfileBody,
+    ProfileHeader,
+    Film,
+    SocialModal,
+    AsyncPipe,
+    ConfirmationModalComponent,
+    BlockedUsersModalComponent,
+    PasswordVerifyModalComponent,
+    BioComponent, AvatarModal],
   templateUrl: "./profile-body.html",
   styleUrl: "./profile-body.css"
 })
@@ -56,6 +57,7 @@ export class ProfileComplete implements OnInit {
 
   isEditing = false;
   isSocialModalOpen = false;
+  isAvatarModalOpen = false;
   thereIsChanges = false;
   socialType: SocialType = 'Seguidores';
   socialData: any[] = [];
@@ -63,6 +65,7 @@ export class ProfileComplete implements OnInit {
   canScrollRight = true;
   isBlockedModalOpen = false;
   pendingBio: string = '';
+  pendingAvatar: string = '';
   showSaveModal: boolean = false;
 
   private followStateSubject = new BehaviorSubject<FollowStatus>('NONE');
@@ -329,15 +332,27 @@ export class ProfileComplete implements OnInit {
     this.thereIsChanges = event.hasChanges;
   }
 
+  onAvatarSelected(seed: string) {
+    this.pendingAvatar = seed;
+    this.thereIsChanges = true;
+    this.isAvatarModalOpen = false;
+  }
+
   handleSaveConfirmation(confirmed: boolean) {
     this.showSaveModal = false;
-    if (confirmed && this.pendingBio) {
-      this.profileService.updateBio(this.pendingBio);
-      this.bioComponent?.updateOriginalBio(this.pendingBio);
+    if (confirmed) {
+      if (this.pendingBio) {
+        this.profileService.updateBio(this.pendingBio);
+      }
+      if (this.pendingAvatar) {
+        this.profileService.updateAvatar(this.pendingAvatar);
+        this.authService.updateStoredUser({ profilePicture: this.pendingAvatar });
+      }
     } else {
       this.bioComponent?.discardChanges();
     }
     this.pendingBio = '';
+    this.pendingAvatar = '';
     this.thereIsChanges = false;
     this.isEditing = false;
   }

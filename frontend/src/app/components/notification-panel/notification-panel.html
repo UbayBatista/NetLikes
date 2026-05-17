@@ -29,6 +29,9 @@
         @for (notification of notifications; track $index) {
           <app-notification
             [image]="notification.senderProfilePicture || 'assets/ProfilePicture.jpg'"
+            [image]="notification.senderProfilePicture == null 
+                        ? 'assets/ProfilePicture.jpg'
+                        : `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${notification.senderProfilePicture}`"
             [message]="notification.message" style="cursor: pointer;" (click)="goToProfile(notification.senderName)">
           </app-notification>
         }
@@ -50,7 +53,9 @@
           @for (request of pendingRequests; track request.email) {
             <div class="request-item d-flex align-items-center justify-content-between py-2">
               <div class="d-flex align-items-center gap-2">
-                <img [src]="request.profilePicture || 'assets/ProfilePicture.jpg'" class="rounded-circle" 
+                <img [src]="request.profilePicture == null 
+                        ? 'assets/ProfilePicture.jpg'
+                        : `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${request.profilePicture}`" class="rounded-circle" 
                      width="40" height="40" style="object-fit: cover;">
                 <span class="fw-semibold small">{{ request.userName }}</span>
               </div>

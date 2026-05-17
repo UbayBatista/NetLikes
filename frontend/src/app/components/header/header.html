@@ -25,7 +25,9 @@
     <div (click)="goToProfile()">
       @if (currentUser$ | async; as user) {
         <img
-        [src]="user.profilePicture || 'assets/ProfilePicture.jpg'" 
+        [src]="user.profilePicture==null 
+          ? 'assets/ProfilePicture.jpg'
+          : `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${user.profilePicture}`"
         alt="Perfil"
         class="rounded-circle avatar"
         />
