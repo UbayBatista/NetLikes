@@ -6,6 +6,7 @@ import software.ulpgc.netlikes.dto.ChangePasswordDTO;
 import software.ulpgc.netlikes.dto.LoginRequestDTO;
 import software.ulpgc.netlikes.dto.UserProfileDTO;
 import software.ulpgc.netlikes.dto.PrivacyRequestDTO;
+import software.ulpgc.netlikes.dto.AvatarRequestDTO;
 import software.ulpgc.netlikes.dto.BioRequestDTO;
 import software.ulpgc.netlikes.dto.RegisterRequestDTO;
 import software.ulpgc.netlikes.dto.ValidAnswerRequestDTO;
@@ -157,6 +158,18 @@ public class UserController {
             @Valid @RequestBody BioRequestDTO request) {
         try {
             userService.updateBio(email, request.getBio());
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/myProfile/{email}/avatar")
+    public ResponseEntity<?> updateAvatar(
+            @NonNull @PathVariable String email,
+            @RequestBody AvatarRequestDTO request) {
+        try {
+            userService.updateAvatar(email, request.getSeed());
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());

@@ -13,6 +13,7 @@ public class UserProfileDTO {
 
     private String email;
     private String userName;
+    private String profilePicture;
     private String bio;
     @JsonProperty("isPrivate")
     private Boolean isPrivate;

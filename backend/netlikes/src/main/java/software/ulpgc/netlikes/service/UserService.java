@@ -210,6 +210,7 @@ public class UserService {
         return new UserProfileDTO(
             user.getEmail(),
             user.getName(),
+            user.getProfilePicture(),
             user.getBio(),
             user.isAccountPrivacity(),
             followService.countFollowersOf(user.getEmail()),
@@ -241,6 +242,7 @@ public class UserService {
         return new UserProfileDTO(
             target.getEmail(),
             target.getName(),
+            target.getProfilePicture(),
             target.getBio(),
             target.isAccountPrivacity(),
             followService.countFollowersOf(target.getEmail()),
@@ -326,6 +328,13 @@ public class UserService {
         User user = userRepository.findById(email)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         user.setBio(bio);
+        userRepository.save(user);
+    }
+
+    public void updateAvatar(@NonNull String email, String seed) {
+        User user = userRepository.findById(email)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        user.setProfilePicture(seed);
         userRepository.save(user);
     }
 }
