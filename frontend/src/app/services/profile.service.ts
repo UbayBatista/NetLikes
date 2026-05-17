@@ -57,4 +57,13 @@ export class ProfileService {
             });
         });
     }
+
+    updateAvatar(seed: string): void {
+        this.profile$.pipe(take(1)).subscribe(profile => {
+            if (!profile) return;
+            this.userService.updateAvatar(profile.email, seed).subscribe(() => {
+            this.profile$.next({ ...profile, profilePicture: seed });
+            });
+        });
+    }
 }
