@@ -314,25 +314,25 @@ public class DiscourseService {
     }
 
     public Integer getPrivateChatId(String user1, String user2) {
-        String url = "https://netlikes.duckdns.org/chat/direct_messages/create.json";
+        String url = "https://netlikes.duckdns.org/chat/api/direct-message-channels.json";
 
-        HttpHeaders headers = setHeaders();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Api-Key", "b6b3e96a0bffef725a4481481d8523e98f743a0ad861117370d6f08a1aa3173f");
+        headers.set("Api-Username", user1.toLowerCase()); 
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-        String u1 = user1.toLowerCase();
-        String u2 = user2.toLowerCase();
-
-        String body = "{\"usernames\": \"" + u1 + "," + u2 + "\"}";
+        String body = "{\"target_usernames\": [\"" + user2.toLowerCase() + "\"], \"upsert\": true}";
 
         HttpEntity<String> request = new HttpEntity<>(body, headers);
 
         try {
             ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
             Map<String, Object> responseBody = response.getBody();
-            Map<String, Object> chatChannel = (Map<String, Object>) responseBody.get("chat_channel");
-            return (Integer) chatChannel.get("id");
+            Map<String, Object> channel = (Map<String, Object>) responseBody.get("channel");
+            return (Integer) channel.get("id");
 
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener el chat de Discourse: " + e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 

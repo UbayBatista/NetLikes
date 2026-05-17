@@ -1,7 +1,8 @@
 <div class="foro-container" [class.show-chat]="selectedChat">
 
     <aside class="sidebar-users">
-         <app-social-chats-users (clickedUser)="seeChat($event)"></app-social-chats-users>
+         <app-social-chats-users [newChatName]="userFriend"
+            [newChatId]="chatId" (clickedUser)="seeChat($event)"></app-social-chats-users>
     </aside>
 
     <main class="chat-main">

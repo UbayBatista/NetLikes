@@ -94,7 +94,7 @@ export class ProfileHeader {
       this.http.get<number>(`https://api-db.duckdns.org/users/chat/id?myUser=${myUser}&userFriend=${userFriend}`)
         .subscribe({
           next: (chatId) => {
-            this.router.navigate(['/social/chats'], { 
+            this.router.navigate(['/social'], { 
               queryParams: { 
                 chatWith: userFriend, 
                 chatId: chatId 

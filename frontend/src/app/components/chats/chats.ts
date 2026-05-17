@@ -12,7 +12,6 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class Chats{
 
-    currentUser: string = '';
     userFriend: string = '';
     selectedChat: boolean = false;
     chatId: number | null = null;
@@ -22,14 +21,15 @@ export class Chats{
     ngOnInit() {
         this.route.queryParams.subscribe(params => {
             if (params['chatId'] && params['chatWith']) {
-            this.chatId = Number(params['chatId']);
-            this.currentUser = params['chatWith'];
+                this.chatId = Number(params['chatId']);
+                this.userFriend = params['chatWith'];
+                this.selectedChat = true;
             }
         });
     }
 
     seeChat(event: { user: string, chatId: number }) {
-        this.currentUser = event.user;
+        this.userFriend = event.user;
         this.selectedChat = true;
         this.chatId = event.chatId;
     }
