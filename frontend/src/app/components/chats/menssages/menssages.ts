@@ -28,7 +28,7 @@ export class Menssages implements OnInit{
             
             setTimeout(() => {
                 this.saveUrl = this.sanitizer.bypassSecurityTrustResourceUrl(ssoUrl);
-                console.log("Cargando foro silenciosamente:", ssoUrl);
+                console.log("Cargando chat silenciosamente:", ssoUrl);
                 this.cdr.detectChanges();
             }, 10);
         }else {

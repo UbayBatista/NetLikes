@@ -318,10 +318,10 @@ public class DiscourseService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Api-Key", "b6b3e96a0bffef725a4481481d8523e98f743a0ad861117370d6f08a1aa3173f");
-        headers.set("Api-Username", user1.toLowerCase()); 
+        headers.set("Api-Username", user1); 
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        String body = "{\"target_usernames\": [\"" + user2.toLowerCase() + "\"], \"upsert\": true}";
+        String body = "{\"target_usernames\": [\"" + user2 + "\"], \"upsert\": true}";
 
         HttpEntity<String> request = new HttpEntity<>(body, headers);
 
