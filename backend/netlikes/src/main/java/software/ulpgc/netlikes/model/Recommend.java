@@ -34,7 +34,6 @@ public class Recommend {
     @ManyToOne
     @MapsId("film")
     @JoinColumn(name = "film_id")
-    @JsonIgnore
     private Film film;
 
     @Column(nullable = false)
