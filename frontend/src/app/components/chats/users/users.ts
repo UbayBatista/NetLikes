@@ -53,13 +53,13 @@ export class Users{
         if (!this.incomingChatName || !this.incomingChatId) return;
 
         const list = this.friends();
-        const exists = list.find(user => user.name === this.incomingChatName);
+        const exists = list.find(user => user.userName === this.incomingChatName);
 
         list.forEach(p => p.active = false);
 
         if (!exists) {
             const nuevoAmigo = {
-                name: this.incomingChatName,
+                userName: this.incomingChatName,
                 chatId: this.incomingChatId, 
                 active: true 
             };
@@ -77,7 +77,7 @@ export class Users{
     filteredUsers = computed(() => {
         const searchLow = (this.searchText() || '').toLowerCase();
         return this.friends().filter(user => 
-        (user.name || '').toLowerCase().includes(searchLow)
+        (user.userName || '').toLowerCase().includes(searchLow)
         );
     });
 

@@ -20,16 +20,16 @@ export class Menssages implements OnInit{
 
     saveUrl: SafeResourceUrl | null = null;
     activeUser = false;
-    chatID: number | null = null;
+    chatId: number | null = null;
 
     @Input() person: string = "";
     @Output() return = new EventEmitter<void>();
 
     @Input() set selectedUserChat(value: number | null) {
-        this.chatID = value;
+        this.chatId = value;
 
-        if (this.chatID !== null) {
-            const targetTopic = `/chat/c/dm/${this.chatID}`; 
+        if (this.chatId !== null) {
+            const targetTopic = `/chat/c/dm/${this.chatId}`; 
             const ssoUrl = `https://netlikes.duckdns.org/session/sso?return_path=${encodeURIComponent(targetTopic)}`;
             
             this.saveUrl = this.sanitizer.bypassSecurityTrustResourceUrl(ssoUrl);
