@@ -92,10 +92,13 @@ export class Users{
 
         const selected = this.filteredUsers()[index];
         if (selected) {
-        selected.active = true;
-        this.clickedUser.emit({ 
-            user: selected.name,
-            chatId: selected.forumTopicId
+            selected.active = true;
+
+            const realName = selected.userName || selected.name || selected.username;
+
+            this.clickedUser.emit({ 
+                user: realName,
+                chatId: selected.chatId || null
         });
         console.log('Cambiando al chat de:', selected.name, "con ID: ", selected.chatID);
         }

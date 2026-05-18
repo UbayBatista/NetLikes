@@ -209,4 +209,23 @@ public class FollowService {
 
         return MutualFollow(me.getEmail(), friend.getEmail());
     }
+
+    public List<UserResponseDTO> getMutualFriends(String username) {
+        User me = userRepository.findByName(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                
+        String myEmail = me.getEmail();
+        
+        List<UserResponseDTO> followers = getFollowersOf(myEmail);
+        List<UserResponseDTO> following = getFollowsOf(myEmail);
+        
+        List<String> followingEmails = following.stream()
+                .map(UserResponseDTO::getEmail)
+                .toList();
+                
+        return followers.stream()
+                .filter(follower -> followingEmails.contains(follower.getEmail()))
+                .toList();
+    }
+
 }
