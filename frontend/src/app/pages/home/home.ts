@@ -4,6 +4,7 @@ import { FilmService } from '../../services/film.service';
 import { Film } from '../../components/film/film';
 import { FilmListItem, GenreGroup } from '../../models/film.models';
 import { Recommendations } from '../../services/recommendations';
+import { RecommendationFollowedService } from '../../services/recommendation-followed';
 
 @Component({
   selector: 'app-home',
@@ -15,24 +16,35 @@ export class Home implements OnInit {
   tabActive: string = 'paraTi';
 
   forYouFilms: GenreGroup[] = [];
-  users_films: FilmListItem[] = [];
+  users_films: any[] = []; 
   
-  constructor(private filmService: FilmService, private cdr: ChangeDetectorRef, private recommendationsService: Recommendations) {}
+  constructor(
+    private filmService: FilmService, 
+    private cdr: ChangeDetectorRef, 
+    private recommendationsService: Recommendations,
+    private recFollowedService: RecommendationFollowedService
+  ) {}
 
   ngOnInit() {
     this.loadFilms();
   }
 
   loadFilms() {
-    this.filmService.getFilms().subscribe({
+    this.recFollowedService.getRecommendedFilmsWithCount().subscribe({
       next: (data) => {
-        this.users_films = data.slice(0,10);
+        this.users_films = data.map(item => ({
+          id: item.film.id,
+          title: item.film.title,
+          posterPath: item.film.posterPath,
+          recommendations: item.count
+        }));
         this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('Error fetching films:', error);
+        console.error('Error fetching user recommendations:', error);
       }
     });
+
     this.recommendationsService.getRecommendations().subscribe({
       next: (data: GenreGroup[]) => {
         this.forYouFilms = data;

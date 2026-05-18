@@ -29,8 +29,12 @@
         <div class="fila-peliculas2">
             @for (f of users_films; track f.id) {
                 <div class="netflix-card">
-                  <app-film [posterPath]="f.posterPath" [title]="f.title" [id]="f.id" [recommendations]="12"></app-film>
+                  <app-film [posterPath]="f.posterPath" [title]="f.title" [id]="f.id" [recommendations]="f.recommendations"></app-film>
                 </div>
+            }
+            
+            @if (users_films.length === 0) {
+              <div class="text-muted mt-3 w-100">Aún no tienes recomendaciones de otros usuarios.</div>
             }
         </div>
     </div>

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { AuthService } from './auth.service';
 import { switchMap, take } from 'rxjs/operators';
 
@@ -37,6 +37,16 @@ export class RecommendationFollowedService {
       switchMap(user => {
         const headers = new HttpHeaders().set('X-User-Id', user!.email);
         return this.http.get<string[]>(`${this.apiUrl}/film/${filmId}/recipients`, { headers });
+      })
+    );
+  }
+
+  getRecommendedFilmsWithCount(): Observable<any[]> {
+    return this.authService.getCurrentUser().pipe(
+      take(1),
+      switchMap(user => {
+        if (!user || !user.email) return of([]);
+        return this.http.get<any[]>(`${this.apiUrl}/stats/${user.email}`);
       })
     );
   }
