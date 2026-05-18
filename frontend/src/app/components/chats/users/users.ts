@@ -94,13 +94,13 @@ export class Users{
         if (selected) {
             selected.active = true;
 
-            const realName = selected.userName || selected.name || selected.username;
+            const realName = selected.userName;
 
             this.clickedUser.emit({ 
                 user: realName,
                 chatId: selected.chatId || null
         });
-        console.log('Cambiando al chat de:', selected.name, "con ID: ", selected.chatId);
+        console.log('Cambiando al chat de:', selected.userName, "con ID: ", selected.chatId);
         }
         
         this.friends.set([...currentUser]);
