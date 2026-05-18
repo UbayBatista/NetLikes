@@ -1,4 +1,4 @@
-import { Component, inject, Input } from "@angular/core";
+import { ChangeDetectorRef, Component, inject, Input } from "@angular/core";
 import { Users } from "./users/users";
 import { Menssages } from "./menssages/menssages";
 import { ActivatedRoute } from '@angular/router';
@@ -20,7 +20,7 @@ export class Chats{
     private authService = inject(AuthService);
     private http = inject(HttpClient);
 
-    constructor(private route: ActivatedRoute) {}
+    constructor(private route: ActivatedRoute, private cdr: ChangeDetectorRef) {}
 
     ngOnInit() {
         this.route.queryParams.subscribe(params => {
@@ -55,6 +55,7 @@ export class Chats{
                             console.log(`¡ID recibido! Abriendo el chat ${nuevoChatId}`);
                             this.chatId = nuevoChatId;
                             this.selectedChat = true;
+                            this.cdr.detectChanges();
                         },
                         error: (err) => {
                             console.error("No se pudo iniciar el chat.", err);

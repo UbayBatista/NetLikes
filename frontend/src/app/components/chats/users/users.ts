@@ -41,8 +41,22 @@ export class Users{
 
             this.http.get<any[]>(`https://api-db.duckdns.org/follows/mutual-friends?username=${user.userName}`)
                 .subscribe({
-                    next: (friends) => {
-                        this.friends.set(friends);
+                    next: (friendsDB) => {
+                        const actualList = this.friends();
+                        const listaFusionada = friendsDB.map(friendDB => {
+                            const nameDB = friendDB.userName || friendDB.name;
+                            const localFriend = actualList.find(a => (a.userName || a.name) === nameDB);
+
+                            if (localFriend) {
+                                return {
+                                    ...friendDB,
+                                    chatId: localFriend.chatId,
+                                    active: localFriend.active
+                                };
+                            }
+                            return friendDB;
+                        });
+                        this.friends.set(listaFusionada);
                     },
                     error: (err) => console.error("Error al cargar amigos mutuos", err)
                 });
@@ -99,8 +113,10 @@ export class Users{
             this.clickedUser.emit({ 
                 user: realName,
                 chatId: selected.chatId || null
-        });
-        console.log('Cambiando al chat de:', selected.userName, "con ID: ", selected.chatId);
+            });
+            console.log(selected);
+            console.log('Cambiando al chat de:', selected.userName, "con ID: ", selected.chatId);
+
         }
         
         this.friends.set([...currentUser]);
