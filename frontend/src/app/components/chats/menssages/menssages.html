@@ -5,7 +5,14 @@
   </header>
 
   
-  @if (saveUrl) {
+  @if (!person) {
+    <div class="p-5 text-center">
+      <h3>Selecciona un usuario para chatear con él o haz amigos para vivir nuevas experiencias</h3>
+    </div>
+} @else if (!saveUrl) {
+    <p>Conectando con el chat de {{ person }}...</p>
+    <div class="spinner"></div>
+} @else {
     <iframe 
       [src]="saveUrl" 
       width="100%" 
@@ -13,16 +20,7 @@
       frameborder="0"
       allowfullscreen>
     </iframe>
-  }@else if(!saveUrl){
-    <p>Conectando con el chat privado...</p>
-    <div class="spinner"></div>
-  }
-  @else {
-    <div class="p-5 text-center">
-      <h3>Selecciona un usuario para chatear con él o haz amigos para vivir nuevas experiencias </h3>
-    </div>
-  }
-
+}
 
 </div>
 

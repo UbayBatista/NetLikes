@@ -100,7 +100,7 @@ export class Users{
                 user: realName,
                 chatId: selected.chatId || null
         });
-        console.log('Cambiando al chat de:', selected.name, "con ID: ", selected.chatID);
+        console.log('Cambiando al chat de:', selected.name, "con ID: ", selected.chatId);
         }
         
         this.friends.set([...currentUser]);

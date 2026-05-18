@@ -22,43 +22,32 @@ export class Menssages implements OnInit{
     activeUser = false;
     chatID: number | null = null;
 
-    
-    // @Input() user: string="Cristiano"
-    // @Input() person: string="Messi"
     @Input() person: string = "";
     @Output() return = new EventEmitter<void>();
 
     @Input() set selectedUserChat(value: number | null) {
         this.chatID = value;
 
-        if (value !== null) {
-          this.activateUser();
-      } else {
+        if (this.chatID !== null) {
+            const targetTopic = `/chat/c/dm/${this.chatID}`; 
+            const ssoUrl = `https://netlikes.duckdns.org/session/sso?return_path=${encodeURIComponent(targetTopic)}`;
+            
+            this.saveUrl = this.sanitizer.bypassSecurityTrustResourceUrl(ssoUrl);
+            console.log("Cargando foro silenciosamente:", ssoUrl);
+        }else {
           this.saveUrl = null; 
           this.activeUser = false;
       }
+
+      this.cdr.detectChanges();
+
     }
 
-    private intervalId: any; 
-    private countMessage = 0;
     constructor(
       private cdr: ChangeDetectorRef, 
       private sanitizer: DomSanitizer,
       private authService: AuthService
     ) {}
-
-    activateUser() {
-        if (this.chatID === null) return;
-
-        this.activeUser = true;
-        this.saveUrl = null;
-
-        const targetTopic = `/chat/c/dm/${this.chatID}`; 
-        const ssoUrl = `https://netlikes.duckdns.org/session/sso?return_path=${encodeURIComponent(targetTopic)}`;
-        this.saveUrl = this.sanitizer.bypassSecurityTrustResourceUrl(ssoUrl);
-        
-        console.log("Cargando foro silenciosamente:", ssoUrl);
-    }
     
     ngOnInit() {
        
