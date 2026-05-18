@@ -9,6 +9,7 @@ import software.ulpgc.netlikes.dto.PrivacyRequestDTO;
 import software.ulpgc.netlikes.dto.RegisterRequestDTO;
 import software.ulpgc.netlikes.dto.ValidAnswerRequestDTO;
 import software.ulpgc.netlikes.service.DiscourseService;
+import software.ulpgc.netlikes.service.FollowService;
 import software.ulpgc.netlikes.service.UserService;
 
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -30,10 +33,12 @@ public class UserController {
 
     private final UserService userService;
     private final DiscourseService discourseService;
+    private final FollowService followService;
 
-    public UserController(UserService userService, DiscourseService discourseService) {
+    public UserController(UserService userService, DiscourseService discourseService, FollowService followService) {
         this.userService = userService;
         this.discourseService = discourseService;
+        this.followService = followService;
     }
 
     @GetMapping
@@ -161,7 +166,14 @@ public class UserController {
     public ResponseEntity<?> getChatId(
             @RequestParam String myUser, 
             @RequestParam String userFriend) {
-            
+        
+        boolean friends = followService.MutualFollowByUsernames(myUser, userFriend);
+    
+        if (!friends) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Os tenéis que seguir mutuamente para poder chatear.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
 
         try {
             Integer chatId = discourseService.getPrivateChatId(myUser, userFriend);

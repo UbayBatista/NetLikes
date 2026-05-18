@@ -1,6 +1,8 @@
 import { Component,Input, Output, EventEmitter, signal, computed, ChangeDetectorRef, inject} from "@angular/core";
 import { FormsModule } from '@angular/forms';
 import { SearchBarComponent } from "../../search-bar/search-bar";
+import { HttpClient } from "@angular/common/http";
+import { AuthService } from "../../../services/auth.service";
 
 @Component({
     selector: "app-social-chats-users",
@@ -14,6 +16,8 @@ export class Users{
     @Output() clickedUser = new EventEmitter<{user: string, chatId: number}>(); 
 
     private cdr = inject(ChangeDetectorRef);
+    private http = inject(HttpClient);
+    private authService = inject(AuthService);
 
     friends = signal<any[]>([]);
     searchText = signal('');
@@ -23,15 +27,29 @@ export class Users{
 
     @Input() set newChatId(id: number | null) {
         this.incomingChatId = id;
-        this.procesarNuevoChat();
+        this.newChat();
     }
 
     @Input() set newChatName(name: string) {
         this.incomingChatName = name;
-        this.procesarNuevoChat();
+        this.newChat();
     }
 
-    private procesarNuevoChat() {
+    ngOnInit() {
+        this.authService.getCurrentUser().subscribe(user => {
+            if (!user) return;
+
+            this.http.get<any[]>(`https://api-db.duckdns.org/follows/mutual-friends?username=${user.userName}`)
+                .subscribe({
+                    next: (friends) => {
+                        this.friends.set(friends);
+                    },
+                    error: (err) => console.error("Error al cargar amigos mutuos", err)
+                });
+        });
+    }
+
+    private newChat() {
         if (!this.incomingChatName || !this.incomingChatId) return;
 
         const list = this.friends();

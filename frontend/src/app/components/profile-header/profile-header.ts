@@ -102,10 +102,12 @@ export class ProfileHeader {
             });
           },
           error: (err) => {
-            if (err.status === 404) {
-                alert("Este amigo aún no ha activado su chat. ¡Dile que entre al foro una vez para poder hablarle!");
+            if (err.status === 400) {
+                alert(err.error.error || "¡Os tenéis que seguir mutuamente para poder hablar!");
+            } else if (err.status === 404) {
+                alert("Este amigo aún no ha activado su chat en el foro.");
             } else {
-                console.error("Error desconocido al crear el chat", err);
+                console.error("Error desconocido", err);
             }
           }
         });
