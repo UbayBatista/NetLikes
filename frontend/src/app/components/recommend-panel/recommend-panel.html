@@ -25,21 +25,36 @@
         }
       </div>
 
-      @for (user of filteredFollowers; track user.name) {
-        <div class="list-item d-flex align-items-center p-3 border-bottom position-relative cursor-pointer transition-hover"
-             (click)="toggleUser(user.name)">
+      @for (user of displayUsers; track user.email) {
+        
+        <div class="list-item d-flex align-items-center p-3 border-bottom position-relative transition-hover"
+             (click)="toggleUser(user.email)"
+             [class.cursor-pointer]="!alreadyRecommendedEmails.includes(user.email)"
+             [class.bg-light]="alreadyRecommendedEmails.includes(user.email)"
+             [style.opacity]="alreadyRecommendedEmails.includes(user.email) ? '0.6' : '1'">
              
-          <img [src]="user.pic || 'assets/ProfilePicture.jpg'" class="rounded-circle border me-4" width="60" height="60" style="object-fit: cover;">
+          <img [src]="user.pic" class="rounded-circle border me-4" width="60" height="60" 
+               style="object-fit: cover;"
+               [style.filter]="alreadyRecommendedEmails.includes(user.email) ? 'grayscale(50%)' : 'none'">
           
-          <span class="fs-5 text-dark">{{ user.name }}</span>
+          <span class="fs-5" 
+                [class.text-dark]="!alreadyRecommendedEmails.includes(user.email)"
+                [class.text-muted]="alreadyRecommendedEmails.includes(user.email)">
+            {{ user.name }}
+          </span>
           
-          @if (selectedUsers.includes(user.name)) {
+          @if (alreadyRecommendedEmails.includes(user.email)) {
+            <span class="position-absolute end-0 me-4 badge text-dark border border-dark rounded-pill px-3 py-2">
+              <i class="bi bi-check2-all me-1"></i> Enviado
+            </span>
+          } @else if (selectedUsers.includes(user.email)) {
             <i class="bi bi-check-circle-fill text-dark position-absolute end-0 me-4 fs-5"></i>
           }
+
         </div>
       }
       
-      @if (filteredFollowers.length === 0) {
+      @if (displayUsers.length === 0) {
         <div class="p-4 text-center text-muted">
           No se encontró ningún usuario seguido.
         </div>
@@ -50,9 +65,21 @@
       <button class="btn btn-dark rounded-pill px-4 fw-medium text-white custom-confirm-btn" 
         [disabled]="addToProfile === initialRecommended && selectedUsers.length === 0"
         (click)="submitRecommendation()">
-        {{ initialRecommended && !addToProfile ? 'Quitar' : 'Confirmar' }}
+        
+        @if (selectedUsers.length > 0) {
+          Recomendar a {{ selectedUsers.length }}
+        } @else {
+          {{ initialRecommended && !addToProfile ? 'Quitar' : 'Confirmar' }}
+        }
       </button>
     </div>
 
   </div>
+
+  @if (showConfirmModal) {
+    <app-confirmation-modal 
+      [message]="confirmMessage"
+      (result)="handleConfirmation($event)">
+    </app-confirmation-modal>
+  }
 }

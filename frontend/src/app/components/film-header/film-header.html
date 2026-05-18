@@ -145,5 +145,4 @@
   [filmId]="film.id"
   [initialRecommended]="isRecommendedProfile" 
   (closed)="closeRecommendPanel()"
-  (recommendedStatusChanged)="updateRecommendationStatus($event)">
-</app-recommend-panel>
+  (recommendationProcessed)="refreshRecommendationStatus()"> </app-recommend-panel>
