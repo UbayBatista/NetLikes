@@ -3,12 +3,6 @@ import { MessageBubble } from '../../message-bubble/message-bubble';
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 import { AuthService } from "../../../services/auth.service";
 
-interface Menssage{
-    user: string;
-    text: string;
-    itsMe: boolean;
-}
-
 @Component({
     selector: "app-social-chats-menssages",
     imports: [MessageBubble],
@@ -32,11 +26,15 @@ export class Menssages implements OnInit{
             const targetTopic = `/chat/c/dm/${this.chatId}`; 
             const ssoUrl = `https://netlikes.duckdns.org/session/sso?return_path=${encodeURIComponent(targetTopic)}`;
             
-            this.saveUrl = this.sanitizer.bypassSecurityTrustResourceUrl(ssoUrl);
-            console.log("Cargando foro silenciosamente:", ssoUrl);
+            setTimeout(() => {
+                this.saveUrl = this.sanitizer.bypassSecurityTrustResourceUrl(ssoUrl);
+                console.log("Cargando foro silenciosamente:", ssoUrl);
+                this.cdr.detectChanges();
+            }, 10);
         }else {
           this.saveUrl = null; 
           this.activeUser = false;
+          this.cdr.detectChanges();
       }
 
       this.cdr.detectChanges();

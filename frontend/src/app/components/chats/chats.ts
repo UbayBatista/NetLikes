@@ -32,7 +32,7 @@ export class Chats{
         });
     }
 
-    seeChat(event: { user: string, chatId: number }) {
+    seeChat(event: { user: string, chatId: number | null }) {
         this.userFriend = event.user;
         this.selectedChat = false;
         this.chatId = null;
@@ -53,9 +53,11 @@ export class Chats{
                     .subscribe({
                         next: (nuevoChatId) => {
                             console.log(`¡ID recibido! Abriendo el chat ${nuevoChatId}`);
-                            this.chatId = nuevoChatId;
-                            this.selectedChat = true;
-                            this.cdr.detectChanges();
+                            setTimeout(() => {
+                                this.chatId = nuevoChatId;
+                                this.selectedChat = true;
+                                this.cdr.detectChanges();
+                            }, 10);
                         },
                         error: (err) => {
                             console.error("No se pudo iniciar el chat.", err);
