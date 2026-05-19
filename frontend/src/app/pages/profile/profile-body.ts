@@ -9,6 +9,7 @@ import { ProfileHeader } from "../../components/profile-header/profile-header";
 import { Film } from "../../components/film/film";
 import { SocialModal } from "../../components/social-modal/social-modal";
 import { PasswordVerifyModalComponent } from '../../components/password-ask-modal/password-ask-modal';
+import { RecoverPassword } from "../../components/recover-password/recover-password";
 
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
@@ -35,7 +36,7 @@ type FollowStatus = 'NONE' | 'PENDING' | 'ACCEPTED' | 'BLOCKED';
     ConfirmationModalComponent,
     BlockedUsersModalComponent,
     PasswordVerifyModalComponent,
-    BioComponent, AvatarModal],
+    BioComponent, AvatarModal, RecoverPassword],
   templateUrl: "./profile-body.html",
   styleUrl: "./profile-body.css"
 })
@@ -83,11 +84,15 @@ export class ProfileComplete implements OnInit {
 
   showConfirmModal = false;
   confirmModalMessage = '';
-  private actionUser: string = '';
+  actionUser: string = '';
   private actionToConfirm: 'UNFOLLOW' | 'BLOCK' | 'DELETE' | 'REMOVE_FOLLOWER' = 'UNFOLLOW';
 
   isPasswordModalOpen = false;
   isDeleteConfirmModalOpen = false;
+
+  passwordModalMode: 'DELETE' | 'CHANGE' = 'DELETE';
+  isRecoverModalOpen = false;
+  skipSecurityQuestion = false;
 
   ngOnInit() {
     this.route.params
@@ -317,14 +322,22 @@ export class ProfileComplete implements OnInit {
 
   startDeleteProcess(email: string) {
     this.actionUser = email;
+    this.passwordModalMode = 'DELETE'; // Modo eliminar cuenta
     this.isPasswordModalOpen = true; 
   }
 
   onPasswordVerified() {
     this.isPasswordModalOpen = false; 
-    this.actionToConfirm = 'DELETE';
-    this.confirmModalMessage = `¿Estás seguro de que deseas borrar permanentemente tu cuenta?`;
-    this.showConfirmModal = true;
+    
+    if (this.passwordModalMode === 'DELETE') {
+      this.actionToConfirm = 'DELETE';
+      this.confirmModalMessage = `¿Estás seguro de que deseas borrar permanentemente tu cuenta?`;
+      this.showConfirmModal = true;
+    } else if (this.passwordModalMode === 'CHANGE') {
+      // Como ya sabemos la actual, saltamos la pregunta de seguridad y pedimos la nueva
+      this.skipSecurityQuestion = true;
+      this.isRecoverModalOpen = true;
+    }
   }
 
   onBioSave(event: { bio: string, hasChanges: boolean }) {
@@ -366,6 +379,23 @@ export class ProfileComplete implements OnInit {
       },
       error: (err) => {
         console.error('Error eliminando la cuenta:', err);
+      }
+    });
+  }
+
+  onForgotPasswordClicked() {
+    this.isPasswordModalOpen = false;
+    // Abrimos el modal de recuperación forzando la pregunta de seguridad
+    this.skipSecurityQuestion = false;
+    this.isRecoverModalOpen = true;
+  }
+
+  startChangePasswordProcess() {
+    this.authService.getCurrentUser().pipe(take(1)).subscribe(user => {
+      if (user) {
+        this.actionUser = user.email;
+        this.passwordModalMode = 'CHANGE'; // Modo cambiar contraseña
+        this.isPasswordModalOpen = true;
       }
     });
   }

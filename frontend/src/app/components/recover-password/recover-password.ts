@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef, OnChanges, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
@@ -12,17 +12,9 @@ type Step = 'question' | 'password' | 'success';
     templateUrl: './recover-password.html',
     styleUrl: './recover-password.css'
 })
-export class RecoverPassword {
-  @Input() set email(value: string) {
-    if (value) {
-      this.userEmail = value;
-      this.authService.getSecurityQuestion(value).subscribe(question => {
-        this.securityQuestion = question;
-        this.step = 'question';
-        this.cdr.detectChanges();
-      });
-    }
-    }
+export class RecoverPassword implements OnChanges {
+  @Input() email: string = '';
+  @Input() skipQuestion: boolean = false;
   @Output() close = new EventEmitter<void>();
 
   step: Step = 'question';
@@ -48,6 +40,23 @@ export class RecoverPassword {
       ]],
       confirmPassword: ['', Validators.required]
     }, { validators: this.passwordsMatch });
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['email'] && this.email) {
+      this.userEmail = this.email;
+      
+      if (this.skipQuestion) {
+        this.step = 'password';
+        this.cdr.detectChanges();
+      } else {
+        this.authService.getSecurityQuestion(this.email).subscribe(question => {
+          this.securityQuestion = question;
+          this.step = 'question';
+          this.cdr.detectChanges();
+        });
+      }
+    }
   }
 
   passwordsMatch(group: FormGroup) {

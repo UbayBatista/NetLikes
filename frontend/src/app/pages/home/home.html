@@ -26,16 +26,25 @@
 @if (tabActive === 'usuarios') {
     <div class="contenido px-4 py-3">
         <h5 class="text-black mb-3">Recomendaciones de otros usuarios</h5>
-        <div class="fila-peliculas2">
-            @for (f of users_films; track f.id) {
-                <div class="netflix-card">
-                  <app-film [posterPath]="f.posterPath" [title]="f.title" [id]="f.id" [recommendations]="f.recommendations"></app-film>
-                </div>
-            }
-            
-            @if (users_films.length === 0) {
-              <div class="text-muted mt-3 w-100">Aún no tienes recomendaciones de otros usuarios.</div>
-            }
-        </div>
+        
+        @if (users_films.length > 0) {
+            <div class="fila-peliculas2">
+                @for (f of users_films; track f.id) {
+                    <div class="netflix-card">
+                        <app-film 
+                            [posterPath]="f.posterPath" 
+                            [title]="f.title" 
+                            [id]="f.id" 
+                            [recommendations]="f.recommendations">
+                        </app-film>
+                    </div>
+                }
+            </div>
+        } @else {
+            <div class="d-flex flex-column align-items-center justify-content-center py-5 text-muted text-center w-100 mt-4">
+                <i class="bi bi-film mb-2" style="font-size: 2rem; opacity: 0.5;"></i>
+                <p class="fs-6 mb-0">Aún no tienes recomendaciones de otros usuarios.</p>
+            </div>
+        }
     </div>
 }

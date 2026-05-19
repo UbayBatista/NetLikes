@@ -32,7 +32,8 @@
       (delete)="startDeleteProcess(profile.email)"
       (openSocialModal)="showSocial($event)"
       (changeAvatar)="isAvatarModalOpen = true"
-      (privacyChange)="onPrivacyChange($event)">
+      (privacyChange)="onPrivacyChange($event)"
+      (changePassword)="startChangePasswordProcess()">
     </app-profile-header>
 
     <app-bio-component
@@ -99,9 +100,19 @@
 
   @if (isPasswordModalOpen) {
     <app-password-verify-modal 
+      [showForgotPassword]="passwordModalMode === 'CHANGE'"
       (close)="isPasswordModalOpen = false"
-      (verified)="onPasswordVerified()">
+      (verified)="onPasswordVerified()"
+      (forgotPassword)="onForgotPasswordClicked()">
     </app-password-verify-modal>
+  }
+
+  @if (isRecoverModalOpen) {
+    <app-recover-password
+      [email]="actionUser"
+      [skipQuestion]="skipSecurityQuestion"
+      (close)="isRecoverModalOpen = false">
+    </app-recover-password>
   }
   @if (isAvatarModalOpen) {
     <app-avatar-modal

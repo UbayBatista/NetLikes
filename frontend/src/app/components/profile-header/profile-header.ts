@@ -27,6 +27,7 @@ export class ProfileHeader {
   @Output() openBlockedModal = new EventEmitter<void>();
   @Output() delete = new EventEmitter<void>();
   @Output() changeAvatar = new EventEmitter<void>();
+  @Output() changePassword = new EventEmitter<void>();
   
   openMenu: boolean = false;
 
@@ -77,5 +78,10 @@ export class ProfileHeader {
 
   openAvatarModal() {
     this.changeAvatar.emit();
+  }
+
+  changePasswordRequest() {
+    this.changePassword.emit();
+    this.toggleMenu();
   }
 }
