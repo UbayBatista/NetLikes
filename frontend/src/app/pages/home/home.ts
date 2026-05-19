@@ -4,7 +4,7 @@ import { FilmService } from '../../services/film.service';
 import { Film } from '../../components/film/film';
 import { FilmListItem, GenreGroup } from '../../models/film.models';
 import { Recommendations } from '../../services/recommendations';
-import { RecommendationFollowedService } from '../../services/recommendation-followed';
+import { RecommendationFollowedService } from '../../services/recommend.service';
 
 @Component({
   selector: 'app-home',

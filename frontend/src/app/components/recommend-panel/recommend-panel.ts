@@ -5,7 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { FollowService } from '../../services/follow.service';
 import { SearchBarComponent } from '../search-bar/search-bar';
 import { ConfirmationModalComponent } from '../confirmation-modal/confirmation-modal';
-import { RecommendationFollowedService } from '../../services/recommendation-followed';
+import { RecommendationFollowedService } from '../../services/recommend.service';
 
 @Component({
   selector: 'app-recommend-panel',
