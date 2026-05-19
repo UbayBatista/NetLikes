@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, switchMap, take } from 'rxjs';
+import { BehaviorSubject, Observable, switchMap, take, of, tap } from 'rxjs';
 import { UserService } from './user.service';
 import { AuthService } from './auth.service';
 import { MyProfile, UserProfile } from '../models/user.models';
@@ -33,13 +33,13 @@ export class ProfileService {
     }
 
     updatePrivacy(isPrivate: boolean): void {
-    this.profile$.pipe(take(1)).subscribe(profile => {
-        if (!profile) return;
-        this.userService.updatePrivacy(profile.email, isPrivate).subscribe(() =>{
-                this.profile$.next({ ...profile, isPrivate })
+        this.profile$.pipe(take(1)).subscribe(profile => {
+            if (!profile) return;
+            this.userService.updatePrivacy(profile.email, isPrivate).subscribe(() =>{
+                    this.profile$.next({ ...profile, isPrivate })
+            });
         });
-    });
-}
+    }
 
     getProfile(): Observable<MyProfile | UserProfile | null> {
         return this.profile$.asObservable();
@@ -65,5 +65,30 @@ export class ProfileService {
             this.profile$.next({ ...profile, profilePicture: seed });
             });
         });
+    }
+
+    updateListVisibility(listType: 'WatchedFilms' | 'FilmsToWatchLater' | 'RecommendedFilms', isVisible: boolean): Observable<void> {
+    return this.profile$.pipe(
+        take(1),
+        switchMap(profile => {
+        if (!profile) return of(void 0 as void);
+
+        const request$ = listType === 'WatchedFilms'
+            ? this.userService.updateWatchedFilmsVisibility(profile.email, isVisible)
+            : listType === 'FilmsToWatchLater'
+            ? this.userService.updateFilmsToWatchLaterVisibility(profile.email, isVisible)
+            : this.userService.updateRecommendedFilmsVisibility(profile.email, isVisible);
+
+        const updatedField = listType === 'WatchedFilms'
+            ? { showWatchedFilms: isVisible }
+            : listType === 'FilmsToWatchLater'
+            ? { showFilmsToWatchLater: isVisible }
+            : { showRecommendedFilms: isVisible };
+
+        return request$.pipe(
+            tap(() => this.profile$.next({ ...profile, ...updatedField }))
+        );
+        })
+    );
     }
 }

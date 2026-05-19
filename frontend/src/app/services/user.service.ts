@@ -75,9 +75,7 @@ export class UserService {
     return this.http.patch<void>(`${this.dbUrl}/myProfile/${email}/privacy`, { isPrivate });
   }
   
-  private handleError(error: any): Observable<never> {
-    return throwError(() => new Error('Something went wrong; please try again later.'));
-  }
+  
 
   deleteUser(): Observable<void> {
     return this.http.delete<void>(
@@ -100,6 +98,22 @@ export class UserService {
 
   updateAvatar(email: string, seed: string): Observable<void> {
     return this.http.patch<void>(`${this.dbUrl}/myProfile/${email}/avatar`, { seed });
+  }
+
+  updateWatchedFilmsVisibility(email: string, isVisible: boolean): Observable<void> {
+    return this.http.patch<void>(`${this.dbUrl}/myProfile/${email}/visibilityWatchedFilms`, { isVisible });
+  }
+
+  updateFilmsToWatchLaterVisibility(email: string, isVisible: boolean): Observable<void> {
+    return this.http.patch<void>(`${this.dbUrl}/myProfile/${email}/visibilityFilmsToWatchLater`, { isVisible });
+  }
+
+  updateRecommendedFilmsVisibility(email: string, isVisible: boolean): Observable<void> {
+    return this.http.patch<void>(`${this.dbUrl}/myProfile/${email}/visibilityRecommendedFilms`, { isVisible });
+  }
+  
+  private handleError(error: any): Observable<never> {
+    return throwError(() => new Error('Something went wrong; please try again later.'));
   }
 }
 
