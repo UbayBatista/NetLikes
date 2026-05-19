@@ -79,6 +79,7 @@
   @if (showConfirmModal) {
     <app-confirmation-modal 
       [message]="confirmMessage"
+      [isDestructive]="false" 
       (result)="handleConfirmation($event)">
     </app-confirmation-modal>
   }

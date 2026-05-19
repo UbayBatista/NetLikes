@@ -12,6 +12,7 @@ import { UserService } from '../../services/user.service';
 })
 export class PasswordVerifyModalComponent {
   @Input() showForgotPassword = false;
+  @Input() isDestructive = true;
   @Output() close = new EventEmitter<void>();
   @Output() verified = new EventEmitter<void>();
   @Output() forgotPassword = new EventEmitter<void>();

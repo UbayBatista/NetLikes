@@ -101,6 +101,7 @@
   @if (isPasswordModalOpen) {
     <app-password-verify-modal 
       [showForgotPassword]="passwordModalMode === 'CHANGE'"
+      [isDestructive]="passwordModalMode === 'DELETE'"
       (close)="isPasswordModalOpen = false"
       (verified)="onPasswordVerified()"
       (forgotPassword)="onForgotPasswordClicked()">

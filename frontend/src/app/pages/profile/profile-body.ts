@@ -322,7 +322,7 @@ export class ProfileComplete implements OnInit {
 
   startDeleteProcess(email: string) {
     this.actionUser = email;
-    this.passwordModalMode = 'DELETE'; // Modo eliminar cuenta
+    this.passwordModalMode = 'DELETE';
     this.isPasswordModalOpen = true; 
   }
 
@@ -334,10 +334,10 @@ export class ProfileComplete implements OnInit {
       this.confirmModalMessage = `¿Estás seguro de que deseas borrar permanentemente tu cuenta?`;
       this.showConfirmModal = true;
     } else if (this.passwordModalMode === 'CHANGE') {
-      // Como ya sabemos la actual, saltamos la pregunta de seguridad y pedimos la nueva
       this.skipSecurityQuestion = true;
       this.isRecoverModalOpen = true;
     }
+    this.cdr.detectChanges();
   }
 
   onBioSave(event: { bio: string, hasChanges: boolean }) {
@@ -385,7 +385,6 @@ export class ProfileComplete implements OnInit {
 
   onForgotPasswordClicked() {
     this.isPasswordModalOpen = false;
-    // Abrimos el modal de recuperación forzando la pregunta de seguridad
     this.skipSecurityQuestion = false;
     this.isRecoverModalOpen = true;
   }
@@ -394,8 +393,9 @@ export class ProfileComplete implements OnInit {
     this.authService.getCurrentUser().pipe(take(1)).subscribe(user => {
       if (user) {
         this.actionUser = user.email;
-        this.passwordModalMode = 'CHANGE'; // Modo cambiar contraseña
+        this.passwordModalMode = 'CHANGE'; 
         this.isPasswordModalOpen = true;
+        this.cdr.detectChanges();
       }
     });
   }

@@ -75,11 +75,16 @@ export class RecoverPassword implements OnChanges {
       next: (valid) => {
         if (!valid) {
           this.answerForm.get('answer')?.setErrors({ wrongAnswer: true });
+          this.cdr.detectChanges();
           return;
         }
         this.step = 'password';
+        this.cdr.detectChanges();
       },
-      error: () => this.answerForm.get('answer')?.setErrors({ wrongAnswer: true })
+      error: () => {
+        this.answerForm.get('answer')?.setErrors({ wrongAnswer: true });
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -91,6 +96,7 @@ export class RecoverPassword implements OnChanges {
     const newPassword = this.passwordForm.get('newPassword')!.value;
     this.authService.changePassword(this.userEmail, newPassword).subscribe(() => {
       this.step = 'success';
+      this.cdr.detectChanges();
     });
   }
 
