@@ -37,6 +37,9 @@ export interface MyProfile {
   watchedFilms: FilmListItem[];
   laterFilms: FilmListItem[];
   recommendedFilms: FilmListItem[];
+  showWatchedFilms: boolean;
+  showFilmsToWatchLater: boolean;
+  showRecommendedFilms: boolean;
 }
 
 export interface UserProfile {
@@ -50,4 +53,7 @@ export interface UserProfile {
   watchedFilms: FilmListItem[] | null;
   laterFilms: FilmListItem[] | null;
   recommendedFilms: FilmListItem[] | null;
+  showWatchedFilms: boolean;
+  showFilmsToWatchLater: boolean;
+  showRecommendedFilms: boolean;
 }

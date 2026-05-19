@@ -43,13 +43,17 @@
     </app-bio-component>
 
     @if ((itsMe$ | async) || profile.watchedFilms !== null) {
-      @for (section of [
-        { title: 'Películas Vistas', data: profile.watchedFilms },
-        { title: 'Ver más tarde', data: profile.laterFilms },
-        { title: 'Películas Recomendadas', data: profile.recommendedFilms }
-      ]; track section.title) {
-        
-        <app-profile-components [title]="section.title" [isEditing]="isEditing">
+      @for (
+    section of sections.filter(
+      s => isEditing || s.visible
+    );
+    track section.title
+  ) {
+        <app-profile-components 
+          [title]="section.title" 
+          [isEditing]="isEditing" 
+          [isVisible]="section.visible"
+          (visibilityChange)="onVisibilityChange(section.type, $event)">
           @for(film of section.data; track film.id) {
             <div class="film-item">
               <app-film 
