@@ -10,6 +10,7 @@ import { RegisterData } from '../../models/user.models';
 import { AuthService } from '../../services/auth.service';
 import { Credentials } from '../../models/user.models';
 import { Subject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-welcome',
@@ -31,7 +32,23 @@ export class Welcome {
         favoriteGenres: []
     };
 
-    constructor(private router: Router, private authService: AuthService) {}
+    constructor(private router: Router, private authService: AuthService,private http: HttpClient) {}
+
+    ngOnInit() {
+    console.log("Iniciando purga de seguridad al entrar al portal de bienvenida...");
+
+    this.http.post('https://api-db.duckdns.org/auth/logout', {}, { withCredentials: true })
+      .subscribe({
+        next: () => {
+          this.authService.clearAllData();
+          console.log("Entorno limpiado correctamente. Listo para Login o Registro.");
+        },
+        error: (err) => {
+          console.log("No había sesión activa en el servidor, limpiando frontend por seguridad...");
+          this.authService.clearAllData();
+        }
+    });
+  }
 
     nextStep() {
         if (this.currentStep < 4) {
