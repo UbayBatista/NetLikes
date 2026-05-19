@@ -97,5 +97,9 @@ export class UserService {
   updateBio(email: string, bio: string): Observable<void> {
     return this.http.patch<void>(`${this.dbUrl}/myProfile/${email}/bio`, { bio });
   }
+
+  updateAvatar(email: string, seed: string): Observable<void> {
+    return this.http.patch<void>(`${this.dbUrl}/myProfile/${email}/avatar`, { seed });
+  }
 }
 

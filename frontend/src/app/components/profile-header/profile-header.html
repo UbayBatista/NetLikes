@@ -58,9 +58,25 @@
 
     <div class="ig-grid">
 
-        <img class="ig-avatar border border-dark border-2 shadow-sm" 
-             [src]="userPicture" 
-             alt="Perfil">
+        <div class="position-relative">
+
+            <img class="ig-avatar border border-dark border-2 shadow-sm overflow-hidden"
+                [src]="userPicture==null 
+                    ? 'assets/ProfilePicture.jpg'
+                    : `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${userPicture}`">
+
+            @if (isEditing) {
+                <button
+                    class="btn-avatar-edit position-absolute bottom-0 end-0 rounded-circle shadow-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#avatarModal"
+                    (click)="openAvatarModal()">
+
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+            }
+
+        </div>
 
         <div class="ig-stats">
             <div class="stat-item" (click)="openSocial('Seguidores')">
