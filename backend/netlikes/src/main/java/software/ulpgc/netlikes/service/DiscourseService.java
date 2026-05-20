@@ -356,7 +356,7 @@ public class DiscourseService {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.set("Api-Key", apiKey);
-            headers.set("Api-Username", username);
+            headers.set("Api-Username", "system");
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             String uploadUrl = "https://netlikes.duckdns.org/uploads.json";
@@ -374,6 +374,7 @@ public class DiscourseService {
             if (uploadId != null) {
                 String pickUrl = "https://netlikes.duckdns.org/u/" + username + "/preferences/avatar/pick.json";
                 
+                headers.set("Api-Username", username);
                 Map<String, Object> pickBody = new HashMap<>();
                 pickBody.put("upload_id", uploadId);
                 pickBody.put("type", "uploaded");
