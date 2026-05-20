@@ -6,6 +6,7 @@ import software.ulpgc.netlikes.dto.ChangePasswordDTO;
 import software.ulpgc.netlikes.dto.LoginRequestDTO;
 import software.ulpgc.netlikes.dto.UserProfileDTO;
 import software.ulpgc.netlikes.dto.PrivacyRequestDTO;
+import software.ulpgc.netlikes.dto.VisibilityRequestDTO;
 import software.ulpgc.netlikes.dto.AvatarRequestDTO;
 import software.ulpgc.netlikes.dto.BioRequestDTO;
 import software.ulpgc.netlikes.dto.RegisterRequestDTO;
@@ -218,5 +219,23 @@ public class UserController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         }
+    }
+
+    @PatchMapping("/myProfile/{email}/visibilityWatchedFilms")
+    public ResponseEntity<?> changeWatchedFilmsVisibility(@NonNull @PathVariable String email, @RequestBody VisibilityRequestDTO request) {
+        userService.changeVisibility(email, request.getIsVisible(), "WatchedFilms");
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/myProfile/{email}/visibilityFilmsToWatchLater")
+    public ResponseEntity<?> changeFilmsToWatchLaterVisibility(@NonNull @PathVariable String email, @RequestBody VisibilityRequestDTO request) {
+        userService.changeVisibility(email, request.getIsVisible(), "FilmsToWatchLater");
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/myProfile/{email}/visibilityRecommendedFilms")
+    public ResponseEntity<?> changeRecommendedFilmsVisibility(@NonNull @PathVariable String email, @RequestBody VisibilityRequestDTO request) {
+        userService.changeVisibility(email, request.getIsVisible(), "RecommendedFilms");
+        return ResponseEntity.ok().build();
     }
 }

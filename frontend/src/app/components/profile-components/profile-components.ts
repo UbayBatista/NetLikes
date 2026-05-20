@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, ElementRef, ChangeDetectorRef, AfterViewInit, HostListener } from '@angular/core';
+import { Component, Input, ViewChild, ElementRef, ChangeDetectorRef, AfterViewInit, HostListener, Output, EventEmitter, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -11,17 +11,27 @@ import { CommonModule } from '@angular/common';
 export class ProfileBody implements AfterViewInit {
     @Input() title: string = '';
     @Input() isEditing: boolean = false;
+    @Input() isVisible: boolean = true;
+
+    @Output() visibilityChange = new EventEmitter<boolean>();
 
     @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLDivElement>;
 
     canScrollLeft = false;
     canScrollRight = false;
+    isVisibleLocal: boolean = true;
 
     constructor(private cdr: ChangeDetectorRef) {}
 
     @HostListener('window:resize')
     onResize() {
         this.updateScrollButtons();
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes['isVisible']) {
+            this.isVisibleLocal = this.isVisible;
+        }
     }
 
     ngAfterViewInit() {
@@ -38,6 +48,11 @@ export class ProfileBody implements AfterViewInit {
         this.canScrollRight = el.scrollWidth > (el.scrollLeft + el.clientWidth + 5);
         
         this.cdr.detectChanges();
+    }
+
+    toggleVisibility() {
+        this.isVisibleLocal = !this.isVisibleLocal;
+        this.visibilityChange.emit(this.isVisibleLocal);
     }
 
     scroll(direction: 'left' | 'right') {

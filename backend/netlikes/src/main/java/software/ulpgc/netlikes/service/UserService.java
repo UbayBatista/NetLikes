@@ -224,7 +224,10 @@ public class UserService {
             followService.countFollowsOf(user.getEmail()),
             watchedFilms, 
             watchLaterFilms,
-            recommendedFilms
+            recommendedFilms,
+            user.isShowWatchedFilms(),
+            user.isShowFilmsToWatchLater(),
+            user.isShowRecommendedFilms()
         );
     }
 
@@ -256,7 +259,10 @@ public class UserService {
             followService.countFollowsOf(target.getEmail()),
             canSeeContent ? watched : null,
             canSeeContent ? later : null,
-            canSeeContent ? recommended : null
+            canSeeContent ? recommended : null,
+            target.isShowWatchedFilms(),
+            target.isShowFilmsToWatchLater(),
+            target.isShowRecommendedFilms()
         );
     }
 
@@ -342,6 +348,19 @@ public class UserService {
         User user = userRepository.findById(email)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         user.setProfilePicture(seed);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void changeVisibility(@NonNull String email, Boolean isVisible, String listType) {
+        User user = userRepository.findById(email)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            switch (listType) {
+                case "WatchedFilms" -> user.setShowWatchedFilms(isVisible);
+                case "FilmsToWatchLater" -> user.setShowFilmsToWatchLater(isVisible);
+                case "RecommendedFilms" -> user.setShowRecommendedFilms(isVisible);
+                default -> throw new RuntimeException("Tipo de lista no válido");
+            }
         userRepository.save(user);
     }
 }

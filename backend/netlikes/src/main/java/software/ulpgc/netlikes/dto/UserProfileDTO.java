@@ -22,4 +22,7 @@ public class UserProfileDTO {
     private List<FilmResponseDTO> watchedFilms;
     private List<FilmResponseDTO> laterFilms;
     private List<FilmResponseDTO> recommendedFilms;
+    private Boolean showWatchedFilms;
+    private Boolean showFilmsToWatchLater;
+    private Boolean showRecommendedFilms;
 }

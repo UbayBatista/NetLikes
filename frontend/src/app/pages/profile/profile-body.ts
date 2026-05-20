@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef, inject, De
 import { CommonModule, AsyncPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router'; 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, filter, map, Observable, take } from 'rxjs';
+import { BehaviorSubject, filter, forkJoin, map, Observable, take } from 'rxjs';
 
 import { ProfileBody } from "../../components/profile-components/profile-components";
 import { ProfileHeader } from "../../components/profile-header/profile-header";
@@ -20,9 +20,11 @@ import { BlockedUsersModalComponent } from '../../components/blocked-users/block
 import { BioComponent } from "../../components/bio-component/bio-component";
 import { UserService } from "../../services/user.service";
 import { AvatarModal } from "../../components/avatar-modal/avatar-modal";
+import { FilmListItem } from "../../models/film.models";
 
 type SocialType = 'Seguidores' | 'Seguidos';
 type FollowStatus = 'NONE' | 'PENDING' | 'ACCEPTED' | 'BLOCKED';
+type VisibilityType = 'WatchedFilms' | 'FilmsToWatchLater' | 'RecommendedFilms';
 
 @Component({
   selector: "app-profile-complete",
@@ -50,6 +52,8 @@ export class ProfileComplete implements OnInit {
   private readonly followService = inject(FollowService);
   private readonly destroyRef = inject(DestroyRef);
 
+  pendingVisibility: { type: VisibilityType, isVisible: boolean }[] = [];
+  
   profile$: Observable<MyProfile | UserProfile | null> = this.profileService.getProfile();
   itsMe$: Observable<boolean> = this.profileService.isMyProfile();
 
@@ -68,6 +72,13 @@ export class ProfileComplete implements OnInit {
   pendingBio: string = '';
   pendingAvatar: string = '';
   showSaveModal: boolean = false;
+
+  sections: {
+    title: string;
+    data: FilmListItem[] | null;
+    visible: boolean;
+    type: VisibilityType;
+  }[] = [];
 
   private followStateSubject = new BehaviorSubject<FollowStatus>('NONE');
   followState$ = this.followStateSubject.asObservable();
@@ -119,6 +130,29 @@ export class ProfileComplete implements OnInit {
             },
             error: (err) => console.error('Error al obtener estado de seguimiento', err)
           });
+        }
+
+        if (profile) {
+          this.sections = [
+            {
+              title: 'Películas Vistas',
+              data: profile.watchedFilms,
+              visible: profile.showWatchedFilms,
+              type: 'WatchedFilms'
+            },
+            {
+              title: 'Ver más tarde',
+              data: profile.laterFilms,
+              visible: profile.showFilmsToWatchLater,
+              type: 'FilmsToWatchLater'
+            },
+            {
+              title: 'Películas Recomendadas',
+              data: profile.recommendedFilms,
+              visible: profile.showRecommendedFilms,
+              type: 'RecommendedFilms'
+            }
+          ];
         }
       });
   }
@@ -351,21 +385,39 @@ export class ProfileComplete implements OnInit {
     this.isAvatarModalOpen = false;
   }
 
+  onVisibilityChange(type: VisibilityType, isVisible: boolean) {
+    const existing = this.pendingVisibility.findIndex(v => v.type === type);
+    if (existing >= 0) {
+      this.pendingVisibility[existing].isVisible = isVisible;
+    } else {
+      this.pendingVisibility.push({ type, isVisible });
+    }
+    this.thereIsChanges = true;
+  }
+
   handleSaveConfirmation(confirmed: boolean) {
     this.showSaveModal = false;
     if (confirmed) {
       if (this.pendingBio) {
         this.profileService.updateBio(this.pendingBio);
+        this.bioComponent?.updateOriginalBio(this.pendingBio);
       }
       if (this.pendingAvatar) {
         this.profileService.updateAvatar(this.pendingAvatar);
         this.authService.updateStoredUser({ profilePicture: this.pendingAvatar });
+      }
+      if (this.pendingVisibility.length > 0) {
+        const visibilityRequests = this.pendingVisibility.map(v =>
+          this.profileService.updateListVisibility(v.type, v.isVisible)
+        );
+        forkJoin(visibilityRequests).subscribe(() => this.cdr.detectChanges());
       }
     } else {
       this.bioComponent?.discardChanges();
     }
     this.pendingBio = '';
     this.pendingAvatar = '';
+    this.pendingVisibility = [];
     this.thereIsChanges = false;
     this.isEditing = false;
   }
