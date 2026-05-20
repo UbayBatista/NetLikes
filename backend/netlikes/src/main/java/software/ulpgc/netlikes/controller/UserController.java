@@ -214,7 +214,9 @@ public class UserController {
             UserResponseDTO userDto = userService.getUserById(email); 
             String username = userDto.getUserName();
 
-            discourseService.updateUserAvatarInDiscourse(username, request.getSeed());
+            String urlavatarDiscourse = "https://api.dicebear.com/9.x/fun-emoji/png?seed=" + request.getSeed();
+
+            discourseService.updateUserAvatarInDiscourse(username, urlavatarDiscourse);
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());

@@ -115,6 +115,8 @@ export class ProfileHeader {
             } else {
                 console.error("Error desconocido", err);
             }
+            
+            this.cdr.detectChanges();
 
             if (this.mensajeErrorChat) {
                 setTimeout(() => {

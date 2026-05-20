@@ -47,7 +47,7 @@
     object-fit: cover;
 }
 
-.ig-name-container { grid-area: name; }
+.ig-name-container { grid-area: name; align-self: end;}
 .ig-name { font-size: 1.75rem; }
 
 .ig-stats {
@@ -81,9 +81,11 @@
 .ig-button-container { 
     grid-area: button; 
     justify-self: start; 
+    align-self: start;
     display: flex;         
     align-items: center;   
     gap: 1rem;           
+    margin-top: 5px;
 }
 
 .ig-action-btn {

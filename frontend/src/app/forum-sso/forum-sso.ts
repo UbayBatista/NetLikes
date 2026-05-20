@@ -18,13 +18,15 @@ export class ForumSsoComponent implements OnInit {
       const userString = localStorage.getItem('user');
       if (sso && sig && userString) {
         const user = JSON.parse(userString);
-        
+        const userAvatar = user.userPicture ? user.userPicture : user.userName;
+
         const payload = {
           sso: sso,
           sig: sig,
           email: user.email,
           username: user.userName,
-          name: user.userName
+          name: user.userName,
+          avatar_url: "&avatar_url=https://api.dicebear.com/9.x/fun-emoji/png?seed=" + userAvatar
         };
 
         this.http.post('https://api-db.duckdns.org/auth/sso/process', payload)
