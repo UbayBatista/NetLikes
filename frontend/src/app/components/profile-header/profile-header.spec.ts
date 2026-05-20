@@ -143,6 +143,19 @@ describe('ProfileHeader Component', () => {
     });
   });
 
+  describe('Change Password Logic', () => {
+    it('should emit changePassword event and close menu when changePasswordRequest is called', () => {
+      let emitted = false;
+      component.changePassword.subscribe(() => emitted = true);
+      component.openMenu = true;
+
+      component.changePasswordRequest();
+
+      expect(emitted).toBeTruthy();
+      expect(component.openMenu).toBeFalsy();
+    });
+  });
+
   describe('Account Privacy Logic (US 6.1)', () => {
     it('should emit true when privacy is toggled from a public account', () => {
       component.isPrivate = false;

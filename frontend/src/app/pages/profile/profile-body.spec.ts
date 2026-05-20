@@ -304,6 +304,42 @@ describe('ProfileComplete Component', () => {
     });
   });
 
+  describe('Change Password Flow', () => {
+    const userEmail = 'test@test.com';
+
+    it('should start change password process by setting mode to CHANGE and opening password modal', () => {
+      authService.getCurrentUser = vi.fn().mockReturnValue(of({ email: userEmail }));
+      
+      component.startChangePasswordProcess();
+
+      expect(component['actionUser']).toBe(userEmail);
+      expect(component.passwordModalMode).toBe('CHANGE');
+      expect(component.isPasswordModalOpen).toBe(true);
+    });
+
+    it('should transition to recover modal bypassing security question when password is verified in CHANGE mode', () => {
+      component.passwordModalMode = 'CHANGE';
+      component.isPasswordModalOpen = true;
+
+      component.onPasswordVerified();
+
+      expect(component.isPasswordModalOpen).toBe(false);
+      expect(component.skipSecurityQuestion).toBe(true);
+      expect(component.isRecoverModalOpen).toBe(true);
+      expect(component.showConfirmModal).toBe(false);
+    });
+
+    it('should open recover modal WITH security question when forgot password is clicked', () => {
+      component.isPasswordModalOpen = true;
+
+      component.onForgotPasswordClicked();
+
+      expect(component.isPasswordModalOpen).toBe(false);
+      expect(component.skipSecurityQuestion).toBe(false);
+      expect(component.isRecoverModalOpen).toBe(true);
+    });
+  });
+
   describe('Profile Sections Rendering (US 10.2)', () => {
     it('should display the "Películas Recomendadas" section if the profile has recommended films', () => {
       profileService.getProfile.mockReturnValue(of({

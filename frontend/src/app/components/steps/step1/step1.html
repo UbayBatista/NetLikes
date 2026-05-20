@@ -42,46 +42,32 @@
     }
   </div>
 
-  <!-- Fecha de nacimiento -->
-  <label class="form-label text-black-50 mb-1">Fecha de nacimiento</label>
-  <div class="d-flex gap-2 mb-3">
-    <select formControlName="day" class="form-select border-0"
-      [ngClass]="{'is-invalid': form.get('day')?.invalid && form.get('day')?.touched}">
-      <option value="" disabled hidden>Día</option>
-      @for (d of days; track d) {
-        <option [value]="d">{{ d }}</option>
-      }
-    </select>
-    <select formControlName="month" class="form-select border-0"
-      [ngClass]="{'is-invalid': form.get('month')?.invalid && form.get('month')?.touched}">
-      <option value="" disabled hidden>Mes</option>
-      @for (m of months; track m.value) {
-        <option [value]="m.value">{{ m.name }}</option>
-      }
-    </select>
-    <select formControlName="year" class="form-select border-0"
-      [ngClass]="{'is-invalid': form.get('year')?.invalid && form.get('year')?.touched}">
-      <option value="" disabled hidden>Año</option>
-      @for (y of years; track y) {
-        <option [value]="y">{{ y }}</option>
-      }
-    </select>
-
-    @if (form.hasError('validateAge') && form.get('year')?.touched) {
-    <div class="d-flex text-danger small mt-1 mb-2">
-      Debes tener al menos 16 años para registrarte.
-    </div>
-}
+  <div class="form-floating mb-3">
+    <input
+      type="date"
+      id="birthdate"
+      placeholder=""
+      formControlName="birthdate"
+      class="form-control border-0"
+      [ngClass]="{'is-invalid': form.get('birthdate')?.invalid && form.get('birthdate')?.touched}"
+    />
+    <label for="birthdate">Fecha de nacimiento</label>
+    @if (form.get('birthdate')?.hasError('required') && form.get('birthdate')?.touched) {
+      <div class="invalid-feedback">La fecha de nacimiento es obligatoria.</div>
+    }
+    @if (form.get('birthdate')?.hasError('minAge') && form.get('birthdate')?.touched) {
+      <div class="invalid-feedback">Debes tener al menos 16 años para registrarte.</div>
+    }
   </div>
 
   <div class="button-group single-btn">   
     <button class="arrow-btn" (click)="notifyNext()">
         <i class="bi bi-arrow-right"></i>
     </button>
-   </div>
+  </div>
 
-   <p class="text-center text-black-50 mt-3 go-to-login" (click)="goBackToLogin()"> 
-      <i class="bi bi-arrow-left"></i>
-      Volver a Iniciar Sesión 
-    </p>
+  <p class="text-center text-black-50 mt-3 go-to-login" (click)="goBackToLogin()"> 
+    <i class="bi bi-arrow-left"></i>
+    Volver a Iniciar Sesión 
+  </p>
 </div>

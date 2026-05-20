@@ -9,6 +9,7 @@ import { ProfileHeader } from "../../components/profile-header/profile-header";
 import { Film } from "../../components/film/film";
 import { SocialModal } from "../../components/social-modal/social-modal";
 import { PasswordVerifyModalComponent } from '../../components/password-ask-modal/password-ask-modal';
+import { RecoverPassword } from "../../components/recover-password/recover-password";
 
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
@@ -37,7 +38,7 @@ type VisibilityType = 'WatchedFilms' | 'FilmsToWatchLater' | 'RecommendedFilms';
     ConfirmationModalComponent,
     BlockedUsersModalComponent,
     PasswordVerifyModalComponent,
-    BioComponent, AvatarModal],
+    BioComponent, AvatarModal, RecoverPassword],
   templateUrl: "./profile-body.html",
   styleUrl: "./profile-body.css"
 })
@@ -94,11 +95,15 @@ export class ProfileComplete implements OnInit {
 
   showConfirmModal = false;
   confirmModalMessage = '';
-  private actionUser: string = '';
+  actionUser: string = '';
   private actionToConfirm: 'UNFOLLOW' | 'BLOCK' | 'DELETE' | 'REMOVE_FOLLOWER' = 'UNFOLLOW';
 
   isPasswordModalOpen = false;
   isDeleteConfirmModalOpen = false;
+
+  passwordModalMode: 'DELETE' | 'CHANGE' = 'DELETE';
+  isRecoverModalOpen = false;
+  skipSecurityQuestion = false;
 
   ngOnInit() {
     this.route.params
@@ -351,14 +356,22 @@ export class ProfileComplete implements OnInit {
 
   startDeleteProcess(email: string) {
     this.actionUser = email;
+    this.passwordModalMode = 'DELETE';
     this.isPasswordModalOpen = true; 
   }
 
   onPasswordVerified() {
     this.isPasswordModalOpen = false; 
-    this.actionToConfirm = 'DELETE';
-    this.confirmModalMessage = `¿Estás seguro de que deseas borrar permanentemente tu cuenta?`;
-    this.showConfirmModal = true;
+    
+    if (this.passwordModalMode === 'DELETE') {
+      this.actionToConfirm = 'DELETE';
+      this.confirmModalMessage = `¿Estás seguro de que deseas borrar permanentemente tu cuenta?`;
+      this.showConfirmModal = true;
+    } else if (this.passwordModalMode === 'CHANGE') {
+      this.skipSecurityQuestion = true;
+      this.isRecoverModalOpen = true;
+    }
+    this.cdr.detectChanges();
   }
 
   onBioSave(event: { bio: string, hasChanges: boolean }) {
@@ -387,6 +400,7 @@ export class ProfileComplete implements OnInit {
     if (confirmed) {
       if (this.pendingBio) {
         this.profileService.updateBio(this.pendingBio);
+        this.bioComponent?.updateOriginalBio(this.pendingBio);
       }
       if (this.pendingAvatar) {
         this.profileService.updateAvatar(this.pendingAvatar);
@@ -417,6 +431,23 @@ export class ProfileComplete implements OnInit {
       },
       error: (err) => {
         console.error('Error eliminando la cuenta:', err);
+      }
+    });
+  }
+
+  onForgotPasswordClicked() {
+    this.isPasswordModalOpen = false;
+    this.skipSecurityQuestion = false;
+    this.isRecoverModalOpen = true;
+  }
+
+  startChangePasswordProcess() {
+    this.authService.getCurrentUser().pipe(take(1)).subscribe(user => {
+      if (user) {
+        this.actionUser = user.email;
+        this.passwordModalMode = 'CHANGE'; 
+        this.isPasswordModalOpen = true;
+        this.cdr.detectChanges();
       }
     });
   }

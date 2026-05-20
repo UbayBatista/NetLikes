@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef, OnChanges, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
@@ -12,17 +12,9 @@ type Step = 'question' | 'password' | 'success';
     templateUrl: './recover-password.html',
     styleUrl: './recover-password.css'
 })
-export class RecoverPassword {
-  @Input() set email(value: string) {
-    if (value) {
-      this.userEmail = value;
-      this.authService.getSecurityQuestion(value).subscribe(question => {
-        this.securityQuestion = question;
-        this.step = 'question';
-        this.cdr.detectChanges();
-      });
-    }
-    }
+export class RecoverPassword implements OnChanges {
+  @Input() email: string = '';
+  @Input() skipQuestion: boolean = false;
   @Output() close = new EventEmitter<void>();
 
   step: Step = 'question';
@@ -50,6 +42,23 @@ export class RecoverPassword {
     }, { validators: this.passwordsMatch });
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['email'] && this.email) {
+      this.userEmail = this.email;
+      
+      if (this.skipQuestion) {
+        this.step = 'password';
+        this.cdr.detectChanges();
+      } else {
+        this.authService.getSecurityQuestion(this.email).subscribe(question => {
+          this.securityQuestion = question;
+          this.step = 'question';
+          this.cdr.detectChanges();
+        });
+      }
+    }
+  }
+
   passwordsMatch(group: FormGroup) {
     const p = group.get('newPassword')?.value;
     const c = group.get('confirmPassword')?.value;
@@ -66,11 +75,16 @@ export class RecoverPassword {
       next: (valid) => {
         if (!valid) {
           this.answerForm.get('answer')?.setErrors({ wrongAnswer: true });
+          this.cdr.detectChanges();
           return;
         }
         this.step = 'password';
+        this.cdr.detectChanges();
       },
-      error: () => this.answerForm.get('answer')?.setErrors({ wrongAnswer: true })
+      error: () => {
+        this.answerForm.get('answer')?.setErrors({ wrongAnswer: true });
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -82,6 +96,7 @@ export class RecoverPassword {
     const newPassword = this.passwordForm.get('newPassword')!.value;
     this.authService.changePassword(this.userEmail, newPassword).subscribe(() => {
       this.step = 'success';
+      this.cdr.detectChanges();
     });
   }
 

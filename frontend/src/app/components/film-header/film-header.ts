@@ -291,12 +291,16 @@ export class FilmHeader implements OnInit {
     this.isRecommendPanelOpen = true; 
   }
 
-  closeRecommendPanel() {
-    this.isRecommendPanelOpen = false;
-  }
-
   updateRecommendationStatus(newState: boolean) {
     this.isRecommendedProfile = newState;
     this.cdr.detectChanges();
+  }
+
+  refreshRecommendationStatus() {
+    this.loadInitialMarkStatus();
+  }
+
+  closeRecommendPanel() {
+    this.isRecommendPanelOpen = false;
   }
 }

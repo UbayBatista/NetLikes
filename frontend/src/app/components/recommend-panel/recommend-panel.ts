@@ -1,14 +1,16 @@
-import { Component, Input, Output, EventEmitter, inject, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserInteractionService } from '../../services/user-interaction.service';
 import { AuthService } from '../../services/auth.service';
 import { FollowService } from '../../services/follow.service';
 import { SearchBarComponent } from '../search-bar/search-bar';
+import { ConfirmationModalComponent } from '../confirmation-modal/confirmation-modal';
+import { RecommendationFollowedService } from '../../services/recommend.service';
 
 @Component({
   selector: 'app-recommend-panel',
   standalone: true,
-  imports: [CommonModule, SearchBarComponent],
+  imports: [CommonModule, SearchBarComponent, ConfirmationModalComponent],
   templateUrl: './recommend-panel.html',
   styleUrl: './recommend-panel.css'
 })
@@ -23,19 +25,28 @@ export class RecommendPanel implements OnChanges {
   private interactionService = inject(UserInteractionService);
   private authService = inject(AuthService);
   private followService = inject(FollowService);
+  private recService = inject(RecommendationFollowedService);
+  private cdr = inject(ChangeDetectorRef);
 
   addToProfile: boolean = false;
   selectedUsers: string[] = [];
 
   followingUsers: any[] = []; 
-  filteredFollowers: any[] = []; 
+  displayUsers: any[] = [];
+  
+  alreadyRecommendedEmails: string[] = [];
+  topRecentEmails: string[] = [];
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['isOpen'] && changes['isOpen'].currentValue === true) {
+    if (changes['initialRecommended']) {
       this.addToProfile = this.initialRecommended;
-      this.selectedUsers = [];
-      
-      this.loadFollowing(); 
+    }
+    
+    if (changes['isOpen'] && this.isOpen) {
+      this.addToProfile = this.initialRecommended;
+      this.selectedUsers = []; 
+      this.loadData(); 
+      this.cdr.detectChanges();
     }
   }
 
@@ -43,71 +54,119 @@ export class RecommendPanel implements OnChanges {
     this.closed.emit();
   }
 
-  loadFollowing() {
+  toggleMyRecommendation() {
+    this.addToProfile = !this.addToProfile;
+  }
+
+  loadData() {
     this.authService.getCurrentUser().subscribe(user => {
-      if (user && user.email) {
-        this.followService.getFollowing(user.email).subscribe({
-          next: (users) => {
-            this.followingUsers = users.map((u: any) => ({
-              name: u.userName,
-              pic: u.profilePicture || 'assets/ProfilePicture.jpg',
-              email: u.email
-            }));
-            
-            this.filteredFollowers = [...this.followingUsers];
-          },
-          error: (err) => console.error('Error cargando los seguidos', err)
+      if (user?.email) {
+        this.followService.getFollowing(user.email).subscribe(allFollowers => {
+          this.followingUsers = allFollowers.map((u: any) => ({
+            name: u.userName,
+            pic: u.profilePicture || 'assets/ProfilePicture.jpg',
+            email: u.email
+          }));
+
+          this.recService.getRecipientsForFilm(this.filmId).subscribe(emails => {
+            this.alreadyRecommendedEmails = emails;
+
+            this.recService.getRecentRecipients().subscribe(recents => {
+              this.topRecentEmails = recents.map(r => r.email);
+              this.updateDisplayList(''); 
+            });
+          });
         });
       }
     });
   }
 
-  toggleMyRecommendation() {
-    this.addToProfile = !this.addToProfile;
-  }
+  toggleUser(email: string) {
+    if (this.alreadyRecommendedEmails.includes(email)) {
+      return; 
+    }
 
-  toggleUser(userName: string) {
-    const index = this.selectedUsers.indexOf(userName);
+    const index = this.selectedUsers.indexOf(email);
     if (index > -1) {
       this.selectedUsers.splice(index, 1);
     } else {
-      this.selectedUsers.push(userName);
+      this.selectedUsers.push(email);
     }
+    this.cdr.detectChanges();
   }
 
   handleSearch(query: string) {
+    this.updateDisplayList(query);
+  }
+
+  updateDisplayList(query: string) {
     if (!query || query.trim() === '') {
-      this.filteredFollowers = [...this.followingUsers];
+      let topUsers = this.followingUsers.filter(u => this.topRecentEmails.includes(u.email));
+      
+      const selectedNotTop = this.followingUsers.filter(u => 
+        this.selectedUsers.includes(u.email) && !this.topRecentEmails.includes(u.email)
+      );
+      
+      let combined = [...topUsers, ...selectedNotTop];
+
+      if (combined.length === 0) {
+        combined = this.followingUsers.slice(0, 10);
+      } else {
+        combined = combined.slice(0, Math.max(10, combined.length));
+      }
+
+      this.displayUsers = combined;
     } else {
       const lowerQuery = query.toLowerCase();
-      this.filteredFollowers = this.followingUsers.filter(user =>
-        user.name.toLowerCase().includes(lowerQuery)
+      this.displayUsers = this.followingUsers.filter(u =>
+        u.name.toLowerCase().includes(lowerQuery)
       );
+    }
+    
+    this.cdr.detectChanges(); 
+  }
+
+  showConfirmModal: boolean = false;
+  confirmMessage: string = '';
+
+  submitRecommendation() {
+    if (this.selectedUsers.length === 0) {
+      this.executeFinalActions();
+      return;
+    }
+
+    const count = this.selectedUsers.length;
+    this.confirmMessage = `Vas a recomendar esta película a ${count} seguidor${count > 1 ? 'es' : ''}. ¿Estás seguro?`;
+    this.showConfirmModal = true;
+  }
+
+  handleConfirmation(confirmed: boolean) {
+    this.showConfirmModal = false;
+    if (confirmed) {
+      this.executeFinalActions();
     }
   }
 
-  submitRecommendation() {
+  private executeFinalActions() {
     if (this.addToProfile !== this.initialRecommended) {
-      this.interactionService.toggleMark(this.filmId, 'RECOMMENDED').subscribe({
-        next: (res) => {
-          this.recommendedStatusChanged.emit(this.addToProfile); 
-        },
-        error: (err) => {
-          console.error('Error al actualizar recomendación en perfil', err);
-          this.addToProfile = this.initialRecommended; 
-        }
-      });
+      
+      this.initialRecommended = this.addToProfile; 
+      
+      this.interactionService.toggleMark(this.filmId, 'RECOMMENDED').subscribe();
+      this.recommendedStatusChanged.emit(this.addToProfile);
     }
 
     if (this.selectedUsers.length > 0) {
-      console.log('Usuarios seleccionados para enviar recomendación (nombres):', this.selectedUsers);
+      const targetEmails = this.selectedUsers.filter(e => !this.alreadyRecommendedEmails.includes(e)); 
       
-      const selectedEmails = this.followingUsers
-        .filter(user => this.selectedUsers.includes(user.name))
-        .map(user => user.email);
-      console.log('Emails de los seleccionados:', selectedEmails);
+      if (targetEmails.length > 0) {
+        this.recService.sendRecommendations(this.filmId, targetEmails).subscribe({
+          next: () => console.log("Recomendaciones enviadas con éxito"),
+          error: (err) => console.error("Error al recomendar a seguidos", err)
+        });
+      }
     }
-
+    
     this.close();
   }
 }

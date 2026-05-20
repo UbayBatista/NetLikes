@@ -15,41 +15,35 @@
 }
 
 .logo-img {
-  display: flex;
-  width: 500px;
-  margin-bottom: -30px;
+    width: 100%;
+    max-width: 500px;
+    height: auto; 
+    margin-bottom: -30px;
 }
 
 .brand-name {
-
-  font-size: 2.5rem;
-  font-weight: bold;
-  margin-bottom: 15px;
-  color: #000;
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #000;
 }
 
 .brand-slogan {
-  font-size: 1.2rem;
-  line-height: 1.4;
-  color: #333;
+    font-size: 1.2rem;
+    line-height: 1.4;
+    color: #333;
 }
 
-/* Móviles */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .brand-side {
         height: auto;
         padding: 30px 20px;
     }
 
     .logo-img {
-        width: 350px;
+        max-width: 350px;
         margin-bottom: -30px;
     }
-
-    /* .brand-name {
-        font-size: 1.8rem;
-        margin-bottom: 5px;
-    } */
 
     .brand-slogan {
         font-size: 1rem;
