@@ -6,12 +6,16 @@
 }
 
 .left-side {
-    flex: 1;
+    flex: 0 0 50% !important;
+    width: 50% !important;
+    max-width: 50% !important;
     height: 100%;
 }
 
 .right-side {
-    flex: 1;
+    flex: 0 0 50% !important;
+    width: 50% !important;
+    max-width: 50% !important;
     display: flex;
     height: 100%;
     align-items: center;
@@ -22,35 +26,29 @@
 
 .form-box {
     width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
 }
 
-/* Tablet */
 @media (max-width: 1024px) {
-    .right-side {
-        padding: 30px;
-    }
-}
-
-/* Móvil*/
-@media (max-width: 768px) {
     .main-container {
-        flex-direction: column;
-        overflow-y: auto;
+        flex-direction: column !important;
+        overflow-y: auto !important;
     }
 
     .left-side, .right-side {
-        flex: none;
-        width: 100%;
-        height: auto;
+        flex: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
     }
 
     .right-side {
         padding: 40px 20px;
-        align-items: flex-start;
+        align-items: center;
     }
 }
 
-/* Móviles pequeños */
 @media (max-width: 480px) {
     .title {
         font-size: 1.8rem;
