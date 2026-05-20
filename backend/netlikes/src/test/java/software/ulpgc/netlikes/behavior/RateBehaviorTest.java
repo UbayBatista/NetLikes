@@ -9,19 +9,17 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 
+import software.ulpgc.netlikes.config.TestConfig;
 import software.ulpgc.netlikes.model.*;
 import software.ulpgc.netlikes.repository.*;
 import software.ulpgc.netlikes.service.RateService;
 
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"spring.profiles.active=test"}
-)
-@ActiveProfiles("test")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Transactional
+@Import(TestConfig.class)
 public class RateBehaviorTest {
 
     @Autowired private RateService rateService;

@@ -11,7 +11,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class DiscourseTest{
+public class DiscourseIT{
 
     private final String discourseApiKey = "b6b3e96a0bffef725a4481481d8523e98f743a0ad861117370d6f08a1aa3173f"; 
     private final String discourseApiUrl = "https://netlikes.duckdns.org/posts.json";

@@ -12,7 +12,7 @@ import software.ulpgc.netlikes.service.HuggingFaceService;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class HuggingFaceServiceIntegrationTest {
+class HuggingFaceIT {
 
     @Autowired
     private HuggingFaceService huggingFaceService; 

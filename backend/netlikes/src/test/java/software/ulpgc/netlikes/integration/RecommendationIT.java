@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 @Transactional 
 @ActiveProfiles("test")
-class RecommendationIntegrationTest {
+class RecommendationIT {
 
     @Autowired
     private FilmRepository filmRepository;

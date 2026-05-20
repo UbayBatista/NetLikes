@@ -4,8 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
+
+import software.ulpgc.netlikes.config.TestConfig;
 import software.ulpgc.netlikes.model.Notify;
 import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.repository.NotifyRepository;
@@ -16,12 +18,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"spring.profiles.active=test"}
-)
-@ActiveProfiles("test")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Transactional
+@Import(TestConfig.class)
 public class NotifyBehaviorTest {
 
     @Autowired private FollowService followService;

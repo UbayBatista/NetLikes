@@ -34,7 +34,7 @@ import java.util.Set;
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Transactional
-public class UpdateFilmTest {
+public class UpdateFilmIT {
 
     @Autowired private FilmRepository filmRepository;
     @Autowired private FilmService filmService;
