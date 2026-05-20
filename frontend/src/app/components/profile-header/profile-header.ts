@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject } from "@angular/core";
+import { Component, Input, Output, EventEmitter, inject, ChangeDetectorRef } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
@@ -37,11 +37,13 @@ export class ProfileHeader {
   @Output() delete = new EventEmitter<void>();
   
   openMenu: boolean = false;
+  mensajeErrorChat: string | null = null;
 
   constructor(
     private http: HttpClient, 
     private router: Router, 
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   toggleMenu() {
@@ -84,6 +86,7 @@ export class ProfileHeader {
   }
 
   startChat() {
+    
     this.authService.getCurrentUser().subscribe(user => { 
 
       if (!user) return;
@@ -103,12 +106,20 @@ export class ProfileHeader {
           },
           error: (err) => {
             if (err.status === 400) {
-                alert(err.error.error || "¡Os tenéis que seguir mutuamente para poder hablar!");
+              this.mensajeErrorChat = err.error.error || "¡Os tenéis que seguir mutuamente para poder hablar!";
             } else if (err.status === 404) {
-                alert("Este amigo aún no ha activado su chat en el foro.");
+              this.mensajeErrorChat = "Este amigo aún no ha activado su chat en el foro.";
             } else {
                 console.error("Error desconocido", err);
             }
+
+            if (this.mensajeErrorChat) {
+                setTimeout(() => {
+                    this.mensajeErrorChat = null;
+                    this.cdr.detectChanges();
+                }, 3500);
+            }
+
           }
         });
     });
