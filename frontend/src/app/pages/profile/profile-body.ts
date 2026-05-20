@@ -9,6 +9,7 @@ import { ProfileHeader } from "../../components/profile-header/profile-header";
 import { Film } from "../../components/film/film";
 import { SocialModal } from "../../components/social-modal/social-modal";
 import { PasswordVerifyModalComponent } from '../../components/password-ask-modal/password-ask-modal';
+import { RecoverPassword } from "../../components/recover-password/recover-password";
 
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
@@ -16,7 +17,9 @@ import { FollowService } from "../../services/follow.service";
 import { MyProfile, UserProfile } from '../../models/user.models';
 import { ConfirmationModalComponent } from '../../components/confirmation-modal/confirmation-modal';
 import { BlockedUsersModalComponent } from '../../components/blocked-users/blocked-users';
+import { BioComponent } from "../../components/bio-component/bio-component";
 import { UserService } from "../../services/user.service";
+import { AvatarModal } from "../../components/avatar-modal/avatar-modal";
 
 type SocialType = 'Seguidores' | 'Seguidos';
 type FollowStatus = 'NONE' | 'PENDING' | 'ACCEPTED' | 'BLOCKED';
@@ -24,15 +27,16 @@ type FollowStatus = 'NONE' | 'PENDING' | 'ACCEPTED' | 'BLOCKED';
 @Component({
   selector: "app-profile-complete",
   standalone: true,
-  imports: [CommonModule, 
-            ProfileBody, 
-            ProfileHeader, 
-            Film, 
-            SocialModal, 
-            AsyncPipe, 
-            ConfirmationModalComponent, 
-            BlockedUsersModalComponent,
-            PasswordVerifyModalComponent],
+  imports: [CommonModule,
+    ProfileBody,
+    ProfileHeader,
+    Film,
+    SocialModal,
+    AsyncPipe,
+    ConfirmationModalComponent,
+    BlockedUsersModalComponent,
+    PasswordVerifyModalComponent,
+    BioComponent, AvatarModal, RecoverPassword],
   templateUrl: "./profile-body.html",
   styleUrl: "./profile-body.css"
 })
@@ -54,14 +58,20 @@ export class ProfileComplete implements OnInit {
 
   isEditing = false;
   isSocialModalOpen = false;
+  isAvatarModalOpen = false;
+  thereIsChanges = false;
   socialType: SocialType = 'Seguidores';
   socialData: any[] = [];
   canScrollLeft = false;
   canScrollRight = true;
   isBlockedModalOpen = false;
+  pendingBio: string = '';
+  pendingAvatar: string = '';
+  showSaveModal: boolean = false;
 
   private followStateSubject = new BehaviorSubject<FollowStatus>('NONE');
   followState$ = this.followStateSubject.asObservable();
+  @ViewChild('bioComponent') bioComponent!: BioComponent;
 
   followButtonText$: Observable<string> = this.followState$.pipe(
     map(state => {
@@ -74,11 +84,15 @@ export class ProfileComplete implements OnInit {
 
   showConfirmModal = false;
   confirmModalMessage = '';
-  private actionUser: string = '';
+  actionUser: string = '';
   private actionToConfirm: 'UNFOLLOW' | 'BLOCK' | 'DELETE' | 'REMOVE_FOLLOWER' = 'UNFOLLOW';
 
   isPasswordModalOpen = false;
   isDeleteConfirmModalOpen = false;
+
+  passwordModalMode: 'DELETE' | 'CHANGE' = 'DELETE';
+  isRecoverModalOpen = false;
+  skipSecurityQuestion = false;
 
   ngOnInit() {
     this.route.params
@@ -270,7 +284,12 @@ export class ProfileComplete implements OnInit {
   }
 
   toggleEdit() {
-    this.isEditing = !this.isEditing;
+    if (this.isEditing && this.thereIsChanges) {
+      this.showSaveModal = true;
+    } else{
+      this.isEditing = !this.isEditing;
+    }
+    
   }
 
   onPrivacyChange(isPrivate: boolean): void {
@@ -303,14 +322,52 @@ export class ProfileComplete implements OnInit {
 
   startDeleteProcess(email: string) {
     this.actionUser = email;
+    this.passwordModalMode = 'DELETE';
     this.isPasswordModalOpen = true; 
   }
 
   onPasswordVerified() {
     this.isPasswordModalOpen = false; 
-    this.actionToConfirm = 'DELETE';
-    this.confirmModalMessage = `¿Estás seguro de que deseas borrar permanentemente tu cuenta?`;
-    this.showConfirmModal = true;
+    
+    if (this.passwordModalMode === 'DELETE') {
+      this.actionToConfirm = 'DELETE';
+      this.confirmModalMessage = `¿Estás seguro de que deseas borrar permanentemente tu cuenta?`;
+      this.showConfirmModal = true;
+    } else if (this.passwordModalMode === 'CHANGE') {
+      this.skipSecurityQuestion = true;
+      this.isRecoverModalOpen = true;
+    }
+    this.cdr.detectChanges();
+  }
+
+  onBioSave(event: { bio: string, hasChanges: boolean }) {
+    this.pendingBio = event.bio;
+    this.thereIsChanges = event.hasChanges;
+  }
+
+  onAvatarSelected(seed: string) {
+    this.pendingAvatar = seed;
+    this.thereIsChanges = true;
+    this.isAvatarModalOpen = false;
+  }
+
+  handleSaveConfirmation(confirmed: boolean) {
+    this.showSaveModal = false;
+    if (confirmed) {
+      if (this.pendingBio) {
+        this.profileService.updateBio(this.pendingBio);
+      }
+      if (this.pendingAvatar) {
+        this.profileService.updateAvatar(this.pendingAvatar);
+        this.authService.updateStoredUser({ profilePicture: this.pendingAvatar });
+      }
+    } else {
+      this.bioComponent?.discardChanges();
+    }
+    this.pendingBio = '';
+    this.pendingAvatar = '';
+    this.thereIsChanges = false;
+    this.isEditing = false;
   }
 
   executeDelete() {
@@ -322,6 +379,23 @@ export class ProfileComplete implements OnInit {
       },
       error: (err) => {
         console.error('Error eliminando la cuenta:', err);
+      }
+    });
+  }
+
+  onForgotPasswordClicked() {
+    this.isPasswordModalOpen = false;
+    this.skipSecurityQuestion = false;
+    this.isRecoverModalOpen = true;
+  }
+
+  startChangePasswordProcess() {
+    this.authService.getCurrentUser().pipe(take(1)).subscribe(user => {
+      if (user) {
+        this.actionUser = user.email;
+        this.passwordModalMode = 'CHANGE'; 
+        this.isPasswordModalOpen = true;
+        this.cdr.detectChanges();
       }
     });
   }

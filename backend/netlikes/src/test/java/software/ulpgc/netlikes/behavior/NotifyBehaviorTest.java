@@ -39,6 +39,7 @@ public class NotifyBehaviorTest {
         paco.setPassword("123456");
         paco.setSecurityQuestion("?");
         paco.setAnswer("!");
+        paco.setVector("");
         userRepository.save(paco);
 
         User elena = new User();
@@ -49,6 +50,7 @@ public class NotifyBehaviorTest {
         elena.setPassword("123456");
         elena.setSecurityQuestion("?");
         elena.setAnswer("!");
+        elena.setVector("");
         userRepository.save(elena);
 
         User carlos = new User();
@@ -59,6 +61,7 @@ public class NotifyBehaviorTest {
         carlos.setPassword("123456");
         carlos.setSecurityQuestion("?");
         carlos.setAnswer("!");
+        carlos.setVector("");
         userRepository.save(carlos);
     }
 

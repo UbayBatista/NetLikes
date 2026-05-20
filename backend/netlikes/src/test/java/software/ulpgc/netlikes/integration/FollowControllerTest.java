@@ -57,6 +57,7 @@ public class FollowControllerTest {
         paco.setPassword("123456"); 
         paco.setSecurityQuestion("¿Color?");
         paco.setAnswer("Rojo");
+        paco.setVector("");
         userRepository.save(paco);
 
         elena = new User();
@@ -67,6 +68,7 @@ public class FollowControllerTest {
         elena.setPassword("123456");
         elena.setSecurityQuestion("¿Color?");
         elena.setAnswer("Azul");
+        elena.setVector("");
         userRepository.save(elena);
     }
 

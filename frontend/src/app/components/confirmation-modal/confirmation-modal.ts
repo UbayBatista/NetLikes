@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 })
 export class ConfirmationModalComponent {
   @Input() message: string = '';
+  @Input() isDestructive: boolean = true;
   @Output() result = new EventEmitter<boolean>();
 
   confirm() {

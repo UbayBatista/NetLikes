@@ -36,11 +36,12 @@ public class UserService {
     private final FollowService followService;
     private final MarkService markService;
     private final DiscourseService discourseService;
+    private final HuggingFaceService huggingFaceService;
 
     public UserService(UserRepository userRepository, GenreRepository genreRepository, 
                        FollowRepository followRepository, PasswordEncoder passwordEncoder, 
                        FollowService followService, MarkService markService,
-                       DiscourseService discourseService ) {
+                       DiscourseService discourseService, HuggingFaceService huggingFaceService ) {
         this.userRepository = userRepository;
         this.genreRepository = genreRepository;
         this.followRepository = followRepository;
@@ -48,6 +49,7 @@ public class UserService {
         this.followService = followService; 
         this.markService = markService;
         this.discourseService = discourseService;
+        this.huggingFaceService = huggingFaceService;
     }
 
     public List<UserResponseDTO> getAllUsers() {
@@ -165,6 +167,11 @@ public class UserService {
             List<Genre> genres = genreRepository.findAllById(ids);
             newUser.setFavoriteGenres(genres);
         }
+
+        newUser.setVector(huggingFaceService.generateVector(
+            String.format("Usuario interesado en películas de géneros: %s.", 
+                        String.join(", ", newUser.getFavoriteGenres().stream().map(Genre::getName).toList())))
+        );
         
         User saved = userRepository.save(newUser);
         return toDTO(saved);
@@ -205,16 +212,19 @@ public class UserService {
         
         List<FilmResponseDTO> watchedFilms = markService.getFilmsByMarkType(email, Mark.Type.SEEN);
         List<FilmResponseDTO> watchLaterFilms = markService.getFilmsByMarkType(email, Mark.Type.WATCHLATER);
+        List<FilmResponseDTO> recommendedFilms = markService.getFilmsByMarkType(email, Mark.Type.RECOMMENDED);
 
         return new UserProfileDTO(
             user.getEmail(),
             user.getName(),
+            user.getProfilePicture(),
             user.getBio(),
             user.isAccountPrivacity(),
             followService.countFollowersOf(user.getEmail()),
             followService.countFollowsOf(user.getEmail()),
             watchedFilms, 
-            watchLaterFilms
+            watchLaterFilms,
+            recommendedFilms
         );
     }
 
@@ -233,15 +243,20 @@ public class UserService {
         List<FilmResponseDTO> later = canSeeContent ? 
             markService.getFilmsByMarkType(target.getEmail(), Mark.Type.WATCHLATER) : new ArrayList<>();
 
+        List<FilmResponseDTO> recommended = canSeeContent ? 
+        markService.getFilmsByMarkType(target.getEmail(), Mark.Type.RECOMMENDED) : new ArrayList<>();
+
         return new UserProfileDTO(
             target.getEmail(),
             target.getName(),
+            target.getProfilePicture(),
             target.getBio(),
             target.isAccountPrivacity(),
             followService.countFollowersOf(target.getEmail()),
             followService.countFollowsOf(target.getEmail()),
             canSeeContent ? watched : null,
-            canSeeContent ? later : null
+            canSeeContent ? later : null,
+            canSeeContent ? recommended : null
         );
     }
 
@@ -316,5 +331,17 @@ public class UserService {
         return null;
     }
 
-    
+    public void updateBio(@NonNull String email, String bio) {
+        User user = userRepository.findById(email)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        user.setBio(bio);
+        userRepository.save(user);
+    }
+
+    public void updateAvatar(@NonNull String email, String seed) {
+        User user = userRepository.findById(email)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        user.setProfilePicture(seed);
+        userRepository.save(user);
+    }
 }

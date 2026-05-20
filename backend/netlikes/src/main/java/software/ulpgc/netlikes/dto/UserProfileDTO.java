@@ -13,6 +13,7 @@ public class UserProfileDTO {
 
     private String email;
     private String userName;
+    private String profilePicture;
     private String bio;
     @JsonProperty("isPrivate")
     private Boolean isPrivate;
@@ -20,4 +21,5 @@ public class UserProfileDTO {
     private int following;
     private List<FilmResponseDTO> watchedFilms;
     private List<FilmResponseDTO> laterFilms;
+    private List<FilmResponseDTO> recommendedFilms;
 }

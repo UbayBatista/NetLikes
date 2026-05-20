@@ -4,19 +4,22 @@
     @if ((followState$ | async) === 'BLOCKED') {
       <div class="d-flex flex-column align-items-center justify-content-center py-5 mt-5 gap-3">
         <h3 class="fw-bold mb-0 text-dark">Usuario no encontrado</h3>
-        <p class="text-muted mb-0 text-center">Vaya, parece que tienes a este usuario bloqueado o el te tiene bloqueado a ti.</p>
+        <p class="text-muted mb-0 text-center">Vaya, parece que tienes a este usuario bloqueado o él te tiene bloqueado a ti.</p>
       </div>
     }
     @else{
       <app-profile-header 
       [userName]="profile.userName" 
-      [userPicture]="profile.profilePicture"
+      [userPicture]="pendingAvatar 
+      ? pendingAvatar 
+      : profile.profilePicture"
       [followers]="(followersCount$ | async) ?? 0"
       [following]="(followingCount$ | async) ?? 0"
       [isPrivate]="profile.isPrivate"
+      [isEditing]="isEditing"
       
       [type]="(itsMe$ | async) 
-                ? (isEditing ? 'Continuar' : 'Editar Perfil') 
+                ? (isEditing ? 'Dejar de editar' : 'Editar Perfil') 
                 : ((followButtonText$ | async) ?? 'Seguir')" 
 
       [otherUser]="(itsMe$ | async) ? false : true"
@@ -28,16 +31,23 @@
       (block)="onBlockRequest(profile.email, profile.userName)"
       (delete)="startDeleteProcess(profile.email)"
       (openSocialModal)="showSocial($event)"
-      (privacyChange)="onPrivacyChange($event)">
+      (changeAvatar)="isAvatarModalOpen = true"
+      (privacyChange)="onPrivacyChange($event)"
+      (changePassword)="startChangePasswordProcess()">
     </app-profile-header>
 
-    <app-profile-components title="Bio" [isEditing]="isEditing">
-      <p>{{profile.bio}}</p>
-    </app-profile-components>
+    <app-bio-component
+    #bioComponent
+    [bio]="profile.bio || ''"
+    [isEditing]="isEditing"
+    (bioSave)="onBioSave($event)">
+    </app-bio-component>
+
     @if ((itsMe$ | async) || profile.watchedFilms !== null) {
       @for (section of [
         { title: 'Películas Vistas', data: profile.watchedFilms },
-        { title: 'Ver más tarde', data: profile.laterFilms }
+        { title: 'Ver más tarde', data: profile.laterFilms },
+        { title: 'Películas Recomendadas', data: profile.recommendedFilms }
       ]; track section.title) {
         
         <app-profile-components [title]="section.title" [isEditing]="isEditing">
@@ -90,8 +100,32 @@
 
   @if (isPasswordModalOpen) {
     <app-password-verify-modal 
+      [showForgotPassword]="passwordModalMode === 'CHANGE'"
+      [isDestructive]="passwordModalMode === 'DELETE'"
       (close)="isPasswordModalOpen = false"
-      (verified)="onPasswordVerified()">
+      (verified)="onPasswordVerified()"
+      (forgotPassword)="onForgotPasswordClicked()">
     </app-password-verify-modal>
+  }
+
+  @if (isRecoverModalOpen) {
+    <app-recover-password
+      [email]="actionUser"
+      [skipQuestion]="skipSecurityQuestion"
+      (close)="isRecoverModalOpen = false">
+    </app-recover-password>
+  }
+  @if (isAvatarModalOpen) {
+    <app-avatar-modal
+      (close)="isAvatarModalOpen = false"
+      (avatarSelected)="onAvatarSelected($event)">
+    </app-avatar-modal>
+  }
+  @if (showSaveModal) {
+    <app-confirmation-modal 
+      [title]="'Guardar cambios'"
+      [message]="'¿Quieres guardar los cambios realizados?'"
+      (result)="handleSaveConfirmation($event)">
+    </app-confirmation-modal>
   }
 </div>

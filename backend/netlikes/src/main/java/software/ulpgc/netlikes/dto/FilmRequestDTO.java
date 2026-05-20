@@ -22,4 +22,6 @@ public class FilmRequestDTO {
     private List<Map<String, String>> cast;
     private List<Map<String, String>> videos;
     private List<Map<String, String>> watchProviders;
+
+    private String vector;
 }

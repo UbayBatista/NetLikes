@@ -33,6 +33,7 @@ class SubscriptionRepositoryIntegrationTest {
         user.setShowRecommendedFilms(false);
         user.setProfilePicture("/");
         user.setBio("Holaaa, soy una prueba.");
+        user.setVector("");
         entityManager.persist(user);
         return user;
     }
@@ -44,6 +45,7 @@ class SubscriptionRepositoryIntegrationTest {
         film.setTitle("Esta abuela es un peligro");
         film.setAdult(false);
         film.setPosterPath("poster/path");
+        film.setVector("");
         entityManager.persist(film);
         return film;
     }

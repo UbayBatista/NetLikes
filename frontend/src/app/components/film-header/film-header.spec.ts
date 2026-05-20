@@ -4,11 +4,17 @@ import { FilmHeader } from './film-header';
 import { UserInteractionService } from '../../services/user-interaction.service';
 import { of, throwError } from 'rxjs'
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { AuthService } from '../../services/auth.service';
+import { SubscriptionService } from '../../services/subscription.service';
+import { ForumService } from '../../services/forum.service';
 
 describe('FilmHeader Component', () => {
   let component: FilmHeader;
   let fixture: ComponentFixture<FilmHeader>;
   let interactionServiceMock: any;
+  let authServiceMock: any;
+  let subscriptionServiceMock: any;
+  let forumServiceMock: any;
 
   const mockFilm = {
     id: 1,
@@ -26,6 +32,18 @@ describe('FilmHeader Component', () => {
     videos: []
   };
 
+  authServiceMock = {
+    getCurrentUser: vi.fn().mockReturnValue(of({ email: 'test@test.com' }))
+  };
+  subscriptionServiceMock = {
+    getUserSubscriptions: vi.fn().mockReturnValue(of([])),
+    subscribeToFilm: vi.fn().mockReturnValue(of({})),
+    unsubscribeFromFilm: vi.fn().mockReturnValue(of({}))
+  };
+  forumServiceMock = {
+    suscribeForum: vi.fn().mockReturnValue(of({ discourseTopicId: 123 }))
+  };
+
   beforeEach(async () => {
     interactionServiceMock = {
       getMarkStatus: vi.fn().mockReturnValue(of(null)),
@@ -38,8 +56,11 @@ describe('FilmHeader Component', () => {
       imports: [FilmHeader],
       providers: [
         provideRouter([]),
-        { provide: UserInteractionService, useValue: interactionServiceMock }
-      ]
+        { provide: UserInteractionService, useValue: interactionServiceMock },
+        { provide: AuthService, useValue: authServiceMock },
+        { provide: SubscriptionService, useValue: subscriptionServiceMock },
+        { provide: ForumService, useValue: forumServiceMock }
+              ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(FilmHeader);
@@ -94,6 +115,24 @@ describe('FilmHeader Component', () => {
       
       expect(hasDescriptionHeader).toBeFalsy();
     });
+
+    it('should not display "Where to watch" if watchProviders is empty', () => {
+      component.film = { ...mockFilm, watchProviders: [] } as any;
+      fixture.detectChanges();
+
+      const headers = Array.from(fixture.nativeElement.querySelectorAll('h5'));
+      const hasProviders = headers.some((h: any) => h.textContent.includes('Dónde ver'));
+      expect(hasProviders).toBeFalsy();
+    });
+
+    it('should not display "Description" header if overView is empty', () => {
+      component.film = { ...mockFilm, overView: '' } as any;
+      fixture.detectChanges();
+
+      const headers = Array.from(fixture.nativeElement.querySelectorAll('h5'));
+      const hasDescription = headers.some((h: any) => h.textContent.includes('Descripción'));
+      expect(hasDescription).toBeFalsy();
+    });
   });
 
   describe('Movie Tracking Logic (US 4.1)', () => {
@@ -143,6 +182,39 @@ describe('FilmHeader Component', () => {
       component.toggleWatched(); 
       
       expect(component.isWatched).toBe(false);
+    });
+  });
+
+  describe('Recommendation Logic (US 10.2)', () => {
+    it('should open the recommend panel when share button is clicked', () => {
+      component.shareFilm();
+      expect(component.isRecommendPanelOpen).toBe(true);
+    });
+
+    it('should close the recommend panel when closeRecommendPanel is called', () => {
+      component.isRecommendPanelOpen = true;
+      component.closeRecommendPanel();
+      expect(component.isRecommendPanelOpen).toBe(false);
+    });
+
+    it('should update isRecommendedProfile when status changes in the panel', () => {
+      component.updateRecommendationStatus(true);
+      expect(component.isRecommendedProfile).toBe(true);
+      
+      component.updateRecommendationStatus(false);
+      expect(component.isRecommendedProfile).toBe(false);
+    });
+
+    it('should load initial recommendation status from getMarkStatus', () => {
+      interactionServiceMock.getMarkStatus.mockReturnValue(of({ 
+        types: ['SEEN', 'RECOMMENDED'] 
+      }));
+      
+      // Forzamos la carga inicial
+      (component as any).loadInitialMarkStatus();
+      
+      expect(component.isRecommendedProfile).toBe(true);
+      expect(component.isWatched).toBe(true);
     });
   });
 

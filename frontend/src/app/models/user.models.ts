@@ -8,7 +8,7 @@ export interface Credentials {
 export interface User {
     userName: string;
     email: string;
-    profilePicture: string;
+    profilePicture: string | null;
 }
 
 export interface RegisterData{
@@ -29,23 +29,25 @@ export interface AnswerResponse {
 export interface MyProfile {
   email: string;
   userName: string;
-  profilePicture: string;
+  profilePicture: string | null;
   bio: string;
   isPrivate: boolean;
   followers: number;
   following: number;
   watchedFilms: FilmListItem[];
   laterFilms: FilmListItem[];
+  recommendedFilms: FilmListItem[];
 }
 
 export interface UserProfile {
   email: string;
   userName: string;
-  profilePicture: string;
+  profilePicture: string | null;
   bio: string;
   isPrivate: boolean;
   followers: number;
   following: number;
   watchedFilms: FilmListItem[] | null;
   laterFilms: FilmListItem[] | null;
+  recommendedFilms: FilmListItem[] | null;
 }

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject, ChangeDetectorRef } from "@angular/core";
+import { Component, Input, Output, EventEmitter, inject, ChangeDetectorRef, SimpleChanges } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
@@ -13,19 +13,13 @@ import { AuthService } from "../../services/auth.service";
 })
 export class ProfileHeader {
   @Input() userName: string = '';
+  @Input() userPicture: string | null = null;
   @Input() isPrivate: boolean = false;
   @Input() type: string = "Editar Perfil";
+  @Input() isEditing: boolean = false;
   @Input() otherUser: boolean = false;
   @Input() followers: number = 0;
   @Input() following: number = 0;
-
-  private _userPicture: string | null = null;
-  @Input() set userPicture(value: string | null) {
-    this._userPicture = value || 'assets/ProfilePicture.jpg';
-  }
-  get userPicture(): string {
-    return this._userPicture || 'assets/ProfilePicture.jpg';
-  }
 
   @Output() privacyChange = new EventEmitter<boolean>();
   @Output() logOut = new EventEmitter<void>();
@@ -35,6 +29,8 @@ export class ProfileHeader {
   @Output() block = new EventEmitter<void>();
   @Output() openBlockedModal = new EventEmitter<void>();
   @Output() delete = new EventEmitter<void>();
+  @Output() changeAvatar = new EventEmitter<void>();
+  @Output() changePassword = new EventEmitter<void>();
   
   openMenu: boolean = false;
   mensajeErrorChat: string | null = null;
@@ -45,6 +41,12 @@ export class ProfileHeader {
     private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) {}
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['userPicture']) {
+      console.log('userPicture recibido:', changes['userPicture'].currentValue);
+    }
+  }
 
   toggleMenu() {
     this.openMenu = !this.openMenu;
@@ -125,4 +127,12 @@ export class ProfileHeader {
     });
   }
 
+  openAvatarModal() {
+    this.changeAvatar.emit();
+  }
+
+  changePasswordRequest() {
+    this.changePassword.emit();
+    this.toggleMenu();
+  }
 }

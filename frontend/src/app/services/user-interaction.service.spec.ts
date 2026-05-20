@@ -59,6 +59,14 @@ describe('UserInteractionService', () => {
       expect(req.request.method).toBe('GET');
       req.flush({ type: 'SEEN' });
     });
+
+    it('should make a POST request when calling toggleMark with RECOMMENDED type', () => {
+      service.toggleMark(123, 'RECOMMENDED').subscribe();
+
+      const req = httpMock.expectOne('http://localhost:8080/marks/test@correo.com/toggle/123?type=RECOMMENDED');
+      expect(req.request.method).toBe('POST');
+      req.flush({ status: 'added' });
+    });
   });
 
   describe('Rates Management', () => {

@@ -90,4 +90,14 @@ describe('PasswordVerifyModalComponent', () => {
       expect(closeSpy).toHaveBeenCalled();
     });
   });
+
+  describe('Forgot Password Logic', () => {
+    it('should emit forgotPassword event when onForgotPassword is called', () => {
+      const forgotSpy = vi.spyOn(component.forgotPassword, 'emit');
+      
+      component.onForgotPassword();
+
+      expect(forgotSpy).toHaveBeenCalled();
+    });
+  });
 });

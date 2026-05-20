@@ -3,6 +3,7 @@ package software.ulpgc.netlikes.integration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -10,11 +11,13 @@ import software.ulpgc.netlikes.dto.FilmResponseDTO;
 import software.ulpgc.netlikes.model.Film;
 import software.ulpgc.netlikes.repository.FilmRepository;
 import software.ulpgc.netlikes.service.FilmService;
+import software.ulpgc.netlikes.service.HuggingFaceService;
 import software.ulpgc.netlikes.tmdbApi.LoadService;
 import software.ulpgc.netlikes.tmdbApi.TmdbApiClient;
 import software.ulpgc.netlikes.tmdbApi.TmdbModels;
 
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,6 +42,9 @@ public class UpdateFilmTest {
 
     @MockitoBean private TmdbApiClient apiClient;
 
+    @MockBean
+    private HuggingFaceService huggingFaceService;
+
     @Test
     void saveNewFilmFromApi() {
         when(apiClient.getPopularFilmIds(anyInt())).thenReturn(List.of(101, 102));
@@ -59,6 +65,7 @@ public class UpdateFilmTest {
 
         when(apiClient.getCompleteFilm(101)).thenReturn(film1);
         when(apiClient.getCompleteFilm(102)).thenReturn(film2);
+        when(huggingFaceService.generateVector(anyString())).thenReturn("[0.0, 0.0]");
 
         assertThat(filmRepository.count()).isEqualTo(0);
 
@@ -83,6 +90,7 @@ public class UpdateFilmTest {
         film1.setGenres(List.of());
         film1.setCast(Set.of());
         film1.setVideos(List.of());
+        film1.setVector("[0.0, 0.0]");
 
         Film film2 = new Film();
         film2.setId(102);
@@ -95,6 +103,7 @@ public class UpdateFilmTest {
         film2.setGenres(List.of());
         film2.setCast(Set.of());
         film2.setVideos(List.of());
+        film2.setVector("[0.0, 0.0]");
 
         filmRepository.save(film1);
         filmRepository.save(film2);

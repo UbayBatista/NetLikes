@@ -71,6 +71,7 @@ class UserControllerTest {
         user.setName("Juan");
         user.setSecurityQuestion("¿Nombre de tu mascota?");
         user.setAnswer("Toby");
+        user.setVector("");
         user.setFavoriteGenres(List.of(savedGenre1, savedGenre2, savedGenre3));
         return userRepository.save(user);
     }
@@ -261,6 +262,7 @@ class UserControllerTest {
         requester.setName("Yo");
         requester.setSecurityQuestion("?");
         requester.setAnswer("x");
+        requester.setVector("");
         requester.setFavoriteGenres(List.of(savedGenre1, savedGenre2, savedGenre3));
         userRepository.save(requester);
 
@@ -271,6 +273,7 @@ class UserControllerTest {
         target.setName("Ana");
         target.setSecurityQuestion("?");
         target.setAnswer("x");
+        target.setVector("");
         target.setAccountPrivacity(false);
         target.setFavoriteGenres(List.of(savedGenre1, savedGenre2, savedGenre3));
         userRepository.save(target);
@@ -295,6 +298,7 @@ class UserControllerTest {
         requester.setSecurityQuestion("?");
         requester.setAnswer("x");
         requester.setFavoriteGenres(List.of(savedGenre1, savedGenre2, savedGenre3));
+        requester.setVector("");
         userRepository.save(requester);
 
         User target = new User();
@@ -306,6 +310,7 @@ class UserControllerTest {
         target.setAnswer("x");
         target.setAccountPrivacity(true);
         target.setFavoriteGenres(List.of(savedGenre1, savedGenre2, savedGenre3));
+        target.setVector("");
         userRepository.save(target);
 
         mockMvc.perform(get("/users/profile/Ana")
@@ -397,6 +402,7 @@ class UserControllerTest {
         target.setAnswer("x");
         target.setAccountPrivacity(true);
         target.setFavoriteGenres(List.of(savedGenre1, savedGenre2, savedGenre3));
+        target.setVector("");
         userRepository.save(target);
 
         createAndSaveUser("juan@email.com");
@@ -419,6 +425,7 @@ class UserControllerTest {
         target.setSecurityQuestion("?");
         target.setAnswer("x");
         target.setAccountPrivacity(false);
+        target.setVector("");
         target.setFavoriteGenres(List.of(savedGenre1, savedGenre2, savedGenre3));
         userRepository.save(target);
 
@@ -450,5 +457,71 @@ class UserControllerTest {
                 .header("X-User-Id", "noexiste@email.com"))
                 .andReturn()
         );
+    }
+
+    @Test
+    void updateBio_shouldReturn200_whenUserExistsAndBioIsValid() throws Exception {
+        createAndSaveUser("juan@email.com");
+
+        String body = "{\"bio\": \"Esta es mi nueva bio\"}";
+
+        mockMvc.perform(patch("/users/myProfile/juan@email.com/bio")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isOk());
+
+        User updated = userRepository.findById("juan@email.com").get();
+        assertTrue(updated.getBio().equals("Esta es mi nueva bio"));
+    }
+
+    @Test
+    void updateBio_shouldReturn400_whenBioExceeds120Characters() throws Exception {
+        createAndSaveUser("juan@email.com");
+
+        String bioLarga = "a".repeat(121);
+        String body = "{\"bio\": \"" + bioLarga + "\"}";
+
+        mockMvc.perform(patch("/users/myProfile/juan@email.com/bio")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void updateBio_shouldReturn200_whenBioIsExactly120Characters() throws Exception {
+        createAndSaveUser("juan@email.com");
+
+        String bioJusta = "a".repeat(120);
+        String body = "{\"bio\": \"" + bioJusta + "\"}";
+
+        mockMvc.perform(patch("/users/myProfile/juan@email.com/bio")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void updateBio_shouldReturn404_whenUserNotFound() throws Exception {
+        String body = "{\"bio\": \"Bio de nadie\"}";
+
+        mockMvc.perform(patch("/users/myProfile/noexiste@email.com/bio")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updateBio_shouldReturn200_whenBioIsEmpty() throws Exception {
+        createAndSaveUser("juan@email.com");
+
+        String body = "{\"bio\": \"\"}";
+
+        mockMvc.perform(patch("/users/myProfile/juan@email.com/bio")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isOk());
+
+        User updated = userRepository.findById("juan@email.com").get();
+        assertTrue(updated.getBio().isEmpty());
     }
 }

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../services/user.service';
@@ -11,8 +11,11 @@ import { UserService } from '../../services/user.service';
   styleUrl: './password-ask-modal.css'
 })
 export class PasswordVerifyModalComponent {
+  @Input() showForgotPassword = false;
+  @Input() isDestructive = true;
   @Output() close = new EventEmitter<void>();
   @Output() verified = new EventEmitter<void>();
+  @Output() forgotPassword = new EventEmitter<void>();
 
   private readonly userService = inject(UserService);
 
@@ -45,6 +48,10 @@ export class PasswordVerifyModalComponent {
         }
       }
     });
+  }
+
+  onForgotPassword() {
+    this.forgotPassword.emit();
   }
 
   onClose() {

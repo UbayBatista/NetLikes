@@ -1,0 +1,24 @@
+<div class="modal-overlay" (click)="cancel()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    
+    <div class="modal-content">
+      <h5 class="modal-title fw-bold mb-3">Elige tu avatar</h5>
+      <div class="avatar-grid">
+        @for (avatar of avatars; track avatar.seed) {
+          <div 
+            class="avatar-option"
+            [class.selected]="selectedSeed === avatar.seed"
+            (click)="selectAvatar(avatar.seed)">
+            <img [src]="avatar.url" [alt]="avatar.seed" width="64" height="64"/>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-confirm" [disabled]="!selectedSeed" (click)="confirm()">Confirmar</button>
+      <button class="btn-cancel" (click)="cancel()">Cancelar</button>
+    </div>
+
+  </div>
+</div>

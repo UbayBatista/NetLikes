@@ -28,7 +28,7 @@ describe('ProfileHeader Component', () => {
 
     it('should use default profile picture when userPicture is null', () => {
       component.userPicture = null;
-      expect(component.userPicture).toBe('assets/ProfilePicture.jpg');
+      expect(component.userPicture).toBe(null);
     });
 
     it('should use provided picture when userPicture is set', () => {
@@ -137,6 +137,19 @@ describe('ProfileHeader Component', () => {
       component.openMenu = true;
 
       component.deleteUser();
+
+      expect(emitted).toBeTruthy();
+      expect(component.openMenu).toBeFalsy();
+    });
+  });
+
+  describe('Change Password Logic', () => {
+    it('should emit changePassword event and close menu when changePasswordRequest is called', () => {
+      let emitted = false;
+      component.changePassword.subscribe(() => emitted = true);
+      component.openMenu = true;
+
+      component.changePasswordRequest();
 
       expect(emitted).toBeTruthy();
       expect(component.openMenu).toBeFalsy();

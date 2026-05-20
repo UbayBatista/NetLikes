@@ -49,11 +49,12 @@ public class FollowServiceTest {
     void setUp() {
         paco = new User();
         paco.setEmail("paco@gmail.com");
+        paco.setVector("");
 
         privateUser = new User();
         privateUser.setEmail("privado@gmail.com");
         privateUser.setAccountPrivacity(true);
-
+        privateUser.setVector("");
         pendingFollow = new Follow(paco, privateUser, Follow.State.PENDING);
     }
 
@@ -95,7 +96,8 @@ public class FollowServiceTest {
         User publicUser = new User();
         publicUser.setEmail("publico@gmail.com");
         publicUser.setAccountPrivacity(false); 
-
+        publicUser.setVector("");
+        
         when(userRepository.findById("publico@gmail.com")).thenReturn(Optional.of(publicUser));
         when(userRepository.findById("paco@gmail.com")).thenReturn(Optional.of(paco));
         when(followRepository.save(any(Follow.class))).thenAnswer(i -> i.getArguments()[0]);

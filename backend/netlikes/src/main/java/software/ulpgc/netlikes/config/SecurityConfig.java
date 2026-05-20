@@ -22,7 +22,7 @@ public class SecurityConfig {
                 .anyRequest().permitAll()
             )
             .headers(headers -> headers
-                .frameOptions(frame -> frame.disable()) // 2. IMPORTANTE: Permitir que el backend se cargue en el popup/frame
+                .frameOptions(frame -> frame.disable())
             );
 
         return http.build();

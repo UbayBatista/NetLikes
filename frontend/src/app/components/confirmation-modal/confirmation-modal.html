@@ -6,7 +6,11 @@
     </div>
 
     <div class="modal-actions">
-      <button class="btn-confirm" (click)="confirm()">Confirmar</button>
+      <button class="btn-confirm" 
+              [style.color]="isDestructive ? '#ed4956' : '#212529'"
+              (click)="confirm()">
+        Confirmar
+      </button>
       <button class="btn-cancel" (click)="cancel()">Cancelar</button>
     </div>
     

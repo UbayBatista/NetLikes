@@ -106,4 +106,12 @@ export class AuthService {
   isLoading(): Observable<boolean> {
     return this.isLoading$.asObservable();
   }
+
+  updateStoredUser(updates: Partial<User>): void {
+    const current = this.currentUser$.value;
+    if (!current) return;
+    const updated = { ...current, ...updates };
+    localStorage.setItem('user', JSON.stringify(updated));
+    this.currentUser$.next(updated);
+  }
 }

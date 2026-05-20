@@ -41,6 +41,7 @@ public class FilmBehaviorTest {
         film.setWatchProviders(new ArrayList<>());
         film.setCast(new HashSet<>());
         film.setVideos(new ArrayList<>());
+        film.setVector("");
         return filmRepository.save(film);
     }
 

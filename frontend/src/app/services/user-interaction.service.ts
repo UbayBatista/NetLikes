@@ -12,7 +12,7 @@ export class UserInteractionService {
     private readonly markUrl = `${environment.apiUrl}/marks`;
     private readonly rateUrl = `${environment.apiUrl}/rates`;
 
-    toggleMark(filmId: number, type: 'SEEN' | 'WATCHLATER'): Observable<any> {
+    toggleMark(filmId: number, type: 'SEEN' | 'WATCHLATER' | 'RECOMMENDED'): Observable<any> {
         const email = this.authService.getCurrentUserEmail();
         if (!email) throw new Error('No hay email');
 

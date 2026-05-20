@@ -34,6 +34,7 @@ public class FollowRepositoryTest {
         user.setBirthdate(new Date());
         user.setAccountPrivacity(false);
         user.setProfilePicture("/");
+        user.setVector("");
         
         entityManager.persist(user);
         return user;
