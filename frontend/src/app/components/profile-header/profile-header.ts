@@ -102,7 +102,8 @@ export class ProfileHeader {
             this.router.navigate(['/social'], { 
               queryParams: { 
                 chatWith: userFriend, 
-                chatId: chatId 
+                chatId: chatId,
+                mode: 'Chats'
               } 
             });
           },
