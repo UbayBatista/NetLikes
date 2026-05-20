@@ -524,4 +524,100 @@ class UserControllerTest {
         User updated = userRepository.findById("juan@email.com").get();
         assertTrue(updated.getBio().isEmpty());
     }
+
+    @Test
+    void changeWatchedFilmsVisibility_shouldReturn200_whenSetToNotVisible() throws Exception {
+        createAndSaveUser("juan@email.com");
+
+        String body = "{\"isVisible\": false}";
+
+        mockMvc.perform(patch("/users/myProfile/juan@email.com/visibilityWatchedFilms")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isOk());
+
+        User updated = userRepository.findById("juan@email.com").get();
+        assertFalse(updated.isShowWatchedFilms());
+    }
+
+    @Test
+    void changeWatchedFilmsVisibility_shouldReturn200_whenSetToVisible() throws Exception {
+        User user = createAndSaveUser("juan@email.com");
+        user.setShowWatchedFilms(false);
+        userRepository.save(user);
+
+        String body = "{\"isVisible\": true}";
+
+        mockMvc.perform(patch("/users/myProfile/juan@email.com/visibilityWatchedFilms")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isOk());
+
+        User updated = userRepository.findById("juan@email.com").get();
+        assertTrue(updated.isShowWatchedFilms());
+    }
+
+    @Test
+    void changeFilmsToWatchLaterVisibility_shouldReturn200_whenSetToNotVisible() throws Exception {
+        createAndSaveUser("juan@email.com");
+
+        String body = "{\"isVisible\": false}";
+
+        mockMvc.perform(patch("/users/myProfile/juan@email.com/visibilityFilmsToWatchLater")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isOk());
+
+        User updated = userRepository.findById("juan@email.com").get();
+        assertFalse(updated.isShowFilmsToWatchLater());
+    }
+
+    @Test
+    void changeFilmsToWatchLaterVisibility_shouldReturn200_whenSetToVisible() throws Exception {
+        User user = createAndSaveUser("juan@email.com");
+        user.setShowFilmsToWatchLater(false);
+        userRepository.save(user);
+
+        String body = "{\"isVisible\": true}";
+
+        mockMvc.perform(patch("/users/myProfile/juan@email.com/visibilityFilmsToWatchLater")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isOk());
+
+        User updated = userRepository.findById("juan@email.com").get();
+        assertTrue(updated.isShowFilmsToWatchLater());
+    }
+
+    @Test
+    void changeRecommendedFilmsVisibility_shouldReturn200_whenSetToNotVisible() throws Exception {
+        createAndSaveUser("juan@email.com");
+
+        String body = "{\"isVisible\": false}";
+
+        mockMvc.perform(patch("/users/myProfile/juan@email.com/visibilityRecommendedFilms")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isOk());
+
+        User updated = userRepository.findById("juan@email.com").get();
+        assertFalse(updated.isShowRecommendedFilms());
+    }
+
+    @Test
+    void changeRecommendedFilmsVisibility_shouldReturn200_whenSetToVisible() throws Exception {
+        User user = createAndSaveUser("juan@email.com");
+        user.setShowRecommendedFilms(false);
+        userRepository.save(user);
+
+        String body = "{\"isVisible\": true}";
+
+        mockMvc.perform(patch("/users/myProfile/juan@email.com/visibilityRecommendedFilms")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isOk());
+
+        User updated = userRepository.findById("juan@email.com").get();
+        assertTrue(updated.isShowRecommendedFilms());
+    }
 }
