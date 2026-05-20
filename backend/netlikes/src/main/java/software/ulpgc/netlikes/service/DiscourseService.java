@@ -352,4 +352,42 @@ public class DiscourseService {
         }
     }
 
+    public void updateUserAvatarInDiscourse(String username, String imageUrl) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Api-Key", apiKey);
+            headers.set("Api-Username", username);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            String uploadUrl = "https://netlikes.duckdns.org/uploads.json";
+            
+            Map<String, Object> uploadBody = new HashMap<>();
+            uploadBody.put("type", "avatar");
+            uploadBody.put("synchronous", true);
+            uploadBody.put("url", imageUrl);
+
+            HttpEntity<Map<String, Object>> uploadRequest = new HttpEntity<>(uploadBody, headers);
+            ResponseEntity<Map> uploadResponse = restTemplate.postForEntity(uploadUrl, uploadRequest, Map.class);
+            
+            Integer uploadId = (Integer) uploadResponse.getBody().get("id");
+
+            if (uploadId != null) {
+                String pickUrl = "https://netlikes.duckdns.org/u/" + username + "/preferences/avatar/pick.json";
+                
+                Map<String, Object> pickBody = new HashMap<>();
+                pickBody.put("upload_id", uploadId);
+                pickBody.put("type", "uploaded");
+
+                HttpEntity<Map<String, Object>> pickRequest = new HttpEntity<>(pickBody, headers);
+                
+                restTemplate.exchange(pickUrl, HttpMethod.PUT, pickRequest, Map.class);
+                
+                System.out.println("Éxito: Foto de perfil sincronizada con Discourse para -> " + username);
+            }
+
+        } catch (Exception e) {
+            System.err.println("Aviso: Fallo al sincronizar avatar con Discourse para " + username + ". Motivo: " + e.getMessage());
+        }
+    }
+
 }

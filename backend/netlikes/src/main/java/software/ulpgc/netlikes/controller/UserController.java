@@ -10,6 +10,7 @@ import software.ulpgc.netlikes.dto.AvatarRequestDTO;
 import software.ulpgc.netlikes.dto.BioRequestDTO;
 import software.ulpgc.netlikes.dto.RegisterRequestDTO;
 import software.ulpgc.netlikes.dto.ValidAnswerRequestDTO;
+import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.service.DiscourseService;
 import software.ulpgc.netlikes.service.FollowService;
 import software.ulpgc.netlikes.service.UserService;
@@ -208,6 +209,11 @@ public class UserController {
             @RequestBody AvatarRequestDTO request) {
         try {
             userService.updateAvatar(email, request.getSeed());
+
+            UserResponseDTO userDto = userService.getUserById(email); 
+            String username = userDto.getUserName();
+
+            discourseService.updateUserAvatarInDiscourse(username, request.getSeed());
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());
