@@ -47,7 +47,7 @@ describe('Step1 Component', () => {
       component.ngOnInit();
 
       expect(component.form.get('userName')?.value).toBe('Marta');
-      expect(component.form.get('year')?.value).toBe(1995);
+      expect(component.form.get('birthdate')?.value).toBe('1995-05-10');
     });
   });
 
@@ -55,16 +55,17 @@ describe('Step1 Component', () => {
     it('should fail validation if the user is under 16 years old', () => {
       const today = new Date();
       const year15Ago = today.getFullYear() - 15;
+      const monthStr = String(today.getMonth() + 1).padStart(2, '0');
+      const dayStr = String(today.getDate()).padStart(2, '0');
+      const dateUnderAge = `${year15Ago}-${monthStr}-${dayStr}`;
 
       component.form.patchValue({
         userName: 'TestUser',
         email: 'test@test.com',
-        day: today.getDate(),
-        month: today.getMonth() + 1,
-        year: year15Ago
+        birthdate: dateUnderAge
       });
 
-      expect(component.form.errors?.['validateAge']).toBe(true);
+      expect(component.form.get('birthdate')?.hasError('minAge')).toBe(true);
       expect(component.form.valid).toBe(false);
     });
   });
@@ -76,9 +77,9 @@ describe('Step1 Component', () => {
       component.form.patchValue({
         userName: 'TestUser',
         email: 'existente@test.com',
-        day: 1, month: 1, year: 1990
+        birthdate: '1990-01-01'
       });
- 
+
       component.notifyNext();
 
       expect(component.emailExists).toBe(true);
@@ -91,7 +92,7 @@ describe('Step1 Component', () => {
       component.form.patchValue({
         userName: 'Cogido',
         email: 'nuevo@test.com',
-        day: 1, month: 1, year: 1990
+        birthdate: '1990-01-01'
       });
 
       component.notifyNext();
@@ -108,7 +109,7 @@ describe('Step1 Component', () => {
       component.form.patchValue({
         userName: 'Alicia',
         email: 'nueva@test.com',
-        day: 23, month: 4, year: 2000
+        birthdate: '2000-04-23'
       });
 
       component.notifyNext();
