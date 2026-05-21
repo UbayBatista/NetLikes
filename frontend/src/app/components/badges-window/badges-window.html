@@ -1,0 +1,22 @@
+<div class="badges-container">
+  <header class="badges-header">
+    <h2>Tus Insignias</h2>
+  </header>
+
+  @if (badgesUrl) {
+    <iframe 
+      [src]="badgesUrl" 
+      width="100%" 
+      height="100%" 
+      frameborder="0"
+      allowfullscreen>
+    </iframe>
+  } @else {
+    <div class="p-5 text-center">
+      <p>Conectando con el sistema de insignias...</p>
+      <div class="spinner-border text-dark" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  }
+</div>
