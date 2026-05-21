@@ -4,7 +4,7 @@ import { Router } from "@angular/router";
 
 interface User {
   name: string;
-  avatar: string;
+  profilePicture: string | null;
   status?: string;
 }
 

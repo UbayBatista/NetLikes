@@ -42,12 +42,6 @@ export class ProfileHeader {
     private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['userPicture']) {
-      console.log('userPicture recibido:', changes['userPicture'].currentValue);
-    }
-  }
-
   toggleMenu() {
     this.openMenu = !this.openMenu;
   }
