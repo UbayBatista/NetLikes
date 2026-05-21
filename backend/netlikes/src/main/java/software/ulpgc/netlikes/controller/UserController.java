@@ -211,12 +211,12 @@ public class UserController {
         try {
             userService.updateAvatar(email, request.getSeed());
 
-            UserResponseDTO userDto = userService.getUserById(email); 
-            String username = userDto.getUserName();
+            // UserResponseDTO userDto = userService.getUserById(email); 
+            // String username = userDto.getUserName();
 
-            String urlavatarDiscourse = "https://api.dicebear.com/9.x/fun-emoji/png?seed=" + request.getSeed();
+            // String urlavatarDiscourse = "https://api.dicebear.com/9.x/fun-emoji/png?seed=" + request.getSeed();
 
-            discourseService.updateUserAvatarInDiscourse(username, urlavatarDiscourse);
+            //discourseService.updateUserAvatarInDiscourse(username, urlavatarDiscourse);
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());
