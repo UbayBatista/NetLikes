@@ -15,7 +15,6 @@ import { ProfileHeader } from './components/profile-header/profile-header';
 export const routes: Routes = [
   { path: 'login', component: Welcome, canActivate: [guestGuard] },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: 'cabecera', component: ProfileHeader },
   {
     path: '',
     canActivate: [authGuard],
