@@ -4,15 +4,13 @@
 
     @if (isEditing && !isEditingBio) {
       <button 
-        class="btn btn-edit btn-dark position-absolute top-0 end-0 m-3 rounded-circle shadow-sm p-0" 
-        style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; z-index: 20;"
+        class="btn btn-edit btn-dark position-absolute top-0 end-0 m-3 z-1 rounded-circle shadow-sm p-0 bio-edit-btn"
         (click)="toggleBioEdit()">
-        <i class="bi bi-pencil-fill fs-5"></i>
+        <i class="bi bi-pencil-fill pencil-icon"></i>
       </button>
     } @else if (isEditing && isEditingBio) {
       <button 
-        class="btn btn-dark position-absolute top-0 end-0 m-3 rounded-circle shadow-sm p-0" 
-        style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; z-index: 20;"
+        class="btn btn-dark position-absolute top-0 end-0 m-3 z-1 rounded-circle shadow-sm p-0 bio-edit-btn"
         (click)="toggleBioEdit()">
         <i class="bi bi-check fs-5"></i>
       </button>
@@ -22,6 +20,7 @@
       <textarea
         class="form-control mb-1"
         rows="3"
+        minlength="1"
         maxlength="120"
         [value]="editableBio"
         (input)="onBioInput($any($event.target).value)"

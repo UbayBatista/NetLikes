@@ -64,7 +64,9 @@ export class RecommendPanel implements OnChanges {
         this.followService.getFollowing(user.email).subscribe(allFollowers => {
           this.followingUsers = allFollowers.map((u: any) => ({
             name: u.userName,
-            pic: u.profilePicture || 'assets/ProfilePicture.jpg',
+            pic: u.profilePicture == null 
+                        ? 'assets/ProfilePicture.jpg'
+                        : `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${u.profilePicture}`,
             email: u.email
           }));
 

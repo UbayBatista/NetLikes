@@ -34,12 +34,6 @@ export class ProfileHeader {
   
   openMenu: boolean = false;
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['userPicture']) {
-      console.log('userPicture recibido:', changes['userPicture'].currentValue);
-    }
-  }
-
   toggleMenu() {
     this.openMenu = !this.openMenu;
   }
