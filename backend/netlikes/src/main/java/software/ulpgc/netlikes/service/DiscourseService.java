@@ -317,7 +317,7 @@ public class DiscourseService {
         String url = "https://netlikes.duckdns.org/chat/api/direct-message-channels.json";
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Api-Key", "b6b3e96a0bffef725a4481481d8523e98f743a0ad861117370d6f08a1aa3173f");
+        headers.set("Api-Key", apiKey);
         headers.set("Api-Username", user1); 
         headers.setContentType(MediaType.APPLICATION_JSON);
 
@@ -353,41 +353,54 @@ public class DiscourseService {
     }
 
     public void updateUserAvatarInDiscourse(String username, String imageUrl) {
+        System.out.println("=== INICIANDO SINCRONIZACIÓN DE AVATAR ===");
+        System.out.println("1. Usuario destino: " + username);
+        System.out.println("2. URL de la imagen a descargar: " + imageUrl);
+        
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.set("Api-Key", apiKey);
             headers.set("Api-Username", "system");
             headers.setContentType(MediaType.APPLICATION_JSON);
 
+        
             String uploadUrl = "https://netlikes.duckdns.org/uploads.json";
-            
             Map<String, Object> uploadBody = new HashMap<>();
             uploadBody.put("type", "avatar");
             uploadBody.put("synchronous", true);
             uploadBody.put("url", imageUrl);
 
+            System.out.println("3. Enviando orden de descarga a uploads.json...");
             HttpEntity<Map<String, Object>> uploadRequest = new HttpEntity<>(uploadBody, headers);
             ResponseEntity<Map> uploadResponse = restTemplate.postForEntity(uploadUrl, uploadRequest, Map.class);
             
-            Integer uploadId = (Integer) uploadResponse.getBody().get("id");
-
-            if (uploadId != null) {
-                String pickUrl = "https://netlikes.duckdns.org/u/" + username + "/preferences/avatar/pick.json";
-                
-                headers.set("Api-Username", username);
-                Map<String, Object> pickBody = new HashMap<>();
-                pickBody.put("upload_id", uploadId);
-                pickBody.put("type", "uploaded");
-
-                HttpEntity<Map<String, Object>> pickRequest = new HttpEntity<>(pickBody, headers);
-                
-                restTemplate.exchange(pickUrl, HttpMethod.PUT, pickRequest, Map.class);
-                
-                System.out.println("Éxito: Foto de perfil sincronizada con Discourse para -> " + username);
+            System.out.println("4. RESPUESTA DE UPLOADS: " + uploadResponse.getBody());
+            
+            Object uploadIdObj = uploadResponse.getBody().get("id");
+            if (uploadIdObj == null) {
+                System.out.println("ERROR: Discourse no devolvió un ID de imagen. ¿Bloqueó la descarga?");
+                return;
             }
+            
+            Integer uploadId = Integer.parseInt(uploadIdObj.toString());
+            System.out.println("5. ID de imagen asignado por Discourse: " + uploadId);
+
+            String pickUrl = "https://netlikes.duckdns.org/u/" + username + "/preferences/avatar/pick.json";
+            
+            Map<String, Object> pickBody = new HashMap<>();
+            pickBody.put("upload_id", uploadId);
+            pickBody.put("type", "uploaded");
+
+            System.out.println("6. Asignando el avatar al usuario en pick.json...");
+            HttpEntity<Map<String, Object>> pickRequest = new HttpEntity<>(pickBody, headers);
+            ResponseEntity<Map> pickResponse = restTemplate.exchange(pickUrl, HttpMethod.PUT, pickRequest, Map.class);
+            
+            System.out.println("7. RESPUESTA DE PICK: " + pickResponse.getBody());
+            System.out.println("=== FIN: AVATAR SINCRONIZADO ===");
 
         } catch (Exception e) {
-            System.err.println("Aviso: Fallo al sincronizar avatar con Discourse para " + username + ". Motivo: " + e.getMessage());
+            System.err.println("=== ERROR CRÍTICO EN LA SINCRONIZACIÓN ===");
+            e.printStackTrace();
         }
     }
 
