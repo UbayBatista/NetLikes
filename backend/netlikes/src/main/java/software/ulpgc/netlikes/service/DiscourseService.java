@@ -309,4 +309,33 @@ public class DiscourseService {
         }
     }
 
+    public void setSlowMode(Integer topicId, int seconds) {
+        String endpoint = discourseUrl + "/t/" + topicId + "/slow_mode.json";
+        
+        Map<String, Object> body = new HashMap<>();
+        body.put("seconds", seconds);
+
+        try {
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, setHeaders());
+            restTemplate.exchange(endpoint, HttpMethod.PUT, request, String.class);
+        } catch (Exception e) {
+            System.err.println("Error al modificar el modo lento: " + e.getMessage());
+        }
+    }
+
+    public void createBotPost(Integer topicId, String message) {
+        String endpoint = discourseUrl + "/posts.json";
+        
+        Map<String, Object> body = new HashMap<>();
+        body.put("topic_id", topicId);
+        body.put("raw", message);
+
+        try {
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, setHeaders());
+            restTemplate.postForEntity(endpoint, request, String.class);
+        } catch (Exception e) {
+            System.err.println("Error al publicar mensaje del bot: " + e.getMessage());
+        }
+    }
+
 }
