@@ -129,6 +129,7 @@
     <app-confirmation-modal 
       [title]="'Guardar cambios'"
       [message]="'¿Quieres guardar los cambios realizados?'"
+      [isDestructive]="false"
       (result)="handleSaveConfirmation($event)">
     </app-confirmation-modal>
   }

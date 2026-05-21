@@ -4,14 +4,14 @@
 
     @if (isEditing && !isEditingBio) {
       <button 
-        class="btn btn-edit position-absolute top-0 end-0 m-3 rounded-circle shadow-sm p-0" 
+        class="btn btn-edit btn-dark position-absolute top-0 end-0 m-3 rounded-circle shadow-sm p-0" 
         style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; z-index: 20;"
         (click)="toggleBioEdit()">
-        <i class="bi bi-pencil fs-5"></i>
+        <i class="bi bi-pencil-fill fs-5"></i>
       </button>
     } @else if (isEditing && isEditingBio) {
       <button 
-        class="btn btn-success position-absolute top-0 end-0 m-3 rounded-circle shadow-sm p-0" 
+        class="btn btn-dark position-absolute top-0 end-0 m-3 rounded-circle shadow-sm p-0" 
         style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; z-index: 20;"
         (click)="toggleBioEdit()">
         <i class="bi bi-check fs-5"></i>

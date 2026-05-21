@@ -12,6 +12,8 @@ import { AuthService } from "../../services/auth.service";
   styleUrl: "./profile-header.css"
 })
 export class ProfileHeader {
+  private router = inject(Router);
+  
   @Input() userName: string = '';
   @Input() userPicture: string | null = null;
   @Input() isPrivate: boolean = false;
@@ -66,6 +68,11 @@ export class ProfileHeader {
 
   togglePrivacy() {
     this.privacyChange.emit(!this.isPrivate);
+  }
+
+  goToBadges() {
+    this.router.navigate(['/badges']);
+    this.toggleMenu();
   }
 
   logout() {

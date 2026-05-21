@@ -6,13 +6,13 @@
 
     @if (isEditing) {
       @if(isVisibleLocal) {
-        <button class="btn btn-dash position-absolute top-0 end-0 m-3 rounded-circle shadow-sm p-0" 
+        <button class="btn btn-dark btn-dash position-absolute top-0 end-0 m-3 rounded-circle shadow-sm p-0" 
           style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; z-index: 20;"
           (click)="toggleVisibility()">
         <i class="bi bi-dash fs-4"></i>
         </button>
       } @else if(!isVisibleLocal) {
-        <button class="btn btn-plus position-absolute top-0 end-0 m-3 rounded-circle shadow-sm p-0" 
+        <button class="btn btn-dark btn-plus position-absolute top-0 end-0 m-3 rounded-circle shadow-sm p-0" 
           style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; z-index: 20;"
           (click)="toggleVisibility()">
         <i class="bi bi-plus fs-4"></i>

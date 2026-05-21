@@ -36,6 +36,12 @@
 
                     <div class="dropdown-divider"></div>
 
+                    <button class="dropdown-item fw-semibold" (click)="goToBadges()">
+                        Insignias
+                    </button>
+
+                    <div class="dropdown-divider"></div>
+
                     <button class="dropdown-item fw-semibold" (click)="showBlockedUsers()">
                         Usuarios Bloqueados
                     </button>
@@ -73,7 +79,7 @@
 
             @if (isEditing) {
                 <button
-                    class="btn-avatar-edit position-absolute bottom-0 end-0 rounded-circle shadow-sm"
+                    class="btn btn-avatar-edit btn-dark position-absolute bottom-0 end-0 rounded-circle shadow-sm"
                     data-bs-toggle="modal"
                     data-bs-target="#avatarModal"
                     (click)="openAvatarModal()">
