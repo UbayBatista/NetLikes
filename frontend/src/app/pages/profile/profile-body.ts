@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef, inject, De
 import { CommonModule, AsyncPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router'; 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, filter, forkJoin, map, Observable, take } from 'rxjs';
+import { BehaviorSubject, filter, forkJoin, map, Observable, take, of } from 'rxjs';
 
 import { ProfileBody } from "../../components/profile-components/profile-components";
 import { ProfileHeader } from "../../components/profile-header/profile-header";
@@ -398,20 +398,29 @@ export class ProfileComplete implements OnInit {
   handleSaveConfirmation(confirmed: boolean) {
     this.showSaveModal = false;
     if (confirmed) {
-      if (this.pendingBio) {
-        this.profileService.updateBio(this.pendingBio);
-        this.bioComponent?.updateOriginalBio(this.pendingBio);
-      }
-      if (this.pendingAvatar) {
-        this.profileService.updateAvatar(this.pendingAvatar);
-        this.authService.updateStoredUser({ profilePicture: this.pendingAvatar });
-      }
-      if (this.pendingVisibility.length > 0) {
-        const visibilityRequests = this.pendingVisibility.map(v =>
-          this.profileService.updateListVisibility(v.type, v.isVisible)
-        );
-        forkJoin(visibilityRequests).subscribe(() => this.cdr.detectChanges());
-      }
+      this.profile$.pipe(take(1)).subscribe(profile => {
+        if (!profile) return;
+
+        const requests: Observable<any>[] = [];
+
+        if (this.pendingBio) {
+          requests.push(this.profileService.updateBio(profile.email, this.pendingBio));
+          this.bioComponent?.updateOriginalBio(this.pendingBio);
+        }
+        if (this.pendingAvatar) {
+          requests.push(this.profileService.updateAvatar(profile.email, this.pendingAvatar));
+          this.authService.updateStoredUser({ profilePicture: this.pendingAvatar });
+        }
+        if (this.pendingVisibility.length > 0) {
+          this.pendingVisibility.forEach(v =>
+            requests.push(this.profileService.updateListVisibility(profile.email, v.type, v.isVisible))
+          );
+        }
+
+        forkJoin(requests.length > 0 ? requests : [of(null)]).subscribe(() => {
+          this.cdr.detectChanges();
+        });
+      });
     } else {
       this.bioComponent?.discardChanges();
     }
