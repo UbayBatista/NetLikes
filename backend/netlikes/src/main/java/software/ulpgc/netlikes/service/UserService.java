@@ -349,7 +349,16 @@ public class UserService {
     public void updateAvatar(@NonNull String email, String seed) {
         User user = userRepository.findById(email)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        user.setProfilePicture(seed);
+
+        String cleanSeed = seed;
+        if (seed.contains("seed=")) {
+            cleanSeed = seed.substring(seed.indexOf("seed=") + 5);
+            if (cleanSeed.contains("&")) {
+                cleanSeed = cleanSeed.substring(0, cleanSeed.indexOf("&"));
+            }
+        }
+            
+        user.setProfilePicture(cleanSeed);
         userRepository.save(user);
     }
 
