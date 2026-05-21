@@ -22,16 +22,16 @@
 .dropdown-item:hover { background-color: #f1f1f1; }
 .dropdown-menu { margin-right: 10px; }
 
-
 .ig-grid {
     display: grid;
     grid-template-columns: auto 1fr auto;
-    grid-template-rows: auto auto;
+    grid-template-rows: 1fr 1fr;
     grid-template-areas:
         "avatar name stats"
         "avatar button stats";
     column-gap: 2rem;
-    row-gap: 0.2rem;
+    row-gap: 0.5rem;
+    align-items: center;
     padding-right: 3rem; 
 }
 
@@ -39,32 +39,34 @@
     padding-right: 60px;
 }
 
+.ig-avatar-wrapper {
+    grid-area: avatar;
+}
 
 .ig-avatar {
     grid-area: avatar;
-    grid-row: 1 / span 2; 
     width: 120px;
     height: 120px;
     border-radius: 50%;
     object-fit: cover;
-    align-self: center; 
 }
 
-.ig-name-container { 
-    grid-area: name; 
-    align-self: end; 
+.ig-name-container { grid-area: name; align-self: end; }
+
+.ig-info-area {
+    grid-area: button;
+    align-self: start;
 }
 
-.ig-name { font-size: 1.75rem; margin: 0; }
 
+
+.ig-name { font-size: 1.75rem; }
 
 .ig-stats {
     grid-area: stats;
-    grid-row: 1 / span 2; 
     display: flex;
     gap: 3.5rem; 
     text-align: center;
-    align-self: center;
 }
 
 .stat-item { 
@@ -94,8 +96,6 @@
     display: flex;         
     align-items: center;   
     gap: 1rem;           
-    align-self: start; 
-    margin-top: 0; 
 }
 
 .ig-action-btn {
@@ -108,18 +108,15 @@
 .settings-btn { padding: 6px 12px; transition: all 0.2s ease; }
 
 .btn-chat-icon {
-    background: none;
-    border: none;
-    padding: 0;
-    font-size: 1.4rem;
-    color: #333;            
-    transition: transform 0.2s ease; 
+    font-size: 1.2rem;
+    padding: 0.35rem 0.8rem;
+    transition: transform 0.2s ease, background-color 0.2s;
 }
 
 .btn-chat-icon:hover {
-    transform: scale(1.15); 
-    color: #000;
+    transform: scale(1.05); 
 }
+
 
 .chat-toast-error {
     position: fixed;
@@ -150,7 +147,6 @@
     }
 }
 
-
 @media (max-width: 480px) {
     .chat-toast-error {
         width: 90%;
@@ -159,6 +155,7 @@
         justify-content: center;
     }
 }
+
 
 @media (max-width: 768px) {
     .ig-grid {
@@ -227,10 +224,14 @@
         align-self: start; 
     }
 
-
-    .ig-name-container { align-self: center; }
-    .ig-stats { align-self: start; gap: 2.5rem; display: flex; justify-content: flex-end; width: 100%; padding-right: 1rem; text-align: center; }
-    .ig-button-container { align-self: center; width: 100%; margin-top: 12px; justify-self: stretch; }
+    .ig-stats {
+        display: flex;
+        justify-content: flex-end;
+        width: 100%;
+        gap: 2.5rem; 
+        padding-right: 1rem; 
+        text-align: center;
+    }
 
     .stat-label { 
         order: 2; 
@@ -249,10 +250,16 @@
     .ig-stats .fs-5 {
         font-size: 1.4rem !important; 
     }
+
     
     .ig-name { 
         font-size: 1.1rem; 
         margin-bottom: 5px !important;
+    }
+
+    .ig-button-container {
+        justify-self: stretch; 
+        margin-top: 12px; 
     }
 
     .ig-action-btn {
