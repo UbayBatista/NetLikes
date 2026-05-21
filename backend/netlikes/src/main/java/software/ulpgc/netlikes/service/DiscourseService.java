@@ -48,7 +48,6 @@ public class DiscourseService {
     }
 
     public Integer createMovieForum(String filmTitle) {
-        RestTemplate restTemplate = new RestTemplate();
         String endpoint = discourseUrl + "/posts.json";
 
         HttpHeaders headers = setHeaders();
@@ -58,10 +57,9 @@ public class DiscourseService {
         String uniqueRaw = "¡Bienvenido al foro oficial de la película **" + filmTitle + "**! \n\n¿Qué te ha parecido? Anímate a compartir tu opinión con otros usuarios suscritos. \n\n<!-- " + System.currentTimeMillis() + " -->";
 
         body.put("title", "Foro oficial: " + filmTitle); 
-        
         body.put("raw", uniqueRaw);
-        
         body.put("category", moviesCategoryId);
+        body.put("create_as_post_voting", true);
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
@@ -78,8 +76,6 @@ public class DiscourseService {
     }
 
     public Integer getForumIdByTitle(String filmTitle) {
-        RestTemplate restTemplate = new RestTemplate();
-        
         String endpoint = discourseUrl + "/search.json?q=" + filmTitle;
 
         HttpHeaders headers = new HttpHeaders();
