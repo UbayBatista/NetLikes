@@ -28,6 +28,26 @@ textarea.form-control:focus {
     box-shadow: none;
 }
 
+.bio-edit-btn {
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 20;
+}
+
+.bio-edit-btn i {
+  font-size: 1.1rem;
+}
+
+.pencil-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
 @media (max-width: 768px) {
     .custom-section {
         width: 92%;
@@ -35,5 +55,18 @@ textarea.form-control:focus {
         border-radius: 12px;
         border-left: 1px solid #efefef;
         border-right: 1px solid #efefef;
+    }
+    
+    .bio-edit-btn {
+        width: 26px;
+        height: 26px;
+    }
+
+    .bio-edit-btn i {
+        font-size: 0.85rem;
+    }
+
+    .pencil-icon {
+        font-size: 1.1rem;
     }
 }

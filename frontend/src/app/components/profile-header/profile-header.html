@@ -24,7 +24,7 @@
                 } 
                 @else {
                     
-                    <div class="dropdown-item d-flex justify-content-between align-items-center">
+                    <div class="dropdown-item d-flex justify-content-between z-3 align-items-center">
                         <span class="me-3">Cuenta privada</span>
                         <div class="form-check form-switch mb-0">
                             <input class="form-check-input" type="checkbox" 
@@ -36,25 +36,25 @@
 
                     <div class="dropdown-divider"></div>
 
-                    <button class="dropdown-item fw-semibold" (click)="showBlockedUsers()">
+                    <button class="dropdown-item z-3 fw-semibold" (click)="showBlockedUsers()">
                         Usuarios Bloqueados
                     </button>
 
                     <div class="dropdown-divider"></div>
 
-                    <button class="dropdown-item fw-semibold" (click)="changePasswordRequest()">
+                    <button class="dropdown-item z-3 fw-semibold" (click)="changePasswordRequest()">
                         Cambiar contraseña
                     </button>
 
                     <div class="dropdown-divider"></div>
                     
-                    <button class="dropdown-item text-danger fw-semibold" (click)="logout()">
+                    <button class="dropdown-item text-danger z-3 fw-semibold" (click)="logout()">
                         Cerrar sesión
                     </button>
 
                     <div class="dropdown-divider"></div>
                     
-                    <button class="dropdown-item text-danger fw-semibold" (click)="deleteUser()">
+                    <button class="dropdown-item text-danger z-3 fw-semibold" (click)="deleteUser()">
                         Eliminar cuenta
                     </button>
                 }

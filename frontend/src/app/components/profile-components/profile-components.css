@@ -87,6 +87,22 @@
 .nav-btn.left::after { transform: rotate(135deg); margin-left: 5px; }
 .nav-btn.right::after { transform: rotate(-45deg); margin-right: 5px; }
 
+.btn-visibility {
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 20;
+}
+
+.visibility-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
 @media (max-width: 768px) {
     .custom-section {
         width: 92%; 
@@ -103,5 +119,14 @@
 
     .netflix-slider {
         gap: 12px; 
+    }
+
+    .btn-visibility {
+        width: 28px;
+        height: 28px;
+    }
+
+    .visibility-icon {
+        font-size: 1.1rem;
     }
 }
