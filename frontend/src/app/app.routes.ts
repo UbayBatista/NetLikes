@@ -9,6 +9,7 @@ import { FilmDetail } from './pages/film-detail/film-detail';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
 import { ForumSsoComponent } from './forum-sso/forum-sso';
+import { Badges } from './pages/badges/badges';
 
 export const routes: Routes = [
   { path: 'login', component: Welcome, canActivate: [guestGuard] },
@@ -23,7 +24,8 @@ export const routes: Routes = [
       { path: 'profile/:username', component: ProfileComplete },
       { path: 'social', component: Social },
       { path: 'film-details/:id', component: FilmDetail },
-      { path: 'forum-sso', component: ForumSsoComponent }
+      { path: 'forum-sso', component: ForumSsoComponent },
+      { path: 'badges', component: Badges }
     ]
   },
   { path: '**', redirectTo: 'login'}

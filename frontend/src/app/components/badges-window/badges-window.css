@@ -1,0 +1,38 @@
+.badges-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.badges-header {
+  display: flex;
+  padding: 15px 25px;
+  border-bottom: 1px solid #eee;
+  background-color: #fff;
+  flex-shrink: 0;
+  justify-content: flex-start;
+}
+
+.badges-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #333;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+iframe {
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .badges-header {
+    padding: 10px 15px;
+  }
+
+  .badges-header h2 {
+    font-size: 1.1rem;
+  }
+}
