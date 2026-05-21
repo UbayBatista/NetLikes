@@ -337,6 +337,7 @@ public class UserService {
         return null;
     }
 
+    @Transactional
     public void updateBio(@NonNull String email, String bio) {
         User user = userRepository.findById(email)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -344,6 +345,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void updateAvatar(@NonNull String email, String seed) {
         User user = userRepository.findById(email)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
