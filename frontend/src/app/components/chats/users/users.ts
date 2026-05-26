@@ -1,6 +1,8 @@
-import { Component, Output, EventEmitter, signal} from "@angular/core";
+import { Component,Input, Output, EventEmitter, signal, computed, ChangeDetectorRef, inject} from "@angular/core";
 import { FormsModule } from '@angular/forms';
 import { SearchBarComponent } from "../../search-bar/search-bar";
+import { HttpClient } from "@angular/common/http";
+import { AuthService } from "../../../services/auth.service";
 
 @Component({
     selector: "app-social-chats-users",
@@ -11,36 +13,116 @@ import { SearchBarComponent } from "../../search-bar/search-bar";
 })
 export class Users{
    
-    @Output() clickedUser = new EventEmitter<{user: string}>(); 
+    @Output() clickedUser = new EventEmitter<{user: string, chatId: number}>(); 
 
-    search = signal('');
-    
-    Friends = [
-        { name: 'Messi', active: true },
-        { name: 'Luis Suarez', active: false },
-        { name: 'Benzema', active: false },
-        { name: 'La Roca', active: false }
-    ];
+    private cdr = inject(ChangeDetectorRef);
+    private http = inject(HttpClient);
+    private authService = inject(AuthService);
 
-    searchText = '';
+    friends = signal<any[]>([]);
+    searchText = signal('');
+
+    private incomingChatId: number | null = null;
+    private incomingChatName: string = '';
+
+    @Input() set newChatId(id: number | null) {
+        this.incomingChatId = id;
+        this.newChat();
+    }
+
+    @Input() set newChatName(name: string) {
+        this.incomingChatName = name;
+        this.newChat();
+    }
+
+    ngOnInit() {
+        this.authService.getCurrentUser().subscribe(user => {
+            if (!user) return;
+
+            this.http.get<any[]>(`https://api-db.duckdns.org/follows/mutual-friends?username=${user.userName}`)
+                .subscribe({
+                    next: (friendsDB) => {
+                        const actualList = this.friends();
+                        const listaFusionada = friendsDB.map(friendDB => {
+                            const nameDB = friendDB.userName || friendDB.name;
+                            const localFriend = actualList.find(a => (a.userName || a.name) === nameDB);
+
+                            if (localFriend) {
+                                return {
+                                    ...friendDB,
+                                    chatId: localFriend.chatId,
+                                    active: localFriend.active
+                                };
+                            }
+                            return friendDB;
+                        });
+                        this.friends.set(listaFusionada);
+                    },
+                    error: (err) => console.error("Error al cargar amigos mutuos", err)
+                });
+        });
+    }
+
+    private newChat() {
+        if (!this.incomingChatName || !this.incomingChatId) return;
+
+        const list = this.friends();
+        const exists = list.find(user => user.userName === this.incomingChatName);
+
+        list.forEach(p => p.active = false);
+
+        if (!exists) {
+            const nuevoAmigo = {
+                userName: this.incomingChatName,
+                chatId: this.incomingChatId, 
+                active: true 
+            };
+            
+            this.friends.set([nuevoAmigo, ...list]);
+        } else {
+            exists.active = true;
+            exists.chatId = this.incomingChatId;
+            this.friends.set([...list]);
+        }
+        
+        this.cdr.detectChanges();
+    }
+
+    filteredUsers = computed(() => {
+        const searchLow = (this.searchText() || '').toLowerCase();
+        return this.friends().filter(user => 
+        (user.userName || '').toLowerCase().includes(searchLow)
+        );
+    });
 
     handleSearch(text: string) {
-        this.searchText = text.toLowerCase();
+        this.searchText.set(text.toLowerCase());
     }
 
-    get filteredUsers(){
-        const searchLow = this.searchText.toLowerCase();
-        return this.Friends.filter(user => 
-            user.name.toLowerCase().includes(searchLow)
-        );
-    }
 
     selectUser(index: number) {
-        this.filteredUsers.forEach(p => p.active = false);
-        this.filteredUsers[index].active = true;
+        const currentUser = this.friends();
+        currentUser.forEach(p => p.active = false);
+
+        const selected = this.filteredUsers()[index];
+        if (selected) {
+            selected.active = true;
+
+            const realName = selected.userName;
+
+            this.clickedUser.emit({ 
+                user: realName,
+                chatId: selected.chatId || null
+            });
+            console.log(selected);
+            console.log('Cambiando al chat de:', selected.userName, "con ID: ", selected.chatId);
+
+        }
         
-        this.clickedUser.emit({ user: this.filteredUsers[index].name });
+        this.friends.set([...currentUser]);
+        this.cdr.detectChanges(); 
     }
+
 
 
 }

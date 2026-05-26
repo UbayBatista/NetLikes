@@ -1,11 +1,7 @@
 import { Component, Input, Output, OnInit, OnDestroy, ChangeDetectorRef, EventEmitter } from "@angular/core";
 import { MessageBubble } from '../../message-bubble/message-bubble';
-
-interface Menssage{
-    user: string;
-    text: string;
-    itsMe: boolean;
-}
+import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
+import { AuthService } from "../../../services/auth.service";
 
 @Component({
     selector: "app-social-chats-menssages",
@@ -14,78 +10,45 @@ interface Menssage{
     templateUrl: "./menssages.html",
     styleUrl: "./menssages.css"
 })
-export class Menssages implements OnInit, OnDestroy{
-    @Input() user: string="Cristiano"
-    @Input() person: string="Messi"
+export class Menssages implements OnInit{
+
+    saveUrl: SafeResourceUrl | null = null;
+    activeUser = false;
+    chatId: number | null = null;
+
+    @Input() person: string = "";
     @Output() return = new EventEmitter<void>();
 
-    @Input() set selectedUserChat(value: string) {
-        this.person = value;
+    @Input() set selectedUserChat(value: number | null) {
+        this.chatId = value;
+
+        if (this.chatId !== null) {
+            const targetTopic = `/chat/c/dm/${this.chatId}`; 
+            const ssoUrl = `https://netlikes.duckdns.org/session/sso?return_path=${encodeURIComponent(targetTopic)}`;
+            
+            setTimeout(() => {
+                this.saveUrl = this.sanitizer.bypassSecurityTrustResourceUrl(ssoUrl);
+                console.log("Cargando chat silenciosamente:", ssoUrl);
+                this.cdr.detectChanges();
+            }, 10);
+        }else {
+          this.saveUrl = null; 
+          this.activeUser = false;
+          this.cdr.detectChanges();
+      }
+
+      this.cdr.detectChanges();
+
     }
 
-    messageHistory: Menssage[] = [
-        { text: 'Hola, ¿qué tal?', itsMe: false, user: this.person},
-        { text: '¡Todo bien! Entrenando.', itsMe: true, user: this.user }
-    ];
-
-        private intervalId: any; 
-        private countMessage = 0;
-        constructor(private cdr: ChangeDetectorRef) {}
-
+    constructor(
+      private cdr: ChangeDetectorRef, 
+      private sanitizer: DomSanitizer,
+      private authService: AuthService
+    ) {}
+    
     ngOnInit() {
-        this.intervalId = setInterval(() => {
-            this.sendAutomaticMessage(); 
-            this.countMessage++;     
-            if (this.countMessage >= 5) {
-                clearInterval(this.intervalId); 
-            }
-        }, 5000); 
-    }
-
-
-    ngOnDestroy() {
-        if (this.intervalId) {
-            clearInterval(this.intervalId);
-        }
-    }
-
-    randomPhrase: string[] = [
-      "¡Hola! ¿Cómo va el entrenamiento?",
-      "Ayer jugamos un partidazo ⚽",
-      "¿Viste el golazo que marqué?",
-      "Siuuuuuuu",
-      "Me voy al gimnasio, luego hablamos.",
-      "Qué buen clima para jugar hoy."
-    ];
-
-    sendAutomaticMessage() {
-        
-        const number = Math.floor(Math.random() * 6);
-
-        const randomText = this.randomPhrase[number];
-        
-
-        this.messageHistory.push(
-            { text: randomText, itsMe: false, user: this.person },
-        );
-
-        this.cdr.detectChanges();
-    }
-   
-    sendMessage(newText: string) {
-        if (newText.trim() !== '') {
-            this.messageHistory.push({
-                text: newText,
-                itsMe: true,
-                user: this.user
-            });
-        }
-        
-    }
-
-    height(textarea: HTMLTextAreaElement) {
-        textarea.style.height = 'auto'; 
-        textarea.style.height = textarea.scrollHeight + 'px';
+       
     }
 
     goBack() {

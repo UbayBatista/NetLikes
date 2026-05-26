@@ -9,7 +9,7 @@ export class RecommendationFollowedService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
   
-  private apiUrl = 'http://localhost:8080/api/recommend';
+  private apiUrl = 'https://api-db.duckdns.org/api/recommend';
 
   sendRecommendations(filmId: number, targetEmails: string[]): Observable<any> {
     return this.authService.getCurrentUser().pipe(

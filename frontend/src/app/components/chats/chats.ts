@@ -1,6 +1,10 @@
-import { Component, Input } from "@angular/core";
+import { ChangeDetectorRef, Component, inject, Input } from "@angular/core";
 import { Users } from "./users/users";
 import { Menssages } from "./menssages/menssages";
+import { ActivatedRoute } from '@angular/router';
+import { AuthService } from "../../services/auth.service";
+import { HttpClient } from "@angular/common/http";
+
 @Component({
     selector: "app-social-chats",
     standalone: true,
@@ -10,12 +14,58 @@ import { Menssages } from "./menssages/menssages";
 })
 export class Chats{
 
-    currentUser: string = 'Messi';
+    userFriend: string = '';
     selectedChat: boolean = false;
+    chatId: number | null = null;
+    private authService = inject(AuthService);
+    private http = inject(HttpClient);
 
-    seeChat(event: { user: string }) {
-        this.currentUser = event.user;
-        this.selectedChat = true;
+    constructor(private route: ActivatedRoute, private cdr: ChangeDetectorRef) {}
+
+    ngOnInit() {
+        this.route.queryParams.subscribe(params => {
+            if (params['chatId'] && params['chatWith']) {
+                this.chatId = Number(params['chatId']);
+                this.userFriend = params['chatWith'];
+                this.selectedChat = true;
+            }
+        });
+    }
+
+    seeChat(event: { user: string, chatId: number | null }) {
+        this.userFriend = event.user;
+        this.selectedChat = false;
+        this.chatId = null;
+
+        if (event.chatId) {
+            this.chatId = event.chatId;
+            this.selectedChat = true;
+            
+        } else {
+            console.log(`Pidiendo ID a Java para chatear con ${this.userFriend}...`);
+            
+            this.authService.getCurrentUser().subscribe(user => { 
+                if (!user) return;
+                
+                const myUser = user.userName;
+                
+                this.http.get<number>(`https://api-db.duckdns.org/users/chat/id?myUser=${myUser}&userFriend=${this.userFriend}`)
+                    .subscribe({
+                        next: (nuevoChatId) => {
+                            console.log(`¡ID recibido! Abriendo el chat ${nuevoChatId}`);
+                            setTimeout(() => {
+                                this.chatId = nuevoChatId;
+                                this.selectedChat = true;
+                                this.cdr.detectChanges();
+                            }, 10);
+                        },
+                        error: (err) => {
+                            console.error("No se pudo iniciar el chat.", err);
+                        }
+                    });
+            });
+        }
+
     }
 
     returnToList() {
