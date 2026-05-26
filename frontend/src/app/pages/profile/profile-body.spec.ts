@@ -8,6 +8,7 @@ import { ProfileService } from '../../services/profile.service';
 import { FollowService } from '../../services/follow.service';
 import { AuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
+import { MyProfile } from '../../models/user.models';
 
 describe('ProfileComplete Component', () => {
   let component: ProfileComplete;
@@ -23,7 +24,9 @@ describe('ProfileComplete Component', () => {
       getProfile: vi.fn().mockReturnValue(of({ userName: 'TestUser', email: 'test@test.com', followers: 10, following: 5 })),
       isMyProfile: vi.fn().mockReturnValue(of(true)),
       loadProfile: vi.fn(),
-      updateBio: vi.fn(),
+      updateBio: vi.fn().mockReturnValue(of({})),
+      updateAvatar: vi.fn().mockReturnValue(of({})),
+      updateListVisibility: vi.fn().mockReturnValue(of({})),
       updatePrivacy: vi.fn()
     };
 
@@ -38,7 +41,8 @@ describe('ProfileComplete Component', () => {
     };
 
     const mockAuthService = {
-      logout: vi.fn()
+      logout: vi.fn(),
+      updateStoredUser: vi.fn()
     };
 
     const mockUserService = {
@@ -349,7 +353,10 @@ describe('ProfileComplete Component', () => {
         following: 5,
         watchedFilms: [],
         laterFilms: [],
-        recommendedFilms: [{ id: 1, title: 'Inception', posterPath: '/inception.jpg' }]
+        recommendedFilms: [{ id: 1, title: 'Inception', posterPath: '/inception.jpg' }],
+        showWatchedFilms: true,
+        showFilmsToWatchLater: true,
+        showRecommendedFilms: true
       }));
       profileService.isMyProfile.mockReturnValue(of(true));
 
@@ -399,18 +406,6 @@ describe('ProfileComplete Component', () => {
       expect(component.thereIsChanges).toBe(false);
     });
 
-    it('should call updateBio and loadProfile when save is confirmed', () => {
-      component.pendingBio = 'Nueva bio';
-
-      component.handleSaveConfirmation(true);
-
-      expect(profileService.updateBio).toHaveBeenCalledWith('Nueva bio');
-      expect(profileService.loadProfile).toHaveBeenCalledWith('TestUser');
-      expect(component.isEditing).toBe(false);
-      expect(component.thereIsChanges).toBe(false);
-      expect(component.pendingBio).toBe('');
-    });
-
     it('should not call updateBio and should reset state when save is cancelled', () => {
       component.pendingBio = 'Nueva bio';
       component.thereIsChanges = true;
@@ -421,6 +416,94 @@ describe('ProfileComplete Component', () => {
       expect(component.isEditing).toBe(false);
       expect(component.thereIsChanges).toBe(false);
       expect(component.pendingBio).toBe('');
+    });
+  });
+
+  describe('Save Confirmation Flow (handleSaveConfirmation)', () => {
+    let mockBioComponent: any;
+
+    beforeEach(() => {
+      mockBioComponent = {
+        updateOriginalBio: vi.fn(),
+        discardChanges: vi.fn()
+      };
+      component.bioComponent = mockBioComponent;
+
+      component.profile$ = of({
+        profilePicture: null,
+        userName: 'TestUser',
+        email: 'test@test.com',
+        bio: '',
+        isPrivate: false,
+        followers: 10,
+        following: 5,
+        watchedFilms: [],
+        laterFilms: [],
+        recommendedFilms: [],
+        showFilmsToWatchLater: true,
+        showRecommendedFilms: true,
+        showWatchedFilms: true
+      } as MyProfile);
+    });
+
+    it('should call updateBio and updateOriginalBio when confirmed is true and bio has changed', () => {
+      component.pendingBio = 'Nueva biografía de prueba';
+      
+      component.handleSaveConfirmation(true);
+
+      expect(profileService.updateBio).toHaveBeenCalledWith('test@test.com', 'Nueva biografía de prueba');
+      expect(mockBioComponent.updateOriginalBio).toHaveBeenCalledWith('Nueva biografía de prueba');
+      expect(component.showSaveModal).toBe(false);
+      expect(component.thereIsChanges).toBe(false);
+      expect(component.isEditing).toBe(false);
+      expect(component.pendingBio).toBe('')
+    });
+
+    it('should call updateAvatar and updateStoredUser when confirmed is true and avatar has changed', () => {
+      component.pendingAvatar = 'avatar_seed_123';
+
+      component.handleSaveConfirmation(true);
+
+      expect(profileService.updateAvatar).toHaveBeenCalledWith('test@test.com', 'avatar_seed_123');
+      expect(authService.updateStoredUser).toHaveBeenCalledWith({ profilePicture: 'avatar_seed_123' });
+      expect(component.pendingAvatar).toBe('');
+      expect(component.thereIsChanges).toBe(false);
+    });
+
+    it('should call updateListVisibility for each item in pendingVisibility when confirmed is true', () => {
+      component.pendingVisibility = [
+        { type: 'WatchedFilms', isVisible: false },
+        { type: 'RecommendedFilms', isVisible: true }
+      ];
+
+      component.handleSaveConfirmation(true);
+
+      expect(profileService.updateListVisibility).toHaveBeenCalledWith('test@test.com', 'WatchedFilms', false);
+      expect(profileService.updateListVisibility).toHaveBeenCalledWith('test@test.com', 'RecommendedFilms', true);
+      expect(component.pendingVisibility).toEqual([]);
+      expect(component.thereIsChanges).toBe(false);
+    });
+
+    it('should call discardChanges on bioComponent and reset state without hitting services when confirmed is false', () => {
+      component.pendingBio = 'Cambio ignorado';
+      component.pendingAvatar = 'avatar_ignorado';
+      component.pendingVisibility = [{ type: 'FilmsToWatchLater', isVisible: false }];
+      component.thereIsChanges = true;
+      component.isEditing = true;
+
+      component.handleSaveConfirmation(false);
+
+      expect(mockBioComponent.discardChanges).toHaveBeenCalled();
+      expect(profileService.updateBio).not.toHaveBeenCalled();
+      expect(profileService.updateAvatar).not.toHaveBeenCalled();
+      expect(profileService.updateListVisibility).not.toHaveBeenCalled();
+
+      expect(component.showSaveModal).toBe(false);
+      expect(component.pendingBio).toBe('');
+      expect(component.pendingAvatar).toBe('');
+      expect(component.pendingVisibility).toEqual([]);
+      expect(component.thereIsChanges).toBe(false);
+      expect(component.isEditing).toBe(false);
     });
   });
 });

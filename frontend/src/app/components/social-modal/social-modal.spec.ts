@@ -29,7 +29,7 @@ describe('SocialModal Component (US 7.2)', () => {
   describe('Profile Navigation', () => {
     it('should navigate to the clicked user profile from the followers list', () => {
       component.title = 'Seguidores';
-      component.users = [{ name: 'ana', avatar: '' }];
+      component.users = [{ name: 'ana', profilePicture: '' }];
       fixture.detectChanges();
 
       component.goToProfile('ana');
@@ -50,7 +50,7 @@ describe('SocialModal Component (US 7.2)', () => {
 
     it('should navigate to the clicked user profile from the following list', () => {
       component.title = 'Seguidos';
-      component.users = [{ name: 'carlos', avatar: '' }];
+      component.users = [{ name: 'carlos', profilePicture: '' }];
       fixture.detectChanges();
 
       component.goToProfile('carlos');
