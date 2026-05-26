@@ -526,6 +526,48 @@ class UserControllerTest {
     }
 
     @Test
+    void updateAvatar_shouldReturn200_whenUserExists() throws Exception {
+        createAndSaveUser("juan@email.com");
+
+        String body = "{\"seed\": \"Moon\"}";
+
+        mockMvc.perform(patch("/users/myProfile/juan@email.com/avatar")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isOk());
+
+        User updated = userRepository.findById("juan@email.com").get();
+        assertThat(updated.getProfilePicture()).isEqualTo("Moon");
+    }
+
+    @Test
+    void updateAvatar_shouldReturn404_whenUserNotFound() throws Exception {
+        String body = "{\"seed\": \"Moon\"}";
+
+        mockMvc.perform(patch("/users/myProfile/noexiste@email.com/avatar")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updateAvatar_shouldReturn200_whenSeedChanges() throws Exception {
+        User user = createAndSaveUser("juan@email.com");
+        user.setProfilePicture("Sad");
+        userRepository.save(user);
+
+        String body = "{\"seed\": \"Moon\"}";
+
+        mockMvc.perform(patch("/users/myProfile/juan@email.com/avatar")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isOk());
+
+        User updated = userRepository.findById("juan@email.com").get();
+        assertThat(updated.getProfilePicture()).isEqualTo("Moon");
+    }
+
+    @Test
     void changeWatchedFilmsVisibility_shouldReturn200_whenSetToNotVisible() throws Exception {
         createAndSaveUser("juan@email.com");
 

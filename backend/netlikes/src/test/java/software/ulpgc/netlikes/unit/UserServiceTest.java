@@ -322,4 +322,26 @@ class UserServiceTest {
 
         assertThrows(RuntimeException.class, () -> userService.updateBio("noexiste@email.com", "Bio"));
     }
+
+    @Test
+    void updateAvatar_shouldSaveAvatar_whenUserExists() {
+        User user = new User();
+        user.setEmail("juan@email.com");
+        user.setVector("");
+
+        when(userRepository.findById("juan@email.com")).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+
+        userService.updateAvatar("juan@email.com", "Moon");
+
+        assertThat(user.getProfilePicture()).isEqualTo("Moon");
+        org.mockito.Mockito.verify(userRepository).save(user);
+    }
+
+    @Test
+    void updateAvatar_shouldThrowException_whenUserNotFound() {
+        when(userRepository.findById("noexiste@email.com")).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> userService.updateAvatar("noexiste@email.com", "Sad"));
+    }
 }
