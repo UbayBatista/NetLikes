@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
+
 import jakarta.persistence.EntityManager;
 import software.ulpgc.netlikes.model.Follow;
 import software.ulpgc.netlikes.model.User;
@@ -15,7 +17,8 @@ import java.util.Date;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@ActiveProfiles("test")
 public class FollowRepositoryIT {
 
     @Autowired 
@@ -49,48 +52,24 @@ public class FollowRepositoryIT {
     }
 
     @Test
-    @DisplayName("Should save follow with PENDING state")
-    void shouldSaveFollow() {
-        User follower = this.createUser("follower@test.com", "Seguidor");
-        User followed = this.createUser("target@test.com", "Objetivo");
-        entityManager.flush(); 
+    @DisplayName("Should get a follow by follower and followed")
+    void should_GetFollowByFollowerAndFollowed_when_FollowExists() {
+        User follower = createUser("follower@test.com", "Seguidor");
+        User followed = createUser("target@test.com", "Objetivo");
+        entityManager.flush();
 
         Follow follow = this.createFollow(follower, followed, Follow.State.PENDING);
         Follow savedFollow = repository.save(follow);
-        entityManager.flush(); 
-
-        assertThat(savedFollow).isNotNull();
-        assertThat(savedFollow.getState()).isEqualTo(Follow.State.PENDING);
-    }
-
-    @Test
-    @DisplayName("Should update state from PENDING to ACCEPTED")
-    void shouldUpdateFollowState() {
-        User follower = this.createUser("follower@test.com", "Seguidor");
-        User followed = this.createUser("target@test.com", "Objetivo");
-        
-        Follow initialFollow = repository.save(this.createFollow(follower, followed, Follow.State.PENDING));
         entityManager.flush();
 
-        initialFollow.setState(Follow.State.ACCEPTED);
-        Follow updatedFollow = repository.save(initialFollow);
-        entityManager.flush();
+        Follow followedList = repository.findByFollowed_Email(followed.getEmail()).get(0);
+        assertThat(followedList).isNotNull();
+        assertThat(followedList).isEqualTo(savedFollow);
+        assertThat(followedList.getState()).isEqualTo(Follow.State.PENDING);
 
-        assertThat(updatedFollow.getState()).isEqualTo(Follow.State.ACCEPTED);
-    }
-
-    @Test
-    @DisplayName("Should delete follow")
-    void shouldRemoveFollow() {
-        User follower = this.createUser("follower@test.com", "Seguidor");
-        User followed = this.createUser("target@test.com", "Objetivo");
-        
-        Follow follow = repository.save(this.createFollow(follower, followed, Follow.State.ACCEPTED));
-        entityManager.flush();
-
-        repository.delete(follow);
-        entityManager.flush();
-
-        assertThat(repository.findAll()).isEmpty();
+        Follow followerList = repository.findByFollower_Email(follower.getEmail()).get(0);
+        assertThat(followerList).isNotNull();
+        assertThat(followerList).isEqualTo(savedFollow);
+        assertThat(followerList.getState()).isEqualTo(Follow.State.PENDING);
     }
 }

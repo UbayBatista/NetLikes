@@ -10,13 +10,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
+import jakarta.transaction.Transactional;
 import software.ulpgc.netlikes.model.Notify;
 import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.repository.NotifyRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
 import software.ulpgc.netlikes.service.FollowService;
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@ActiveProfiles("test")
+@Transactional
 public class FollowServiceIT {
 
     @Autowired private FollowService followService;
@@ -62,7 +68,7 @@ public class FollowServiceIT {
     
     @Test
     @DisplayName("Should receive notification on follow request")
-    void shouldReceiveNotification_when_UserRequestsToFollow() {
+    void should_ReceiveNotification_when_UserRequestsToFollow() {
         followService.requestFollow("paco@gmail.com", "elena@gmail.com");
 
         List<Notify> notifications = notifyRepository.findByUserReceiverEmailOrderByDateDesc("elena@gmail.com");

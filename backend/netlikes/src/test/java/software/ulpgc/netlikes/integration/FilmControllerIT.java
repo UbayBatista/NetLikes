@@ -12,6 +12,7 @@ import software.ulpgc.netlikes.model.Film;
 import software.ulpgc.netlikes.repository.FilmRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -53,14 +54,16 @@ public class FilmControllerIT {
     }
 
     @Test
-    void shouldReturnAllFilms() throws Exception {
+    @DisplayName("Should return all films")
+    void should_ReturnAllFilms_when_Requested() throws Exception {
         mockMvc.perform(get("/films"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$").isArray());
     }
 
     @Test
-    void shouldReturnFilmDetailsAndVideos() throws Exception {
+    @DisplayName("Should return film details and videos when requested")
+    void should_ReturnFilmDetailsAndVideos_when_RequestedForId() throws Exception {
         Film savedFilm = createAndSaveFilm();
 
         mockMvc.perform(get("/films/" + savedFilm.getId()))
@@ -69,12 +72,24 @@ public class FilmControllerIT {
     }
 
     @Test
-    @DisplayName("Should remove film from database when deleted")
-    void should_RemoveFilmFromDatabase_when_Deleted() {
+    @DisplayName("Should remove film via API when deleted")
+    void should_RemoveFilmFromDatabase_when_Deleted() throws Exception {
         Film film = createAndSaveFilm();
 
-        filmRepository.deleteById(film.getId());
+        mockMvc.perform(delete("/films/" + film.getId()))
+            .andExpect(status().isOk()); 
 
         assertThat(filmRepository.existsById(film.getId())).isFalse();
+    }
+
+    @Test
+    @DisplayName("Should return empty video list when no trailers exist")
+    void should_ReturnEmptyVideoList_when_NoTrailersExist() throws Exception {
+        Film film = createAndSaveFilm();
+        
+        mockMvc.perform(delete("/films/" + film.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.videos").isArray())
+        .andExpect(jsonPath("$.videos").isEmpty());
     }
 }
