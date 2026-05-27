@@ -61,8 +61,7 @@ public class FilmService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public FilmResponseDTO saveFilm(FilmRequestDTO dto) {
 
-        Film film = new Film();
-        applyDtoToEntity(dto, film);
+        Film film = applyDtoToEntity(dto);
 
         filmRepository.save(film);
         return toDTO(film);
@@ -79,7 +78,8 @@ public class FilmService {
         return ResponseEntity.ok(results);
     }
 
-    private void applyDtoToEntity(FilmRequestDTO dto, Film film) {
+    private Film applyDtoToEntity(FilmRequestDTO dto) {
+        Film film = new Film();
         film.setId(dto.getId());
         film.setTitle(dto.getTitle());
         film.setOverView(dto.getOverView());
@@ -156,6 +156,8 @@ public class FilmService {
         film.setVideos(videos);
 
         film.setVector(dto.getVector());
+
+        return film;
     }
 
 

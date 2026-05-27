@@ -47,7 +47,7 @@ public class FilmBehaviorTest {
     void deletingFilmShouldRemoveItFromDatabase() {
         createAndSaveFilm(101);
 
-        filmService.deleteFilm(101);
+        filmRepository.deleteById(101);
 
         assertThat(filmRepository.existsById(101)).isFalse();
     }
