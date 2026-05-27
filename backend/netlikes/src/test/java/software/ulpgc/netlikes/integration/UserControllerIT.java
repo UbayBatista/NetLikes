@@ -9,6 +9,7 @@ import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.repository.GenreRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
