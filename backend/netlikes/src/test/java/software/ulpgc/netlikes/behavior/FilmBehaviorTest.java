@@ -44,7 +44,7 @@ public class FilmBehaviorTest {
 
     @Test
     @DisplayName("Should remove film from database when deleted")
-    void deletingFilmShouldRemoveItFromDatabase() {
+    void should_RemoveFilmFromDatabase_when_Deleted() {
         createAndSaveFilm(101);
 
         filmRepository.deleteById(101);
@@ -54,7 +54,7 @@ public class FilmBehaviorTest {
 
     @Test
     @DisplayName("Should return empty video list when no trailers exist")
-    void shouldReturnEmptyVideoListWhenNoTrailersExist() {
+    void should_ReturnEmptyVideoList_when_NoTrailersExist() {
         createAndSaveFilm(102);
 
         FilmResponseDTO response = filmService.getFilmById(102);

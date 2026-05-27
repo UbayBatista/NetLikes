@@ -67,7 +67,7 @@ public class NotifyBehaviorTest {
 
     @Test
     @DisplayName("Should receive notification on follow request")
-    void testHU8_2_ReceiveNotificationOnFollowRequest() {
+    void shouldReceiveNotification_when_UserRequestsToFollow() {
         followService.requestFollow("paco@gmail.com", "elena@gmail.com");
 
         List<Notify> notifs = notifyRepository.findByUserReceiverEmailOrderByDateDesc("elena@gmail.com");
@@ -79,7 +79,7 @@ public class NotifyBehaviorTest {
 
     @Test
     @DisplayName("Should remove notification when follow request is cancelled")
-    void testCancelFollowRequest_RemovesNotification() {
+    void should_RemoveNotification_when_FollowRequestIsCancelled() {
         followService.requestFollow("paco@gmail.com", "elena@gmail.com");
 
         followService.deleteFollow("paco@gmail.com", "elena@gmail.com");
@@ -88,8 +88,9 @@ public class NotifyBehaviorTest {
         assertTrue(notifs.isEmpty(), "La notificación debe desaparecer al cancelar la solicitud");
     }
 
-    @Test //Este test habrá que quitarlo cuando seguir genere notifiaciones.
-    void testFollowPublicAccount_DoesNotSendNotification() {
+    @Test
+    @DisplayName("Should not send notification when user follows public account")
+    void should_NotSendNotification_when_UserFollowsPublicAccount() {
         followService.requestFollow("paco@gmail.com", "carlos@gmail.com");
 
         List<Notify> notifs = notifyRepository.findByUserReceiverEmailOrderByDateDesc("carlos@gmail.com");

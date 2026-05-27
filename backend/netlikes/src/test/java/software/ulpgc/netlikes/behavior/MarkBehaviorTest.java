@@ -65,7 +65,7 @@ public class MarkBehaviorTest {
 
     @Test
     @DisplayName("Should add film to seen list")
-    void shouldAddFilmToSeenList() {
+    void should_AddFilmToSeenList_when_ToggledToSeen() {
         assertThat(markRepository.existsById(new MarkId(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN))).isFalse();
 
         markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN);
@@ -77,7 +77,7 @@ public class MarkBehaviorTest {
 
     @Test
     @DisplayName("Should change from watch later to seen")
-    void shouldChangeFromWatchLaterToSeen() {
+    void should_ChangeFromWatchLaterToSeen_when_ToggledToWatchLater() {
         markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.WATCHLATER);
         markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN);
 
@@ -90,7 +90,7 @@ public class MarkBehaviorTest {
 
     @Test
     @DisplayName("Should remove film from seen list")
-    void shouldRemoveFromSeenList() {
+    void should_RemoveFilmFromSeenList_when_ToggledOff() {
         markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN);
         markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN);
 
@@ -99,7 +99,7 @@ public class MarkBehaviorTest {
 
     @Test
     @DisplayName("Should add film to recommended list")
-    void shouldAddFilmToRecommendedList() {
+    void should_AddFilmToRecommendedList_when_SelectedRecommended() {
         assertThat(markRepository.existsById(new MarkId(testUser.getEmail(), testFilm.getId(), Mark.Type.RECOMMENDED))).isFalse();
 
         markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.RECOMMENDED);
@@ -111,7 +111,7 @@ public class MarkBehaviorTest {
 
     @Test
     @DisplayName("Should remove film from recommended list")
-    void shouldRemoveFromRecommendedList() {
+    void should_RemoveFilmFromRecommendedList_when_UndoRecommended() {
         markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.RECOMMENDED);
 
         markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.RECOMMENDED);
