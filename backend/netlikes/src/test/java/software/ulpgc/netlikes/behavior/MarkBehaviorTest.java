@@ -45,7 +45,7 @@ public class MarkBehaviorTest {
         testUser.setShowWatchedFilms(false);
         testUser.setShowFilmsToWatchLater(false);
         testUser.setShowRecommendedFilms(false);
-        testUser.setVector("");
+        testUser.setVector("[1.0, 0.5, 0.2]");
         userRepository.save(testUser);
 
         testFilm = new Film();
@@ -59,7 +59,7 @@ public class MarkBehaviorTest {
         testFilm.setGenres(List.of());
         testFilm.setCast(new HashSet<>());
         testFilm.setVideos(List.of());
-        testFilm.setVector("");
+        testFilm.setVector("[0.8, 0.6, 0.4]");
         filmRepository.save(testFilm);
     }
 
