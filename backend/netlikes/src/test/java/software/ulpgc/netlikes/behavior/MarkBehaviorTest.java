@@ -64,7 +64,7 @@ public class MarkBehaviorTest {
     }
 
     @Test
-    @DisplayName("HU 4.1: Añadir a Vistas")
+    @DisplayName("Should add film to seen list")
     void shouldAddFilmToSeenList() {
         assertThat(markRepository.existsById(new MarkId(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN))).isFalse();
 
@@ -76,7 +76,7 @@ public class MarkBehaviorTest {
     }
 
     @Test
-    @DisplayName("HU 4.1: Cambiar de Ver más tarde a Vistas")
+    @DisplayName("Should change from watch later to seen")
     void shouldChangeFromWatchLaterToSeen() {
         markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.WATCHLATER);
         markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN);
@@ -89,7 +89,7 @@ public class MarkBehaviorTest {
     }
 
     @Test
-    @DisplayName("HU 4.1: Retirar de Vistas")
+    @DisplayName("Should remove film from seen list")
     void shouldRemoveFromSeenList() {
         markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN);
         markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.SEEN);
@@ -98,7 +98,7 @@ public class MarkBehaviorTest {
     }
 
     @Test
-    @DisplayName("HU 10.2: Añadir a Recomendaciones")
+    @DisplayName("Should add film to recommended list")
     void shouldAddFilmToRecommendedList() {
         assertThat(markRepository.existsById(new MarkId(testUser.getEmail(), testFilm.getId(), Mark.Type.RECOMMENDED))).isFalse();
 
@@ -110,7 +110,7 @@ public class MarkBehaviorTest {
     }
 
     @Test
-    @DisplayName("HU 10.2: Retirar de Recomendaciones")
+    @DisplayName("Should remove film from recommended list")
     void shouldRemoveFromRecommendedList() {
         markService.toggleMarkLogic(testUser.getEmail(), testFilm.getId(), Mark.Type.RECOMMENDED);
 

@@ -43,7 +43,7 @@ public class FilmBehaviorTest {
     }
 
     @Test
-    @DisplayName("Eliminar una película debe borrarla de la base de datos")
+    @DisplayName("Should remove film from database when deleted")
     void deletingFilmShouldRemoveItFromDatabase() {
         createAndSaveFilm(101);
 
@@ -53,7 +53,7 @@ public class FilmBehaviorTest {
     }
 
     @Test
-    @DisplayName("Debe devolver lista de vídeos vacía si la película no tiene trailers")
+    @DisplayName("Should return empty video list when no trailers exist")
     void shouldReturnEmptyVideoListWhenNoTrailersExist() {
         createAndSaveFilm(102);
 

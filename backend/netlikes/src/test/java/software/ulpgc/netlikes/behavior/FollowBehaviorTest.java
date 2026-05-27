@@ -1,6 +1,7 @@
 package software.ulpgc.netlikes.behavior;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,7 +29,6 @@ public class FollowBehaviorTest {
     @Autowired private FollowRepository followRepository;
     @Autowired private UserRepository userRepository;
 
-    @MockitoBean private DiscourseService discourseService;
 
     @BeforeEach
     void setUp() {
@@ -68,7 +68,8 @@ public class FollowBehaviorTest {
     }
 
     @Test
-    void testHU7_4_AcceptFollowRequest() {
+    @DisplayName("Should accept follow request and update status to ACCEPTED")
+    void acceptFollowRequest() {
         followService.requestFollow("paco@gmail.com", "elena@gmail.com");
 
         followService.acceptFollow("paco@gmail.com", "elena@gmail.com");
@@ -78,7 +79,8 @@ public class FollowBehaviorTest {
     }
 
     @Test
-    void testHU7_4_RejectFollowRequest() {
+    @DisplayName("Should reject follow request and remove it from database")
+    void rejectFollowRequest() {
         followService.requestFollow("paco@gmail.com", "elena@gmail.com");
 
         followService.rejectFollow("paco@gmail.com", "elena@gmail.com");
@@ -88,7 +90,8 @@ public class FollowBehaviorTest {
     }
 
     @Test
-    void testFollowPublicAccount_AutoAccepts() {
+    @DisplayName("Should follow public account without needing acceptance")
+    void followPublicAccount_AutoAccepts() {
         followService.requestFollow("paco@gmail.com", "carlos@gmail.com");
 
         Follow follow = followRepository.findById(new FollowId("paco@gmail.com", "carlos@gmail.com")).orElseThrow();
@@ -96,7 +99,8 @@ public class FollowBehaviorTest {
     }
 
     @Test
-    void testHU7_5_1_BlockUser() {
+    @DisplayName("Should block user and update status to BLOCKED")
+    void blockUser() {
         followService.blockUser("paco@gmail.com", "elena@gmail.com");
 
         Follow follow = followRepository.findById(new FollowId("paco@gmail.com", "elena@gmail.com")).orElseThrow();
@@ -107,7 +111,8 @@ public class FollowBehaviorTest {
     }
 
     @Test
-    void testHU7_5_2_UnblockUser() {
+    @DisplayName("Should unblock user and remove follow record from database")
+    void unblockUser() {
         followService.blockUser("paco@gmail.com", "elena@gmail.com");
         
         followService.unblockUser("paco@gmail.com", "elena@gmail.com");

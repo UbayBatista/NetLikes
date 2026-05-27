@@ -1,6 +1,7 @@
 package software.ulpgc.netlikes.behavior;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -65,6 +66,7 @@ public class NotifyBehaviorTest {
     }
 
     @Test
+    @DisplayName("Should receive notification on follow request")
     void testHU8_2_ReceiveNotificationOnFollowRequest() {
         followService.requestFollow("paco@gmail.com", "elena@gmail.com");
 
@@ -76,6 +78,7 @@ public class NotifyBehaviorTest {
     }
 
     @Test
+    @DisplayName("Should remove notification when follow request is cancelled")
     void testCancelFollowRequest_RemovesNotification() {
         followService.requestFollow("paco@gmail.com", "elena@gmail.com");
 
