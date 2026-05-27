@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Transactional
-public class MarkControllerTest {
+public class MarkControllerIT {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private UserRepository userRepository;

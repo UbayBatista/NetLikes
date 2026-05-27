@@ -27,7 +27,7 @@ import java.util.List;
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Transactional
-public class FilmControllerTest {
+public class FilmControllerIT {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private FilmRepository filmRepository;

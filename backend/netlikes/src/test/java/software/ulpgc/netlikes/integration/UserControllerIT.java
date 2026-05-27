@@ -40,7 +40,7 @@ import java.util.List;
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Transactional
-class UserControllerTest {
+class UserControllerIT {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private UserRepository userRepository;

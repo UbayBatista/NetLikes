@@ -4,9 +4,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean; 
 import org.springframework.transaction.annotation.Transactional;
+
+import software.ulpgc.netlikes.config.TestConfig;
 import software.ulpgc.netlikes.model.Follow;
 import software.ulpgc.netlikes.model.FollowId;
 import software.ulpgc.netlikes.model.User;
@@ -17,12 +19,9 @@ import software.ulpgc.netlikes.service.FollowService;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"spring.profiles.active=test"}
-)
-@ActiveProfiles("test")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Transactional
+@Import(TestConfig.class)
 public class FollowBehaviorTest {
 
     @Autowired private FollowService followService;

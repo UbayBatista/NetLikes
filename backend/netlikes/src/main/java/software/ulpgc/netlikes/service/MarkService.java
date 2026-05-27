@@ -15,9 +15,6 @@ import software.ulpgc.netlikes.repository.UserRepository;
 
 import java.util.List;
 import org.springframework.transaction.annotation.Transactional;
-import lombok.*;
-
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -46,6 +43,7 @@ public class MarkService {
                 markRepository.deleteByUserEmailAndFilmIdAndType(email, filmId, Mark.Type.WATCHLATER);
             }
             saveMark(user, film, newType);
+            updateUserVector(user, film, newType);
             return "added";
         }
     }
