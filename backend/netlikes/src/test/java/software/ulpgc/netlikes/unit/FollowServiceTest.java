@@ -1,6 +1,7 @@
 package software.ulpgc.netlikes.unit;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,22 +27,16 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class FollowServiceTest {
 
-    @Mock
-    private FollowRepository followRepository;
-
-    @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    private NotifyService notifyService;
-
-    @Mock
-    private DiscourseService discourseService;
+    @Mock private FollowRepository followRepository;
+    @Mock private UserRepository userRepository;
+    @Mock private NotifyService notifyService;
+    @Mock private DiscourseService discourseService;
 
     @InjectMocks
     private FollowService followService;
 
     private User paco;
+    private User publicUser;
     private User privateUser;
     private Follow pendingFollow;
 
@@ -56,28 +51,39 @@ public class FollowServiceTest {
         privateUser.setAccountPrivacity(true);
         privateUser.setVector("");
         pendingFollow = new Follow(paco, privateUser, Follow.State.PENDING);
+
+        publicUser = new User();
+        publicUser.setEmail("publico@gmail.com");
+        publicUser.setAccountPrivacity(false); 
+        publicUser.setVector("");
+
+        lenient().when(userRepository.findById("privado@gmail.com")).thenReturn(Optional.of(privateUser));
+        lenient().when(userRepository.findById("paco@gmail.com")).thenReturn(Optional.of(paco));
+        lenient().when(userRepository.findById("publico@gmail.com")).thenReturn(Optional.of(publicUser));
+
+        lenient().when(followRepository.save(any(Follow.class))).thenAnswer(i -> i.getArguments()[0]);
+        lenient().when(followRepository.findById(new FollowId("paco@gmail.com", "privado@gmail.com")))
+                .thenReturn(Optional.of(pendingFollow));
+        
+        lenient().when(discourseService.getRealUsernameByEmail("paco@gmail.com")).thenReturn("PacoForo");
+        lenient().when(discourseService.getRealUsernameByEmail("privado@gmail.com")).thenReturn("PrivadoForo");
     }
 
     @Test
-    void testRequestFollow_PrivateAccount_CreatesPendingAndNotifies() {
-        when(userRepository.findById("privado@gmail.com")).thenReturn(Optional.of(privateUser));
-        when(userRepository.findById("paco@gmail.com")).thenReturn(Optional.of(paco));
-        when(followRepository.save(any(Follow.class))).thenAnswer(i -> i.getArguments()[0]);
-
+    @DisplayName("Should create pending follow and notify user when requesting follow to private account")
+    void should_CreatePendingFollowAndNotifyUser_when_RequestingFollowToPrivateAccount() {
         Follow result = followService.requestFollow("paco@gmail.com", "privado@gmail.com");
 
         assertEquals(Follow.State.PENDING, result.getState());
         assertEquals("paco@gmail.com", result.getFollower().getEmail());
         verify(followRepository, times(1)).save(any(Follow.class));
-        verify(notifyService, times(1)).createFollowNotification("paco@gmail.com", "privado@gmail.com");
+        verify(notifyService, times(1))
+                    .createFollowNotification("paco@gmail.com", "privado@gmail.com");
     }
 
     @Test
-    void testAcceptFollow_UpdatesStateToAccepted() {
-        when(followRepository.findById(new FollowId("paco@gmail.com", "privado@gmail.com")))
-                .thenReturn(Optional.of(pendingFollow));
-        when(followRepository.save(any(Follow.class))).thenAnswer(i -> i.getArguments()[0]);
-
+    @DisplayName("Should accept follow request and update status to ACCEPTED")
+    void should_UpdatesStateToAccepted_when_AcceptingFollowRequest() {
         Follow result = followService.acceptFollow("paco@gmail.com", "privado@gmail.com");
 
         assertEquals(Follow.State.ACCEPTED, result.getState());
@@ -85,23 +91,17 @@ public class FollowServiceTest {
     }
 
     @Test
-    void testRejectFollow_DeletesFollowRecord() {
+    @DisplayName("Should reject follow request and remove it from database")
+    void should_DeleteFollowRecord_when_RejectingFollowRequest() {
         followService.rejectFollow("paco@gmail.com", "privado@gmail.com");
 
-        verify(followRepository, times(1)).deleteById(new FollowId("paco@gmail.com", "privado@gmail.com"));
+        verify(followRepository, times(1))
+                    .deleteById(new FollowId("paco@gmail.com", "privado@gmail.com"));
     }
 
     @Test
-    void testRequestFollow_PublicAccount_CreatesAcceptedAndNoNotification() {
-        User publicUser = new User();
-        publicUser.setEmail("publico@gmail.com");
-        publicUser.setAccountPrivacity(false); 
-        publicUser.setVector("");
-        
-        when(userRepository.findById("publico@gmail.com")).thenReturn(Optional.of(publicUser));
-        when(userRepository.findById("paco@gmail.com")).thenReturn(Optional.of(paco));
-        when(followRepository.save(any(Follow.class))).thenAnswer(i -> i.getArguments()[0]);
-
+    @DisplayName("Should follow public account without needing acceptance")
+    void should_CreateAcceptedFollowAndNotNotifyUser_when_RequestingFollowToPublicAccount() {
         Follow result = followService.requestFollow("paco@gmail.com", "publico@gmail.com");
 
         assertEquals(Follow.State.ACCEPTED, result.getState());
@@ -110,25 +110,22 @@ public class FollowServiceTest {
     }
 
     @Test
-    void testDeleteFollow_DeletesFollowAndNotification() {
+    @DisplayName("Should delete follow record when unfollowing user")
+    void should_DeleteFollowRecord_when_DeletingFollow() {
         followService.deleteFollow("paco@gmail.com", "privado@gmail.com");
 
-        verify(followRepository, times(1)).deleteById(new FollowId("paco@gmail.com", "privado@gmail.com"));
-        verify(notifyService, times(1)).deleteFollowNotification("paco@gmail.com", "privado@gmail.com");
+        verify(followRepository, times(1))
+                    .deleteById(new FollowId("paco@gmail.com", "privado@gmail.com"));
+        verify(notifyService, times(1))
+                    .deleteFollowNotification("paco@gmail.com", "privado@gmail.com");
     }
 
     @Test
-    void testBlockUser_SavesBlockedStateAndIgnoresInDiscourse() {
-        when(userRepository.findById("paco@gmail.com")).thenReturn(Optional.of(paco));
-        when(userRepository.findById("privado@gmail.com")).thenReturn(Optional.of(privateUser));
-        
-        when(discourseService.getRealUsernameByEmail("paco@gmail.com")).thenReturn("PacoForo");
-        when(discourseService.getRealUsernameByEmail("privado@gmail.com")).thenReturn("PrivadoForo");
-
+    @DisplayName("Should block user and update status to BLOCKED")
+    void should_SavesBlockedStateAndIgnoresInDiscourse_when_BlockingUser() {
         followService.blockUser("paco@gmail.com", "privado@gmail.com");
 
         verify(discourseService, times(1)).ignoreDiscourseUser("PacoForo", "PrivadoForo");
-        
         verify(followRepository, times(1)).save(argThat(follow -> 
             follow.getFollower().getEmail().equals("paco@gmail.com") &&
             follow.getFollowed().getEmail().equals("privado@gmail.com") &&
@@ -137,7 +134,8 @@ public class FollowServiceTest {
     }
 
     @Test
-    void testBlockUser_ThrowsExceptionIfUserBlocksHimself() {
+    @DisplayName("Should throw exception when user blocks himself")
+    void should_ThrowsException_when_UserBlocksHimself() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             followService.blockUser("paco@gmail.com", "paco@gmail.com");
         });
@@ -147,14 +145,12 @@ public class FollowServiceTest {
     }
 
     @Test
-    void testUnblockUser_DeletesRecordAndUnignoresInDiscourse() {
-        when(discourseService.getRealUsernameByEmail("paco@gmail.com")).thenReturn("PacoForo");
-        when(discourseService.getRealUsernameByEmail("privado@gmail.com")).thenReturn("PrivadoForo");
-
+    @DisplayName("Should unblock user and remove follow record from database")
+    void should_DeletesRecordAndUnignoresInDiscourse_when_UnblockingUser() {
         followService.unblockUser("paco@gmail.com", "privado@gmail.com");
 
         verify(discourseService, times(1)).unignoreDiscourseUser("PacoForo", "PrivadoForo");
-
-        verify(followRepository, times(1)).deleteById(new FollowId("paco@gmail.com", "privado@gmail.com"));
+        verify(followRepository, times(1))
+                    .deleteById(new FollowId("paco@gmail.com", "privado@gmail.com"));
     }
 }

@@ -1,5 +1,6 @@
 package software.ulpgc.netlikes.unit;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,7 +26,8 @@ public class NotifyServiceTest {
     private NotifyService notifyService;
 
     @Test
-    void testDeleteFollowNotification_CallsRepository() {
+    @DisplayName("Should call NotifyRepository to delete follow notification")
+    void should_CallNotifyRepository_when_DeleteFollowNotification() {
         notifyService.deleteFollowNotification("paco@gmail.com", "elena@gmail.com");
 
         verify(notifyRepository, times(1)).deleteByUserSenderEmailAndUserReceiverEmailAndType(
@@ -36,14 +38,16 @@ public class NotifyServiceTest {
     }
     
     @Test
-    void testMarkAllAsRead_CallsRepository() {
+    @DisplayName("Should call NotifyRepository to mark all notifications as read")
+    void should_CallNotifyRepository_when_MarkAllAsRead() {
         notifyService.markAllAsRead("elena@gmail.com");
         
         verify(notifyRepository, times(1)).markAllAsReadForUser("elena@gmail.com");
     }
 
     @Test
-    void testCreateFollowNotification_SavesNotificationCorrectly() {
+    @DisplayName("Should save notification correctly when creating follow notification")
+    void should_SaveNotificationCorrectly_when_CreateFollowNotification() {
         User paco = new User(); 
         paco.setEmail("paco@gmail.com"); 
         paco.setName("Paco"); 

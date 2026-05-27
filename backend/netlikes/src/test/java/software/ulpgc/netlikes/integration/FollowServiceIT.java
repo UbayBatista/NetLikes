@@ -1,28 +1,23 @@
-package software.ulpgc.netlikes.behavior;
+package software.ulpgc.netlikes.integration;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.transaction.annotation.Transactional;
 
-import software.ulpgc.netlikes.config.TestConfig;
 import software.ulpgc.netlikes.model.Notify;
 import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.repository.NotifyRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
 import software.ulpgc.netlikes.service.FollowService;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Transactional
-@Import(TestConfig.class)
-public class NotifyBehaviorTest {
+public class FollowServiceIT {
 
     @Autowired private FollowService followService;
     @Autowired private NotifyRepository notifyRepository;
@@ -64,17 +59,17 @@ public class NotifyBehaviorTest {
         carlos.setVector("");
         userRepository.save(carlos);
     }
-
+    
     @Test
     @DisplayName("Should receive notification on follow request")
     void shouldReceiveNotification_when_UserRequestsToFollow() {
         followService.requestFollow("paco@gmail.com", "elena@gmail.com");
 
-        List<Notify> notifs = notifyRepository.findByUserReceiverEmailOrderByDateDesc("elena@gmail.com");
-        assertEquals(1, notifs.size(), "Debe existir una notificación en el buzón");
-        assertEquals(Notify.Type.FOLLOWREQUEST, notifs.get(0).getType());
-        assertEquals("Paco quiere seguirte.", notifs.get(0).getId().getMessage());
-        assertFalse(notifs.get(0).isRead(), "La notificación debe estar pendiente (no leída)");
+        List<Notify> notifications = notifyRepository.findByUserReceiverEmailOrderByDateDesc("elena@gmail.com");
+        assertEquals(1, notifications.size(), "Debe existir una notificación en el buzón");
+        assertEquals(Notify.Type.FOLLOWREQUEST, notifications.get(0).getType());
+        assertEquals("Paco quiere seguirte.", notifications.get(0).getId().getMessage());
+        assertFalse(notifications.get(0).isRead(), "La notificación debe estar pendiente (no leída)");
     }
 
     @Test
@@ -84,8 +79,8 @@ public class NotifyBehaviorTest {
 
         followService.deleteFollow("paco@gmail.com", "elena@gmail.com");
 
-        List<Notify> notifs = notifyRepository.findByUserReceiverEmailOrderByDateDesc("elena@gmail.com");
-        assertTrue(notifs.isEmpty(), "La notificación debe desaparecer al cancelar la solicitud");
+        List<Notify> notifications = notifyRepository.findByUserReceiverEmailOrderByDateDesc("elena@gmail.com");
+        assertTrue(notifications.isEmpty(), "La notificación debe desaparecer al cancelar la solicitud");
     }
 
     @Test
@@ -93,7 +88,7 @@ public class NotifyBehaviorTest {
     void should_NotSendNotification_when_UserFollowsPublicAccount() {
         followService.requestFollow("paco@gmail.com", "carlos@gmail.com");
 
-        List<Notify> notifs = notifyRepository.findByUserReceiverEmailOrderByDateDesc("carlos@gmail.com");
-        assertTrue(notifs.isEmpty(), "No debe enviarse notificación de solicitud a cuentas públicas");
+        List<Notify> notifications = notifyRepository.findByUserReceiverEmailOrderByDateDesc("carlos@gmail.com");
+        assertTrue(notifications.isEmpty(), "No debe enviarse notificación de solicitud a cuentas públicas");
     }
 }

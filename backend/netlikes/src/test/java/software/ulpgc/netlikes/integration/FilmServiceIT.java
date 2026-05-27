@@ -1,4 +1,4 @@
-package software.ulpgc.netlikes.behavior;
+package software.ulpgc.netlikes.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -8,23 +8,20 @@ import java.util.HashSet;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.transaction.annotation.Transactional;
-import software.ulpgc.netlikes.service.FilmService;
-import software.ulpgc.netlikes.config.TestConfig;
+
 import software.ulpgc.netlikes.dto.FilmResponseDTO;
 import software.ulpgc.netlikes.model.Film;
 import software.ulpgc.netlikes.repository.FilmRepository;
+import software.ulpgc.netlikes.service.FilmService;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Transactional
-@Import(TestConfig.class)
-public class FilmBehaviorTest {
+public class FilmServiceIT {
 
-    @Autowired private FilmService filmService;
-    @Autowired private FilmRepository filmRepository;
+    @Autowired
+    private FilmRepository filmRepository;
 
+    @Autowired
+    private FilmService filmService;
+    
     private Film createAndSaveFilm(int id) {
         Film film = new Film();
         film.setId(id);
@@ -41,17 +38,7 @@ public class FilmBehaviorTest {
         film.setVector("");
         return filmRepository.save(film);
     }
-
-    @Test
-    @DisplayName("Should remove film from database when deleted")
-    void should_RemoveFilmFromDatabase_when_Deleted() {
-        createAndSaveFilm(101);
-
-        filmRepository.deleteById(101);
-
-        assertThat(filmRepository.existsById(101)).isFalse();
-    }
-
+    
     @Test
     @DisplayName("Should return empty video list when no trailers exist")
     void should_ReturnEmptyVideoList_when_NoTrailersExist() {

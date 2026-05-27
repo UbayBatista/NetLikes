@@ -1,5 +1,6 @@
 package software.ulpgc.netlikes.integration;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,6 +11,7 @@ import software.ulpgc.netlikes.tmdbApi.FilmSyncScheduler;
 import software.ulpgc.netlikes.model.Film;
 import software.ulpgc.netlikes.repository.FilmRepository;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -64,5 +66,15 @@ public class FilmControllerIT {
         mockMvc.perform(get("/films/" + savedFilm.getId()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.title").value("Mario"));
+    }
+
+    @Test
+    @DisplayName("Should remove film from database when deleted")
+    void should_RemoveFilmFromDatabase_when_Deleted() {
+        Film film = createAndSaveFilm();
+
+        filmRepository.deleteById(film.getId());
+
+        assertThat(filmRepository.existsById(film.getId())).isFalse();
     }
 }
