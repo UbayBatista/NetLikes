@@ -1,5 +1,6 @@
 package software.ulpgc.netlikes.integration;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,7 +29,8 @@ class RecommendationIT {
     private UserRepository userRepository;
 
     @Test
-    void testFindTop50Recommendations_OrdersByVectorDistance() {
+    @DisplayName("Should return top recommendations ordered by closest vector distance when queried with user vector")
+    void should_ReturnRecommendationsOrderedByVectorDistance_when_queriedWithUserVector() {
         String userEmail = "test_recs@email.com";
         User user = new User();
         user.setEmail(userEmail);

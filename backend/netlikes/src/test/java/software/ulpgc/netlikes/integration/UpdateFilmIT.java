@@ -1,5 +1,6 @@
 package software.ulpgc.netlikes.integration;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -46,7 +47,8 @@ public class UpdateFilmIT {
     private HuggingFaceService huggingFaceService;
 
     @Test
-    void saveNewFilmFromApi() {
+    @DisplayName("Should save new films to the repository when querying the TMDB API")
+    void should_SaveNewFilms_when_queryingTmdbApi() {
         when(apiClient.getPopularFilmIds(anyInt())).thenReturn(List.of(101, 102));
 
         TmdbModels.Film film1 = new TmdbModels.Film(
@@ -77,8 +79,10 @@ public class UpdateFilmIT {
         assertThat(savedFilms.get(1).getTitle()).isEqualTo("Inception");
     }
 
+
     @Test
-    void updateFilmCatalog() {
+    @DisplayName("Should return the complete film catalog as DTOs when all films are requested")
+    void should_ReturnCompleteFilmCatalog_when_allFilmsAreRequested() {
         Film film1 = new Film();
         film1.setId(101);
         film1.setTitle("Matrix");

@@ -5,8 +5,10 @@ import software.ulpgc.netlikes.repository.*;
 import software.ulpgc.netlikes.service.RecommendService;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -39,7 +41,8 @@ public class RecommendServiceTest {
     }
 
     @Test
-    void sendMultipleRecommendations_SavesCorrectAmountOfTimes() {
+    @DisplayName("Should save a recommendation for each target user when sending multiple recommendations")
+    void should_SaveRecommendationForEachTarget_when_sendingMultipleRecommendations() {
         String senderEmail = "sender@test.com";
         Integer filmId = 1;
         List<String> targets = List.of("user1@test.com", "user2@test.com");
@@ -55,7 +58,8 @@ public class RecommendServiceTest {
     }
 
     @Test
-    void getRecentRecipients_CallsRepositoryWithPageRequest() {
+    @DisplayName("Should query the repository with pagination when fetching recent recipients")
+    void should_QueryRepositoryWithPagination_when_fetchingRecentRecipients() {
         String email = "sender@test.com";
         
         recommendService.getRecentRecipients(email);
