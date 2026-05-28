@@ -34,7 +34,7 @@ public class SubscriptionService {
         return this.subscriptionRepository.findAll();
     }
 
-    public List<Subscription> getByUserId(String email) {
+    public List<Subscription> getSubscriptionByUserEmail(String email) {
         return this.subscriptionRepository.getByUserEmail(email);
     }
 
@@ -55,7 +55,7 @@ public class SubscriptionService {
     }
 
     @Transactional
-    public void deleteSubscription(String email, Integer forumId) {
+    public void deleteUserSubscription(String email, Integer forumId) {
         
         long currentSubscriptions = this.subscriptionRepository.countByIdForumId(forumId);
 

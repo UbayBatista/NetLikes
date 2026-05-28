@@ -42,8 +42,8 @@ public class UserController {
     }
 
     @GetMapping("/{email}")
-    public UserResponseDTO getUserById(@NonNull @PathVariable String email) {
-        return userService.getUserById(email);
+    public UserResponseDTO getUserByEmail(@NonNull @PathVariable String email) {
+        return userService.getUserByEmail(email);
     }
 
     @PutMapping("/{email}")
@@ -154,7 +154,7 @@ public class UserController {
     }
 
     @PatchMapping("/myProfile/{email}/bio")
-    public ResponseEntity<?> updateBio(
+    public ResponseEntity<?> updateUserBio(
             @NonNull @PathVariable String email,
             @Valid @RequestBody BioRequestDTO request) {
         try {
@@ -166,7 +166,7 @@ public class UserController {
     }
 
     @PatchMapping("/myProfile/{email}/avatar")
-    public ResponseEntity<?> updateAvatar(
+    public ResponseEntity<?> updateUserAvatar(
             @NonNull @PathVariable String email,
             @RequestBody AvatarRequestDTO request) {
         try {

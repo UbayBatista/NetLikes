@@ -203,8 +203,7 @@ public class DiscourseService {
             HttpEntity<Map<String, Object>> putRequest = new HttpEntity<>(body, headers);
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, putRequest, String.class);
             
-            System.out.println("✅ ¡BINGO! Usuario " + blockedUsername + " IGNORADO por " + blockerUsername);
-            System.out.println("👉 Respuesta: " + response.getStatusCode());
+            System.out.println("Respuesta: " + response.getStatusCode());
 
         } catch (Exception e) {
             System.err.println("Error en la lógica de bloqueo de Discourse: " + e.getMessage());

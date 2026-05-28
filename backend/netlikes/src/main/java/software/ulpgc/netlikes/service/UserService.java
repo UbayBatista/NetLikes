@@ -82,7 +82,7 @@ public class UserService {
         return ResponseEntity.ok(results);
     }
 
-    public UserResponseDTO getUserById(@NonNull String email) {
+    public UserResponseDTO getUserByEmail(@NonNull String email) {
         User user = userRepository.findById(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 

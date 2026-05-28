@@ -69,36 +69,12 @@ public class SsoController {
             String redirectUrl = "https://netlikes.duckdns.org/session/sso_login?sso=" + base64Reply + "&sig=" + signature;
             
             return ResponseEntity.ok(Map.of("redirectUrl", redirectUrl));
-        } catch (Exception e) {
-            e.printStackTrace(); // Esto te imprimirá el error real en la consola de Spring Boot
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno: " + e.getMessage());
+        } catch (Exception error) {
+            error.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno: " + error.getMessage());
         }
     }
     
-    @GetMapping("/sso")
-    public ResponseEntity<Void> sso(@RequestParam String sso, @RequestParam String sig) {
-        String calculatedSig = calculateHmacSha256(sso, ssoSecret);
-        if (!calculatedSig.equalsIgnoreCase(sig)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        String decodedSso = new String(Base64.getDecoder().decode(URLDecoder.decode(sso, StandardCharsets.UTF_8)));
-        String nonce = extractParam(decodedSso, "nonce");
-
-        String email = "jose@ejemplo.com"; 
-        String username = "JoseNetlikes";
-
-        String reply = "nonce=" + nonce + "&email=" + email + "&external_id=" + email + "&username=" + username;
-        String base64Reply = Base64.getEncoder().encodeToString(reply.getBytes(StandardCharsets.UTF_8));
-        String signature = calculateHmacSha256(base64Reply, ssoSecret);
-
-        String redirectUrl = "https://netlikes.duckdns.org/session/sso_login?sso=" + base64Reply + "&sig=" + signature;
-        
-        return ResponseEntity.status(HttpStatus.FOUND)
-                .header("Location", redirectUrl)
-                .build();
-    }
-
     private String calculateHmacSha256(String data, String secret) {
         try {
             Mac sha256Hmac = Mac.getInstance("HmacSHA256");

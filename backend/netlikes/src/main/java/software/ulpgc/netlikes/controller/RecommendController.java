@@ -19,7 +19,7 @@ public class RecommendController {
     private RecommendService recommendService;
 
     @PostMapping
-    public Recommend create(@RequestBody Recommend recommend) {
+    public Recommend createRecommendation(@RequestBody Recommend recommend) {
         return recommendService.addRecommendation(recommend);
     }
 
@@ -34,7 +34,7 @@ public class RecommendController {
     }
 
     @PostMapping("/bulk")
-    public ResponseEntity<String> sendMultiple(
+    public ResponseEntity<String> sendMultipleRecommendations(
             @RequestHeader("X-User-Id") String senderEmail, 
             @RequestBody Map<String, Object> body) {
         
@@ -47,7 +47,7 @@ public class RecommendController {
     }
 
     @GetMapping("/recent")
-    public ResponseEntity<List<User>> getRecent(@RequestHeader("X-User-Id") String email) {
+    public ResponseEntity<List<User>> getRecentRecommendationsOf(@RequestHeader("X-User-Id") String email) {
         return ResponseEntity.ok(recommendService.getRecentRecipients(email));
     }
 

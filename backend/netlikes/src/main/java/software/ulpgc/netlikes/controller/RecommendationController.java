@@ -17,7 +17,7 @@ public class RecommendationController {
     private final RecommendationService recommendationService;
 
     @GetMapping
-    public ResponseEntity<List<FilmResponseDTO>> getRecommendations(@RequestHeader("X-User-Id") String email) {
+    public ResponseEntity<List<FilmResponseDTO>> getRecommendationsOf(@RequestHeader("X-User-Id") String email) {
         List<FilmResponseDTO> recommendations = recommendationService.getRecommendationsForUser(email);
         return ResponseEntity.ok(recommendations);
     }

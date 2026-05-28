@@ -18,17 +18,17 @@ public class SubscriptionController {
     }
 
     @GetMapping  
-    public List<Subscription> getAll(){
+    public List<Subscription> getAllSubscriptions(){
         return this.subscriptionService.getAllSubscriptions();
     }
 
     @GetMapping("/{email:.+}")
-    public ResponseEntity<?> getByUserId(@PathVariable String email) {
+    public ResponseEntity<?> getSubscriptionByUserEmail(@PathVariable String email) {
         System.out.println("---- PETICIÓN RECIBIDA EN BACKEND ----");
         System.out.println("Buscando foros para el email EXACTO: " + email);
         
         try {
-            List<Subscription> subs = this.subscriptionService.getByUserId(email);
+            List<Subscription> subs = this.subscriptionService.getSubscriptionByUserEmail(email);
             System.out.println("Suscripciones encontradas en la BD: " + subs.size());
             
             
@@ -65,7 +65,7 @@ public class SubscriptionController {
     }
     
     @PostMapping("/{email}/film/{filmId}")
-    public ResponseEntity<?> subscribe(@PathVariable String email, @PathVariable Integer filmId){
+    public ResponseEntity<?> subscribeUserToFilm(@PathVariable String email, @PathVariable Integer filmId){
         try {
             Subscription subscription = this.subscriptionService.subscribeUserToFilm(email, filmId);
             return ResponseEntity.ok(subscription);
@@ -82,9 +82,9 @@ public class SubscriptionController {
     }
 
     @DeleteMapping("/{email}/unsubscribe/{forumId}")
-    public ResponseEntity<?> unsubscribe(@PathVariable String email, @PathVariable Integer forumId) {
+    public ResponseEntity<?> unsubscribeUserToFilm(@PathVariable String email, @PathVariable Integer forumId) {
         try {
-            this.subscriptionService.deleteSubscription(email, forumId);
+            this.subscriptionService.deleteUserSubscription(email, forumId);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(500).build();
