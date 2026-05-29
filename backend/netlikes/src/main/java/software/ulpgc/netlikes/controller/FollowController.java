@@ -110,4 +110,14 @@ public class FollowController {
         followService.unblockUser(myId, targetId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/mutual-friends")
+    public ResponseEntity<List<UserResponseDTO>> getMutualFriends(@RequestParam String username) {
+        try {
+            List<UserResponseDTO> mutuals = followService.getMutualFriends(username);
+            return ResponseEntity.ok(mutuals);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

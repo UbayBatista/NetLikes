@@ -11,6 +11,9 @@ import software.ulpgc.netlikes.dto.AvatarRequestDTO;
 import software.ulpgc.netlikes.dto.BioRequestDTO;
 import software.ulpgc.netlikes.dto.RegisterRequestDTO;
 import software.ulpgc.netlikes.dto.ValidAnswerRequestDTO;
+import software.ulpgc.netlikes.model.User;
+import software.ulpgc.netlikes.service.DiscourseService;
+import software.ulpgc.netlikes.service.FollowService;
 import software.ulpgc.netlikes.service.UserService;
 
 import org.springframework.http.HttpStatus;
@@ -18,18 +21,28 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+@CrossOrigin(
+    origins = { "https://net-likes-bay.vercel.app", "http://localhost:4200" }, 
+    allowCredentials = "true"
+)
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
+    private final DiscourseService discourseService;
+    private final FollowService followService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, DiscourseService discourseService, FollowService followService) {
         this.userService = userService;
+        this.discourseService = discourseService;
+        this.followService = followService;
     }
 
     @GetMapping
@@ -152,6 +165,32 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("valid", false));
         }
     }
+    
+    @GetMapping("/chat/id")
+    public ResponseEntity<?> getChatId(
+            @RequestParam String myUser, 
+            @RequestParam String userFriend) {
+        
+        boolean friends = followService.MutualFollowByUsernames(myUser, userFriend);
+    
+        if (!friends) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Os tenéis que seguir mutuamente para poder chatear.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+
+        try {
+            Integer chatId = discourseService.getPrivateChatId(myUser, userFriend);
+            return ResponseEntity.ok(chatId);
+        } catch (Exception e) {
+
+            System.err.println("Fallo al crear chat entre " + myUser + " y " + userFriend + ". Motivo: " + e.getMessage());
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("Este usuario aún no ha entrado al foro, no puedes chatear con él todavía.");
+        }
+    }
+
 
     @PatchMapping("/myProfile/{email}/bio")
     public ResponseEntity<?> updateUserBio(
@@ -171,6 +210,13 @@ public class UserController {
             @RequestBody AvatarRequestDTO request) {
         try {
             userService.updateAvatar(email, request.getSeed());
+
+            UserResponseDTO userDto = userService.getUserByEmail(email); 
+            String username = userDto.getUserName();
+
+            String urlavatarDiscourse = "https://api.dicebear.com/9.x/fun-emoji/png?seed=" + request.getSeed();
+
+            discourseService.updateUserAvatarInDiscourse(username, urlavatarDiscourse);
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());

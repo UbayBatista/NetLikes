@@ -173,7 +173,6 @@ export class FilmHeader implements OnInit {
     if (this.isProcessingForum) return;
     
     if (!this.isSubscribed && !this.isWatched) {
-      alert('Debes marcar la película como "Vista" para poder suscribirte a este foro.');
       return;
     }
 
@@ -182,7 +181,6 @@ export class FilmHeader implements OnInit {
     this.authService.getCurrentUser().subscribe({
       next: (user) => {
         if (!user || !user.email) {
-          alert('¡Debes iniciar sesión para poder suscribirte a un foro!');
           return;
         }
 
@@ -204,7 +202,6 @@ export class FilmHeader implements OnInit {
             error: (err) => {
               console.error('Error al suscribirse:', err);
               const errorMsg = err.error ? (typeof err.error === 'string' ? err.error : JSON.stringify(err.error)) : err.message;
-              alert('Fallo al suscribirse: ' + errorMsg);
               this.isProcessingForum = false; 
               this.cdr.detectChanges();
             }
@@ -219,7 +216,6 @@ export class FilmHeader implements OnInit {
             },
             error: (err) => {
               console.error('Error al desuscribirse:', err);
-              alert('Error al desuscribirse. Revisa la consola.');
               this.isProcessingForum = false; 
               this.cdr.detectChanges();
             }
@@ -261,7 +257,6 @@ export class FilmHeader implements OnInit {
     this.authService.getCurrentUser().subscribe(user => { 
 
         if (!user || !user.email) {
-          alert('¡Debes iniciar sesión para poder suscribirte a un foro!');
           return; 
         }
       
@@ -273,13 +268,9 @@ export class FilmHeader implements OnInit {
           console.log('¡Éxito! El ID del foro en Discourse es:', response.discourseTopicId);
 
           this.forumUrl = `https://netlikes.duckdns.org/t/${response.discourseTopicId}`;
-
-          alert('¡Foro creado/obtenido con éxito! ID: ' + response.discourseTopicId);
-
         },
         error: (error) => {
           console.error('Ha ocurrido un error:', error);
-          alert('Error al crear el foro. Revisa la consola.');
         }
       });
     

@@ -20,7 +20,7 @@ public class FilmController {
     @GetMapping
     public ResponseEntity<List<FilmResponseDTO>> getAllFilms(
         @RequestParam(defaultValue = "0") int page, 
-        @RequestParam(defaultValue = "20") int size
+        @RequestParam(defaultValue = "100") int size
     ) {
         return filmService.getAllFilms(page, size);
     }

@@ -111,8 +111,15 @@ public class UserService {
 
     @Transactional
     public void deleteUser(@NonNull String email) {
-        if (!userRepository.existsById(email)) {
-            throw new RuntimeException("Usuario no encontrado");
+
+        User user = userRepository.findById(email)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        
+        String discourseId = getCachedDiscourseId(user);
+
+        if (discourseId != null) {
+            discourseService.anonymizeUser(discourseId);
         }
         
         userRepository.deleteById(email);
@@ -330,6 +337,7 @@ public class UserService {
         return null;
     }
 
+    @Transactional
     public void updateBio(@NonNull String email, String bio) {
         User user = userRepository.findById(email)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -337,10 +345,20 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void updateAvatar(@NonNull String email, String seed) {
         User user = userRepository.findById(email)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        user.setProfilePicture(seed);
+
+        String cleanSeed = seed;
+        if (seed.contains("seed=")) {
+            cleanSeed = seed.substring(seed.indexOf("seed=") + 5);
+            if (cleanSeed.contains("&")) {
+                cleanSeed = cleanSeed.substring(0, cleanSeed.indexOf("&"));
+            }
+        }
+            
+        user.setProfilePicture(cleanSeed);
         userRepository.save(user);
     }
 

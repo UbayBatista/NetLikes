@@ -4,7 +4,34 @@
     <h2> {{ person }}</h2>
   </header>
 
-  <div class="messages-viewport">
+  
+  @if (!person) {
+    <div class="p-5 text-center">
+      <h3>Selecciona un usuario para chatear con él o haz amigos para vivir nuevas experiencias</h3>
+    </div>
+} @else if (!saveUrl) {
+    <p>Conectando con el chat de {{ person }}...</p>
+    <div class="spinner"></div>
+} @else {
+    <iframe 
+      [src]="saveUrl" 
+      width="100%" 
+      height="100%" 
+      frameborder="0"
+      allowfullscreen>
+    </iframe>
+}
+
+</div>
+
+
+
+
+
+
+
+
+  <!-- <div class="messages-viewport">
      @for (msg of messageHistory; track msg) {
 
             <div class="message-row" [class.mine]="msg.itsMe">
@@ -30,5 +57,4 @@
             (click)="sendMessage(txtArea.value); txtArea.value=''; height(txtArea)"
         >▻</button>
     </div>
-  </footer>
-</div>
+  </footer> -->

@@ -183,4 +183,41 @@ public class FollowService {
                 })
                 .toList();
     }
+
+    public boolean MutualFollow(String myUserEmail, String userFriendEmail) {
+
+        var directRelation = followRepository.findById(new FollowId(myUserEmail, userFriendEmail));
+        var reverseRelation = followRepository.findById(new FollowId(userFriendEmail, myUserEmail));
+
+        return directRelation.isPresent() && directRelation.get().getState() == Follow.State.ACCEPTED &&
+               reverseRelation.isPresent() && reverseRelation.get().getState() == Follow.State.ACCEPTED;
+    }
+
+    public boolean MutualFollowByUsernames(String myUsername, String friendUsername) {
+        User me = userRepository.findByName(myUsername)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        User friend = userRepository.findByName(friendUsername)
+                .orElseThrow(() -> new RuntimeException("Amigo no encontrado"));
+
+        return MutualFollow(me.getEmail(), friend.getEmail());
+    }
+
+    public List<UserResponseDTO> getMutualFriends(String username) {
+        User me = userRepository.findByName(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                
+        String myEmail = me.getEmail();
+        
+        List<UserResponseDTO> followers = getFollowersOf(myEmail);
+        List<UserResponseDTO> following = getFollowsOf(myEmail);
+        
+        List<String> followingEmails = following.stream()
+                .map(UserResponseDTO::getEmail)
+                .toList();
+                
+        return followers.stream()
+                .filter(follower -> followingEmails.contains(follower.getEmail()))
+                .toList();
+    }
+
 }
