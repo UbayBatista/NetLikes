@@ -87,7 +87,7 @@ public class FilmControllerIT {
     void should_ReturnEmptyVideoList_when_NoTrailersExist() throws Exception {
         Film film = createAndSaveFilm();
         
-        mockMvc.perform(delete("/films/" + film.getId()))
+        mockMvc.perform(get("/films/" + film.getId()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.videos").isArray())
         .andExpect(jsonPath("$.videos").isEmpty());

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 
 import jakarta.transaction.Transactional;
@@ -18,9 +19,10 @@ import software.ulpgc.netlikes.model.Notify;
 import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.repository.NotifyRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
+import software.ulpgc.netlikes.service.DiscourseService;
 import software.ulpgc.netlikes.service.FollowService;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ActiveProfiles("test")
 @Transactional
 public class FollowServiceIT {
@@ -28,6 +30,9 @@ public class FollowServiceIT {
     @Autowired private FollowService followService;
     @Autowired private NotifyRepository notifyRepository;
     @Autowired private UserRepository userRepository;
+
+    @MockBean
+    private DiscourseService discourseService;
 
     @BeforeEach
     void setUp() {
