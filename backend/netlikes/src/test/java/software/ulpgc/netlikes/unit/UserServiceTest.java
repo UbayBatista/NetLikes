@@ -7,6 +7,7 @@ import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.model.Genre;
 import software.ulpgc.netlikes.repository.GenreRepository;
 import software.ulpgc.netlikes.repository.UserRepository;
+import software.ulpgc.netlikes.service.DiscourseService;
 import software.ulpgc.netlikes.service.HuggingFaceService;
 import software.ulpgc.netlikes.service.UserService;
 
@@ -16,6 +17,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,7 +30,7 @@ import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
-class UserServiceTest {
+public class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
@@ -42,26 +44,22 @@ class UserServiceTest {
     @Mock
     private HuggingFaceService huggingFaceService;
 
+    @Mock
+    private DiscourseService discourseService;
+
     @InjectMocks
     private UserService userService;
 
     @Test
-    void register_shouldReturnUserDTO_whenEmailIsNew() {
-        Genre genre1 = new Genre();
-        genre1.setId(21);
-        genre1.setName("Acción");
+    @DisplayName("Should register successfully and return user DTO when email is new")
+    void should_RegisterSuccessfullyAndReturnUserDto_when_emailIsNew() {
+        Genre actionGenre = createGenre(21, "Acción");
+        Genre dramaGenre = createGenre(23, "Drama");
+        Genre horrorGenre = createGenre(15, "Terror");
 
-        Genre genre2 = new Genre();
-        genre2.setId(23);
-        genre2.setName("Drama");
-
-        Genre genre3 = new Genre();
-        genre3.setId(15);
-        genre3.setName("Terror");
-
-        List<Genre> mockGenres = List.of(genre1, genre2, genre3);
+        List<Genre> selectedGenres = List.of(actionGenre, dramaGenre, horrorGenre);
         
-        List<Integer> genreIds = mockGenres.stream().map(Genre::getId).toList();
+        List<Integer> genreIds = selectedGenres.stream().map(Genre::getId).toList();
 
         RegisterRequestDTO request = new RegisterRequestDTO(
             "Juan", 
@@ -70,35 +68,31 @@ class UserServiceTest {
             "SuperMan23",
             "Nombre de tu primera mascota",
             "Toby",
-            mockGenres
+            selectedGenres
         );
 
         when(userRepository.existsByEmail("juan@email.com")).thenReturn(false);
         when(passwordEncoder.encode("SuperMan23")).thenReturn("hashedPassword");
         
-        when(genreRepository.findAllById(genreIds)).thenReturn(mockGenres);
+        when(genreRepository.findAllById(genreIds)).thenReturn(selectedGenres);
         
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
-        UserResponseDTO result = userService.register(request);
+        UserResponseDTO userResponse = userService.register(request);
 
-        assertThat(result).isNotNull();
-        assertThat(result.getEmail()).isEqualTo("juan@email.com");
-        assertThat(result.getUserName()).isEqualTo("Juan");
+        assertThat(userResponse).isNotNull();
+        assertThat(userResponse.getEmail()).isEqualTo("juan@email.com");
+        assertThat(userResponse.getUserName()).isEqualTo("Juan");
 
         org.mockito.Mockito.verify(genreRepository).findAllById(genreIds);
         org.mockito.Mockito.verify(userRepository).save(any(User.class));
     }
 
     @Test
-    void register_shouldThrowException_whenEmailAlreadyExists() {
-        Genre genre1 = new Genre();
-        genre1.setId(21);
-        genre1.setName("Acción");
-
-        Genre genre2 = new Genre();
-        genre2.setId(23);
-        genre2.setName("Drama");
+    @DisplayName("Should throw an exception when the email already exists")
+    void should_ThrowException_when_emailAlreadyExists() {
+        Genre actionGenre = createGenre(21, "Acción");
+        Genre dramaGenre = createGenre(23, "Drama");
 
         RegisterRequestDTO request = new RegisterRequestDTO
         ("Juan", 
@@ -107,7 +101,7 @@ class UserServiceTest {
         "SuperMan23",
         "Nombre de tu primera mascota",
         "Toby",
-        List.of(genre1, genre2)
+        List.of(actionGenre, dramaGenre)
         );
 
         when(userRepository.existsByEmail("juan@email.com")).thenReturn(true);
@@ -116,7 +110,8 @@ class UserServiceTest {
     }
 
     @Test
-    void register_shouldThrowException_whenNameAlreadyExists() {
+    @DisplayName("Should throw an exception when the name already exists")
+    void should_ThrowException_when_nameAlreadyExists() {
         RegisterRequestDTO request = new RegisterRequestDTO(
         "Juan", "nuevo_email@email.com", Date.valueOf("2002-11-15"), "SuperMan23", "Mascota", "Toby", List.of()
         );
@@ -128,31 +123,26 @@ class UserServiceTest {
     }
 
     @Test
-    void login_shouldReturnUserDTO_whenCredentialsAreCorrect() {
+    @DisplayName("Should login successfully and return user DTO when credentials are correct")
+    void should_LoginSuccessfullyAndReturnUserDto_when_credentialsAreCorrect() {
         LoginRequestDTO request = new LoginRequestDTO("juan@email.com", "SuperMan23");
 
-        User user = new User();
-        user.setEmail("juan@email.com");
-        user.setName("Juan");
-        user.setPassword("hashedPassword");
-        user.setVector("");
+        User user = createUser("juan@email.com", "Juan", "hashedPassword", null, null);
 
         when(userRepository.findById("juan@email.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("SuperMan23", "hashedPassword")).thenReturn(true);
 
-        UserResponseDTO result = userService.login(request);
+        UserResponseDTO userResponse = userService.login(request);
 
-        assertThat(result.getEmail()).isEqualTo("juan@email.com");
+        assertThat(userResponse.getEmail()).isEqualTo("juan@email.com");
     }
 
     @Test
-    void login_shouldThrowException_whenPasswordIsWrong() {
+    @DisplayName("Should throw an exception when the password is wrong")
+    void should_ThrowException_when_passwordIsWrong() {
         LoginRequestDTO request = new LoginRequestDTO("juan@email.com", "wrongPassword");
 
-        User user = new User();
-        user.setEmail("juan@email.com");
-        user.setPassword("hashedPassword");
-        user.setVector("");
+        User user = createUser("juan@email.com", null, "hashedPassword", null, null);
 
         when(userRepository.findById("juan@email.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrongPassword", "hashedPassword")).thenReturn(false);
@@ -161,7 +151,8 @@ class UserServiceTest {
     }
 
     @Test
-    void login_shouldThrowException_whenUserNotFound() {
+    @DisplayName("Should throw an exception when the user does not exist")
+    void should_ThrowException_when_userDoesNotExist() {
         LoginRequestDTO request = new LoginRequestDTO("joss@email.com", "SuperMan23");
 
         when(userRepository.findById("joss@email.com")).thenReturn(Optional.empty());
@@ -170,7 +161,8 @@ class UserServiceTest {
     }
 
     @Test
-    void existsEmail_shouldReturnTrue_whenEmailExists() {
+    @DisplayName("Should return true when the email exists")
+    void should_ReturnTrue_when_emailExists() {
         when(userRepository.existsByEmail("juan@email.com")).thenReturn(true);
 
         boolean result = userService.existsEmail("juan@email.com");
@@ -179,7 +171,8 @@ class UserServiceTest {
     }
 
     @Test
-    void existsEmail_shouldReturnFalse_whenEmailNotExists() {
+    @DisplayName("Should return false when the email does not exist")
+    void should_ReturnFalse_when_emailDoesNotExist() {
         when(userRepository.existsByEmail("noexiste@email.com")).thenReturn(false);
 
         boolean result = userService.existsEmail("noexiste@email.com");
@@ -188,23 +181,23 @@ class UserServiceTest {
     }
 
     @Test
-    void existsName_shouldReturnTrue_whenNameExists() {
+    @DisplayName("Should return true when the name exists")
+    void should_ReturnTrue_when_nameExists() {
         when(userRepository.existsByName("Juan")).thenReturn(true);
         assertThat(userService.existsName("Juan")).isTrue();
     }
 
     @Test
-    void existsName_shouldReturnFalse_whenNameNotExists() {
+    @DisplayName("Should return false when the name does not exist")
+    void should_ReturnFalse_when_nameDoesNotExist() {
         when(userRepository.existsByName("noexiste")).thenReturn(false);
         assertThat(userService.existsName("noexiste")).isFalse();
     }
 
     @Test
-    void getSecurityQuestion_shouldReturnQuestion_whenUserExists() {
-        User user = new User();
-        user.setEmail("juan@email.com");
-        user.setSecurityQuestion("¿Nombre de tu mascota?");
-        user.setVector("");
+    @DisplayName("Should return the security question when the user exists")
+    void should_ReturnSecurityQuestion_when_userExists() {
+        User user = createUser("juan@email.com", null, null, "¿Nombre de tu mascota?", null);
 
         when(userRepository.findById("juan@email.com")).thenReturn(Optional.of(user));
 
@@ -214,18 +207,17 @@ class UserServiceTest {
     }
 
     @Test
-    void getSecurityQuestion_shouldThrowException_whenUserNotFound() {
+    @DisplayName("Should throw an exception when the user does not exist")
+    void should_ThrowException_when_userDoesNotExistAgain() {
         when(userRepository.findById("noexiste@email.com")).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () -> userService.getSecurityQuestion("noexiste@email.com"));
     }
 
     @Test
-    void isValidAnswer_shouldReturnTrue_whenAnswerIsCorrect() {
-        User user = new User();
-        user.setEmail("juan@email.com");
-        user.setAnswer("Firulais");
-        user.setVector("");
+    @DisplayName("Should return true when the answer is correct")
+    void should_ReturnTrue_when_answerIsCorrect() {
+        User user = createUser("juan@email.com", null, null, null, "Firulais");
 
         when(userRepository.findById("juan@email.com")).thenReturn(Optional.of(user));
 
@@ -235,11 +227,9 @@ class UserServiceTest {
     }
 
     @Test
-    void isValidAnswer_shouldReturnFalse_whenAnswerIsWrong() {
-        User user = new User();
-        user.setEmail("juan@email.com");
-        user.setAnswer("Firulais");
-        user.setVector("");
+    @DisplayName("Should return false when the answer is wrong")
+    void should_ReturnFalse_when_answerIsWrong() {
+        User user = createUser("juan@email.com", null, null, null, "Firulais");
 
         when(userRepository.findById("juan@email.com")).thenReturn(Optional.of(user));
 
@@ -249,7 +239,8 @@ class UserServiceTest {
     }
 
     @Test
-    void login_shouldThrowException_whenUserDoesNotExist() {
+    @DisplayName("Should throw an exception when the credentials are invalid")
+    void should_ThrowException_when_credentialsAreInvalid() {
         when(userRepository.findById("noexiste@email.com")).thenReturn(Optional.empty());
 
         LoginRequestDTO request = new LoginRequestDTO("noexiste@email.com", "1234");
@@ -258,13 +249,11 @@ class UserServiceTest {
     }
 
     @Test
-    void changePassword_shouldEncodeAndSaveNewPassword_whenUserExists() {
+    @DisplayName("Should encode and save the new password when the user exists")
+    void should_EncodeAndSaveNewPassword_when_userExists() {
         String email = "juan@email.com";
         String newPassword = "newSecretPassword";
-        User user = new User();
-        user.setEmail(email);
-        user.setPassword("oldHashedPassword");
-        user.setVector("");
+        User user = createUser(email, null, "oldHashedPassword", null, null);
 
         when(userRepository.findById(email)).thenReturn(Optional.of(user));
         when(passwordEncoder.encode(newPassword)).thenReturn("newHashedPassword");
@@ -276,7 +265,8 @@ class UserServiceTest {
     }
 
     @Test
-    void changePassword_shouldThrowException_whenUserNotFound() {
+    @DisplayName("Should throw an exception when the user does not exist")
+    void should_ThrowException_when_userDoesNotExistForPasswordChange() {
         when(userRepository.findById("noexiste@email.com")).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () -> 
@@ -285,8 +275,15 @@ class UserServiceTest {
     }
 
     @Test
-    void deleteUser_shouldDeleteUser_whenUserExists() {
-        when(userRepository.existsById("juan@email.com")).thenReturn(true);
+    @DisplayName("Should delete the user when the user exists")
+    void should_DeleteUser_when_userExists() {
+
+        User mockUser = new User();
+        mockUser.setEmail("juan@email.com");
+
+        when(userRepository.findById("juan@email.com")).thenReturn(Optional.of(mockUser));
+
+        when(discourseService.getDiscourseUserId(any())).thenReturn(123);
 
         userService.deleteUser("juan@email.com");
 
@@ -294,18 +291,18 @@ class UserServiceTest {
     }
 
     @Test
-    void deleteUser_shouldThrowException_whenUserNotFound() {
-        when(userRepository.existsById("noexiste@email.com")).thenReturn(false);
+    @DisplayName("Should throw an exception when the user does not exist")
+    void should_ThrowException_when_userDoesNotExistForDeletion() {
+        when(userRepository.findById("noexiste@email.com")).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () -> userService.deleteUser("noexiste@email.com"));
     }
 
     @Test
-    void updateBio_shouldSaveBio_whenUserExists() {
-        User user = new User();
-        user.setEmail("juan@email.com");
+    @DisplayName("Should update the biography when the user exists")
+    void should_UpdateBio_when_userExists() {
+        User user = createUser("juan@email.com", null, null, null, null);
         user.setBio("Bio antigua");
-        user.setVector("");
 
         when(userRepository.findById("juan@email.com")).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
@@ -317,17 +314,17 @@ class UserServiceTest {
     }
 
     @Test
-    void updateBio_shouldThrowException_whenUserNotFound() {
+    @DisplayName("Should throw an exception when the user does not exist")
+    void should_ThrowException_when_userDoesNotExistForBioUpdate() {
         when(userRepository.findById("noexiste@email.com")).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () -> userService.updateBio("noexiste@email.com", "Bio"));
     }
 
     @Test
-    void updateAvatar_shouldSaveAvatar_whenUserExists() {
-        User user = new User();
-        user.setEmail("juan@email.com");
-        user.setVector("");
+    @DisplayName("Should update the avatar when the user exists")
+    void should_UpdateAvatar_when_userExists() {
+        User user = createUser("juan@email.com", null, null, null, null);
 
         when(userRepository.findById("juan@email.com")).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
@@ -339,9 +336,26 @@ class UserServiceTest {
     }
 
     @Test
-    void updateAvatar_shouldThrowException_whenUserNotFound() {
+    @DisplayName("Should throw an exception when the user does not exist")
+    void should_ThrowException_when_userDoesNotExistForAvatarUpdate() {
         when(userRepository.findById("noexiste@email.com")).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () -> userService.updateAvatar("noexiste@email.com", "Sad"));
     }
-}
+    private Genre createGenre(int id, String name) {
+        Genre genre = new Genre();
+        genre.setId(id);
+        genre.setName(name);
+        return genre;
+    }
+
+    private User createUser(String email, String name, String password, String securityQuestion, String answer) {
+        User user = new User();
+        user.setEmail(email);
+        user.setName(name);
+        user.setPassword(password);
+        user.setSecurityQuestion(securityQuestion);
+        user.setAnswer(answer);
+        user.setVector("");
+        return user;
+    }}
