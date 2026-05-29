@@ -1,4 +1,5 @@
 package software.ulpgc.netlikes.integration;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -34,7 +35,8 @@ public class DiscourseChatIT {
     String user2 = "netlikes.admin";
 
     @Test
-    public void shouldSendChatMessage() {
+    @DisplayName("Should publish message successfully in a chat when valid inputs are provided")
+    public void should_publishMessageSuccessfullyInChat_when_validInputsAreProvided() {
 
         String userMenssage = "Este es un mensaje para un test";
         boolean successfulMessage  = sendChatMessage(user1, user2, userMenssage);   
@@ -42,7 +44,8 @@ public class DiscourseChatIT {
     }
 
     @Test
-    public void shouldSendChatVideo() {
+    @DisplayName("Should publish video successfully in a chat when valid inputs are provided")
+    public void should_publishVideoSuccessfullyInChat_when_validInputsAreProvided() {
 
         String userMenssage = "https://youtu.be/f7o-u153zGQ";
         boolean successfulMessage  = sendChatMessage(user1, user2, userMenssage);   
@@ -50,7 +53,8 @@ public class DiscourseChatIT {
     }
 
     @Test
-    public void shouldSendChatImage() {
+    @DisplayName("Should publish image successfully in a chat when valid inputs are provided")
+    public void should_publishImageSuccessfullyInChat_when_validInputsAreProvided() {
 
         String userMenssage = "https://images.daznservices.com/di/library/DAZN_News/91/8c/cristiano-ronaldo-champions-league_17ak1udoiuj631316hlbv1bi1i.png?t=37193869";
         boolean successfulMessage  = sendChatMessage(user1, user2, userMenssage);   

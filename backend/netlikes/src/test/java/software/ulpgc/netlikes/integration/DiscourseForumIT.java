@@ -3,10 +3,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-<<<<<<< HEAD:backend/netlikes/src/test/java/software/ulpgc/netlikes/integration/DiscourseIT.java
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-=======
->>>>>>> test/chats:backend/netlikes/src/test/java/software/ulpgc/netlikes/integration/DiscourseTest.java
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -24,7 +20,6 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-<<<<<<< HEAD:backend/netlikes/src/test/java/software/ulpgc/netlikes/integration/DiscourseIT.java
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -32,18 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 )
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 @ActiveProfiles("test")
-public class DiscourseIT{
+public class DiscourseForumIT{
 
-=======
-
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"spring.profiles.active=test"}
-)
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
-public class DiscourseTest{
-
->>>>>>> test/chats:backend/netlikes/src/test/java/software/ulpgc/netlikes/integration/DiscourseTest.java
     @Value("${discourse.api.key}")
     private String apiKey;
 
