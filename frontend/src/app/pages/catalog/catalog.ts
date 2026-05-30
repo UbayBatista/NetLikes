@@ -1,6 +1,4 @@
-
-
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Genre } from "../../components/genre/genre";
 import { FormsModule } from '@angular/forms';
@@ -19,7 +17,7 @@ import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/
   templateUrl: './catalog.html',
   styleUrl: './catalog.css',
 })
-export class Catalog implements OnInit {
+export class Catalog implements OnInit, OnDestroy {
   genres: GenreGroup[] = [];
 
   searchResults: Film[] = []; 
@@ -33,6 +31,10 @@ export class Catalog implements OnInit {
     this.loadFilms();
 
     this.setupSearchPipeline();
+  }
+
+  ngOnDestroy() {
+    this.searchSubject.complete();
   }
 
   loadFilms() {
