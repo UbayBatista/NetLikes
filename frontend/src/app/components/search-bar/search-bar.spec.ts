@@ -16,7 +16,11 @@ describe('SearchBar', () => {
     await fixture.whenStable();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('should emit the search value when onSearchChange is called', () => {
+    const emitSpy = vi.spyOn(component.searchEvent, 'emit');
+    
+    component.onSearchChange('Batman');
+    
+    expect(emitSpy).toHaveBeenCalledWith('Batman');
   });
 });

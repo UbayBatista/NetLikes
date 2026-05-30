@@ -3,27 +3,23 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Step1 } from './step1';
 import { ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
-import { Router } from '@angular/router';
 import { of } from 'rxjs';
 
 describe('Step1 Component', () => {
   let component: Step1;
   let fixture: ComponentFixture<Step1>;
   let mockAuthService: any;
-  let mockRouter: any;
 
   beforeEach(async () => {
     mockAuthService = {
       checkEmailExists: vi.fn().mockReturnValue(of(false)),
       checkNameExists: vi.fn().mockReturnValue(of(false))
     };
-    mockRouter = { navigate: vi.fn() };
 
     await TestBed.configureTestingModule({
       imports: [Step1, ReactiveFormsModule],
       providers: [
         { provide: AuthService, useValue: mockAuthService },
-        { provide: Router, useValue: mockRouter }
       ]
     }).compileComponents();
 
