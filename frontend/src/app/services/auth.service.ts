@@ -12,8 +12,6 @@ export interface LoginResponse {
 export class AuthService {
   private currentUser$ = new BehaviorSubject<User | null>(null);
 
-  
-  private readonly apiUrl = 'https://api-db.duckdns.org/users';
   private isLoading$ = new BehaviorSubject<boolean>(true);
   private readonly dbUrl = `${environment.apiUrl}/users`;
 

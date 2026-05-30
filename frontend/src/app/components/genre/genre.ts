@@ -14,8 +14,6 @@ export class Genre {
 
   @Input() genre!: GenreGroup;
 
-  @Input() index!: number;
-
   canScrollLeft = false;
   canScrollRight = true;
 

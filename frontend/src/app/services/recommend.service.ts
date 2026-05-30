@@ -5,7 +5,7 @@ import { AuthService } from './auth.service';
 import { switchMap, take } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
-export class RecommendationFollowedService {
+export class RecommendService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
   

@@ -8,8 +8,7 @@
 @if (!isSearching) {
   @for (genre of genres; track $index) {
     <app-genre 
-      [genre]="genre"
-      [index]="$index">
+      [genre]="genre">
     </app-genre>
   }
 } 

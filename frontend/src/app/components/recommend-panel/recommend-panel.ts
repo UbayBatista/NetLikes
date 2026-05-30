@@ -5,7 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { FollowService } from '../../services/follow.service';
 import { SearchBarComponent } from '../search-bar/search-bar';
 import { ConfirmationModalComponent } from '../confirmation-modal/confirmation-modal';
-import { RecommendationFollowedService } from '../../services/recommend.service';
+import { RecommendService } from '../../services/recommend.service';
 
 @Component({
   selector: 'app-recommend-panel',
@@ -25,7 +25,7 @@ export class RecommendPanel implements OnChanges {
   private interactionService = inject(UserInteractionService);
   private authService = inject(AuthService);
   private followService = inject(FollowService);
-  private recService = inject(RecommendationFollowedService);
+  private recService = inject(RecommendService);
   private cdr = inject(ChangeDetectorRef);
 
   addToProfile: boolean = false;
@@ -70,7 +70,7 @@ export class RecommendPanel implements OnChanges {
             email: u.email
           }));
 
-          this.recService.getRecipientsForFilm(this.filmId).subscribe(emails => {
+          this.recService.getRecipientsForFilm(this.filmId).subscribe((emails: string[]) => {
             this.alreadyRecommendedEmails = emails;
 
             this.recService.getRecentRecipients().subscribe(recents => {
@@ -164,7 +164,7 @@ export class RecommendPanel implements OnChanges {
       if (targetEmails.length > 0) {
         this.recService.sendRecommendations(this.filmId, targetEmails).subscribe({
           next: () => console.log("Recomendaciones enviadas con éxito"),
-          error: (err) => console.error("Error al recomendar a seguidos", err)
+          error: (err: any) => console.error("Error al recomendar a seguidos", err)
         });
       }
     }

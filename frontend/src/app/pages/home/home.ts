@@ -1,10 +1,9 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Genre } from '../../components/genre/genre';
-import { FilmService } from '../../services/film.service';
 import { Film } from '../../components/film/film';
-import { FilmListItem, GenreGroup } from '../../models/film.models';
+import { GenreGroup } from '../../models/film.models';
 import { Recommendations } from '../../services/recommendations';
-import { RecommendationFollowedService } from '../../services/recommend.service';
+import { RecommendService } from '../../services/recommend.service';
 
 @Component({
   selector: 'app-home',
@@ -19,10 +18,9 @@ export class Home implements OnInit {
   users_films: any[] = []; 
   
   constructor(
-    private filmService: FilmService, 
     private cdr: ChangeDetectorRef, 
     private recommendationsService: Recommendations,
-    private recFollowedService: RecommendationFollowedService
+    private recFollowedService: RecommendService
   ) {}
 
   ngOnInit() {
