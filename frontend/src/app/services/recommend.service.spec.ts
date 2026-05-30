@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { RecommendationFollowedService } from './recommend.service';
+import { RecommendService } from './recommend.service';
 import { AuthService } from './auth.service';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
 
 describe('RecommendationFollowedService', () => {
-  let service: RecommendationFollowedService;
+  let service: RecommendService;
   let httpMock: HttpTestingController;
   let authServiceMock: any;
 
@@ -24,7 +24,7 @@ describe('RecommendationFollowedService', () => {
       ]
     });
 
-    service = TestBed.inject(RecommendationFollowedService);
+    service = TestBed.inject(RecommendService);
     httpMock = TestBed.inject(HttpTestingController);
   });
 

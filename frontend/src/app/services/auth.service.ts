@@ -4,10 +4,6 @@ import { Credentials, User, RegisterData} from '../models/user.models';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-export interface LoginResponse {
-  user: User;
-}
-
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private currentUser$ = new BehaviorSubject<User | null>(null);

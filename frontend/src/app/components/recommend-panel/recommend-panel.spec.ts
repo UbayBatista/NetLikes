@@ -3,7 +3,7 @@ import { RecommendPanel } from './recommend-panel';
 import { UserInteractionService } from '../../services/user-interaction.service';
 import { AuthService } from '../../services/auth.service';
 import { FollowService } from '../../services/follow.service';
-import { RecommendationFollowedService } from '../../services/recommend.service';
+import { RecommendService } from '../../services/recommend.service';
 import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
@@ -46,7 +46,7 @@ describe('RecommendPanel Component', () => {
         { provide: UserInteractionService, useValue: interactionServiceMock },
         { provide: AuthService, useValue: authServiceMock },
         { provide: FollowService, useValue: followServiceMock },
-        { provide: RecommendationFollowedService, useValue: recFollowedServiceMock }
+        { provide: RecommendService, useValue: recFollowedServiceMock }
       ]
     }).compileComponents();
 

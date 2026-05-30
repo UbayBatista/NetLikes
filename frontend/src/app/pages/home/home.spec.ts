@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Home } from './home';
 import { FilmService } from '../../services/film.service';
 import { Recommendations } from '../../services/recommendations';
-import { RecommendationFollowedService } from '../../services/recommend.service';
+import { RecommendService } from '../../services/recommend.service';
 import { of } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
@@ -29,7 +29,7 @@ describe('Home Component', () => {
       providers: [
         { provide: FilmService, useValue: {} },
         { provide: Recommendations, useValue: recommendationsServiceMock },
-        { provide: RecommendationFollowedService, useValue: recFollowedServiceMock }
+        { provide: RecommendService, useValue: recFollowedServiceMock }
       ]
     }).compileComponents();
 

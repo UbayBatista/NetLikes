@@ -12,7 +12,7 @@ import { signal } from '@angular/core';
   styleUrls: ['../steps.css', './step4.css']
 })
 export class Step4 implements OnInit{
-  @Output() toEnd = new EventEmitter<any>();
+  @Output() toEnd = new EventEmitter<number[]>();
   @Output() toPrev = new EventEmitter<void>();
 
   generos = signal<Genre[]>([]);

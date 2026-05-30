@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, Input } from '@angular/core';
+import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './step3.html',
   styleUrls: ['../steps.css', './step3.css']
 })
-export class Step3 {
+export class Step3 implements OnInit {
   @Input() initialStatus: boolean = false;
   @Output() toNext = new EventEmitter<boolean>();
   @Output() toPrev = new EventEmitter<void>();

@@ -66,7 +66,7 @@ export class Welcome {
             genre: '' 
         }));
         this.authService.register(this.registrationData).subscribe({
-            next: (user) => {
+            next: () => {
                 this.router.navigate(['/home']);
             },
             error: (err) => console.error('Error al registrar:', err)
@@ -75,7 +75,7 @@ export class Welcome {
 
     logIn(credentials: Credentials){
         this.authService.login(credentials).subscribe({
-            next: (user) => {
+            next: () => {
                 this.router.navigate(['/home']);
             },
             error: (err) => this.credentialsError$.next()

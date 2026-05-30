@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, Input } from '@angular/core';
+import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
 import { NgClass, CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators} from '@angular/forms';
 
@@ -16,7 +16,7 @@ function samePasswords(group: FormGroup) {
   styleUrl: '../steps.css'
 })
 
-export class Step2 {
+export class Step2 implements OnInit {
   @Input() initialData: any;
   @Output() toNext = new EventEmitter<{ password: string; securityQuestion: string; answer: string }>();
   @Output() toPrev = new EventEmitter<void>();

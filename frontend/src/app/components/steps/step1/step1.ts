@@ -1,7 +1,6 @@
-import { Component, Output, EventEmitter, Input } from '@angular/core';
+import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
-import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { forkJoin } from 'rxjs';
 
@@ -30,7 +29,7 @@ function validateAge(control: AbstractControl) {
   templateUrl: './step1.html',
   styleUrls: ['../steps.css', './step1.css']
 })
-export class Step1 {
+export class Step1 implements OnInit {
   @Input() initialData: any;
   @Output() toNext = new EventEmitter<{ userName: string; email: string; birthdate: string }>();
   @Output() toPrev = new EventEmitter<void>();
@@ -39,7 +38,7 @@ export class Step1 {
   emailExists: boolean = false;
   nameExists: boolean = false;
 
-  constructor(private router: Router, private fb: FormBuilder, private authService: AuthService) {
+  constructor(private fb: FormBuilder, private authService: AuthService) {
     this.form = this.fb.group({
       userName: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
