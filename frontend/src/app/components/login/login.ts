@@ -1,7 +1,6 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import { NgClass } from '@angular/common';
-import { Router } from '@angular/router';
 import { Credentials } from '../../models/user.models';
 import { AuthService } from '../../services/auth.service';
 import { RecoverPassword } from '../recover-password/recover-password';
@@ -13,7 +12,7 @@ import { Subject, takeUntil } from 'rxjs';
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
-export class LoginForm {
+export class LoginForm implements OnDestroy{
   private destroy$ = new Subject<void>();
 
   @Input() set credentialsError(obs: Subject<void>) {
@@ -31,7 +30,7 @@ export class LoginForm {
   showRecoverError = false;
 
 
-  constructor(private router: Router, private fb: FormBuilder, private authService: AuthService) {
+  constructor(private fb: FormBuilder, private authService: AuthService) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]

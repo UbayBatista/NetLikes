@@ -20,7 +20,6 @@ export class RecoverPassword implements OnChanges {
   step: Step = 'question';
   userEmail = '';
   securityQuestion = '';
-  errorMessage = '';
   showPassword = false;
   showConfirmPassword = false;
 
