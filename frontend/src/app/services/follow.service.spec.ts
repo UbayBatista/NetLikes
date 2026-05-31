@@ -3,7 +3,6 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { of } from 'rxjs';
-
 import { FollowService, Follow, LoggedUser } from './follow.service';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';

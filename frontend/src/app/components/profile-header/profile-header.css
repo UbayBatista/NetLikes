@@ -58,8 +58,6 @@
     align-self: start;
 }
 
-
-
 .ig-name { font-size: 1.75rem; }
 
 .ig-stats {
@@ -117,7 +115,6 @@
     transform: scale(1.05); 
 }
 
-
 .chat-toast-error {
     position: fixed;
     top: 25px; 
@@ -155,7 +152,6 @@
         justify-content: center;
     }
 }
-
 
 @media (max-width: 768px) {
     .ig-grid {
@@ -251,7 +247,6 @@
         font-size: 1.4rem !important; 
     }
 
-    
     .ig-name { 
         font-size: 1.1rem; 
         margin-bottom: 5px !important;

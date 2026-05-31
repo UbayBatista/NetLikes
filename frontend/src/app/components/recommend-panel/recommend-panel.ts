@@ -30,10 +30,8 @@ export class RecommendPanel implements OnChanges {
 
   addToProfile: boolean = false;
   selectedUsers: string[] = [];
-
   followingUsers: any[] = []; 
   displayUsers: any[] = [];
-  
   alreadyRecommendedEmails: string[] = [];
   topRecentEmails: string[] = [];
 
@@ -84,6 +82,7 @@ export class RecommendPanel implements OnChanges {
   }
 
   toggleUser(email: string) {
+    
     if (this.alreadyRecommendedEmails.includes(email)) {
       return; 
     }

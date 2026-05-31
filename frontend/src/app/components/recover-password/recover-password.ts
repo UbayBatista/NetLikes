@@ -6,11 +6,11 @@ import { AuthService } from '../../services/auth.service';
 type Step = 'question' | 'password' | 'success';
 
 @Component({
-    selector: 'app-recover-password',
-    standalone: true,
-    imports: [ReactiveFormsModule, NgClass],
-    templateUrl: './recover-password.html',
-    styleUrl: './recover-password.css'
+  selector: 'app-recover-password',
+  standalone: true,
+  imports: [ReactiveFormsModule, NgClass],
+  templateUrl: './recover-password.html',
+  styleUrl: './recover-password.css'
 })
 export class RecoverPassword implements OnChanges {
   @Input() email: string = '';
@@ -69,6 +69,7 @@ export class RecoverPassword implements OnChanges {
       this.answerForm.markAllAsTouched();
       return;
     }
+
     const answer = this.answerForm.get('answer')!.value;
     this.authService.isValidAnswer(this.userEmail, answer).subscribe({
       next: (valid) => {
@@ -88,15 +89,18 @@ export class RecoverPassword implements OnChanges {
   }
 
   submitPassword() {
+
     if (this.passwordForm.invalid) {
       this.passwordForm.markAllAsTouched();
       return;
     }
+
     const newPassword = this.passwordForm.get('newPassword')!.value;
     this.authService.changePassword(this.userEmail, newPassword).subscribe(() => {
       this.step = 'success';
       this.cdr.detectChanges();
     });
+    
   }
 
   togglePassword() { this.showPassword = !this.showPassword; }

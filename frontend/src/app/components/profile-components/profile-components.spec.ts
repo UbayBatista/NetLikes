@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ProfileBody } from './profile-components'; 
 import { SimpleChange } from '@angular/core';
-import { vi } from 'vitest';
 
 describe('ProfileBody', () => {
   let component: ProfileBody;
@@ -33,7 +32,6 @@ describe('ProfileBody', () => {
     it('should update isVisibleLocal when ngOnChanges is called with a new isVisible value', () => {
       fixture.detectChanges();
       component.isVisibleLocal = true;
-      // Actualizamos también la propiedad del componente para que coincida con el cambio
       component.isVisible = false; 
 
       component.ngOnChanges({

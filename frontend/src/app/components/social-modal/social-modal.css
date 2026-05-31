@@ -59,6 +59,23 @@
   font-size: 0.95rem;
 }
 
+.modal-body::-webkit-scrollbar {
+  display: none;
+}
+
+.btn-light {
+  background: none !important;
+  border: none !important;
+  color: #666;
+  border-bottom: 2px solid transparent !important;
+}
+
+.active-tab {
+  color: #000 !important;
+  border-bottom: 2px solid #000 !important;
+  background: none !important;
+}
+
 .btn-secondary {
   background-color: #f0f0f0 !important;
   border: none !important;
@@ -70,6 +87,7 @@
 .btn-secondary:hover {
   background-color: #e0e0e0 !important;
 }
+
 @media (max-width: 480px) {
   .modal-dialog {
     margin: 0 !important;
@@ -104,21 +122,4 @@
     flex: 1;
     background-color: white;
   }
-}
-
-.modal-body::-webkit-scrollbar {
-    display: none;
-}
-
-.btn-light {
-    background: none !important;
-    border: none !important;
-    color: #666;
-    border-bottom: 2px solid transparent !important;
-}
-
-.active-tab {
-    color: #000 !important;
-    border-bottom: 2px solid #000 !important;
-    background: none !important;
 }

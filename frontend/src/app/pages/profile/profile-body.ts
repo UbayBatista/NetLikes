@@ -52,26 +52,33 @@ export class ProfileComplete implements OnInit {
   private readonly followService = inject(FollowService);
   private readonly destroyRef = inject(DestroyRef);
 
-  pendingVisibility: { type: VisibilityType, isVisible: boolean }[] = [];
-  
   profile$: Observable<MyProfile | UserProfile | null> = this.profileService.getProfile();
   itsMe$: Observable<boolean> = this.profileService.isMyProfile();
 
   followersCount$ = new BehaviorSubject<number>(0);
   followingCount$ = new BehaviorSubject<number>(0);
 
-  isEditing = false;
-  isSocialModalOpen = false;
-  isAvatarModalOpen = false;
-  thereIsChanges = false;
+  pendingVisibility: { type: VisibilityType, isVisible: boolean }[] = [];
+  
+  canScrollLeft: boolean = false;
+  canScrollRight: boolean = true;
+  isEditing: boolean = false;
+  isSocialModalOpen: boolean = false;
+  isAvatarModalOpen: boolean = false;
+  isRecoverModalOpen: boolean = false;
+  isBlockedModalOpen: boolean = false;
+  isPasswordModalOpen: boolean = false;
+  isDeleteConfirmModalOpen: boolean = false;
+  showSaveModal: boolean = false;
+  showConfirmModal: boolean = false;
+  thereIsChanges: boolean = false;
+  skipSecurityQuestion: boolean = false;
   socialType: SocialType = 'Seguidores';
   socialData: any[] = [];
-  canScrollLeft = false;
-  canScrollRight = true;
-  isBlockedModalOpen = false;
   pendingBio: string = '';
   pendingAvatar: string = '';
-  showSaveModal: boolean = false;
+  confirmModalMessage: string = '';
+  actionUser: string = '';
 
   sections: {
     title: string;
@@ -93,17 +100,8 @@ export class ProfileComplete implements OnInit {
     })
   );
 
-  showConfirmModal = false;
-  confirmModalMessage = '';
-  actionUser: string = '';
   private actionToConfirm: 'UNFOLLOW' | 'BLOCK' | 'DELETE' | 'REMOVE_FOLLOWER' = 'UNFOLLOW';
-
-  isPasswordModalOpen = false;
-  isDeleteConfirmModalOpen = false;
-
   passwordModalMode: 'DELETE' | 'CHANGE' = 'DELETE';
-  isRecoverModalOpen = false;
-  skipSecurityQuestion = false;
 
   ngOnInit() {
     this.route.params
@@ -323,23 +321,11 @@ export class ProfileComplete implements OnInit {
     } else{
       this.isEditing = !this.isEditing;
     }
-    
-  }
-
-  onPrivacyChange(isPrivate: boolean): void {
-    this.profileService.updatePrivacy(isPrivate);
   }
 
   logout() {
     this.authService.logout();
     this.router.navigate(['/']);
-  }
-
-  onBlockRequest(userMail: string, userName: string){
-    this.actionUser = userMail;
-    this.actionToConfirm = 'BLOCK';
-    this.confirmModalMessage = `¿Estás seguro de que quieres dejar de seguir a @${userName}?`;
-    this.showConfirmModal = true;
   }
 
   executeBlock(targetEmail: string) {
@@ -374,6 +360,17 @@ export class ProfileComplete implements OnInit {
     this.cdr.detectChanges();
   }
 
+  onPrivacyChange(isPrivate: boolean): void {
+    this.profileService.updatePrivacy(isPrivate);
+  }
+
+  onBlockRequest(userMail: string, userName: string){
+    this.actionUser = userMail;
+    this.actionToConfirm = 'BLOCK';
+    this.confirmModalMessage = `¿Estás seguro de que quieres dejar de seguir a @${userName}?`;
+    this.showConfirmModal = true;
+  }
+
   onBioSave(event: { bio: string, hasChanges: boolean }) {
     this.pendingBio = event.bio;
     this.thereIsChanges = event.hasChanges;
@@ -393,6 +390,12 @@ export class ProfileComplete implements OnInit {
       this.pendingVisibility.push({ type, isVisible });
     }
     this.thereIsChanges = true;
+  }
+
+  onForgotPasswordClicked() {
+    this.isPasswordModalOpen = false;
+    this.skipSecurityQuestion = false;
+    this.isRecoverModalOpen = true;
   }
 
   handleSaveConfirmation(confirmed: boolean) {
@@ -434,7 +437,6 @@ export class ProfileComplete implements OnInit {
   executeDelete() {
     this.userService.deleteUser().subscribe({
       next: () => {
-        console.log('Cuenta eliminada con éxito en la base de datos.');
         this.authService.logout();
         this.router.navigate(['/']);
       },
@@ -442,12 +444,6 @@ export class ProfileComplete implements OnInit {
         console.error('Error eliminando la cuenta:', err);
       }
     });
-  }
-
-  onForgotPasswordClicked() {
-    this.isPasswordModalOpen = false;
-    this.skipSecurityQuestion = false;
-    this.isRecoverModalOpen = true;
   }
 
   startChangePasswordProcess() {

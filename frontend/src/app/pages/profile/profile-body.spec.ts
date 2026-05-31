@@ -3,7 +3,6 @@ import { ProfileComplete } from './profile-body';
 import { provideRouter, ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
-
 import { ProfileService } from '../../services/profile.service';
 import { FollowService } from '../../services/follow.service';
 import { AuthService } from '../../services/auth.service';
@@ -344,7 +343,7 @@ describe('ProfileComplete Component', () => {
     });
   });
 
-  describe('Profile Sections Rendering (US 10.2)', () => {
+  describe('Profile Sections Rendering', () => {
     it('should display the "Películas Recomendadas" section if the profile has recommended films', () => {
       profileService.getProfile.mockReturnValue(of({
         userName: 'TestUser',

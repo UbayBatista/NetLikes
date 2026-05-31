@@ -75,8 +75,6 @@ export class UserService {
     return this.http.patch<void>(`${this.dbUrl}/myProfile/${email}/privacy`, { isPrivate });
   }
   
-  
-
   deleteUser(): Observable<void> {
     return this.http.delete<void>(
       `${this.dbUrl}`, 
