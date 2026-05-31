@@ -37,9 +37,6 @@ export class Home implements OnInit {
           recommendations: item.count
         }));
         this.cdr.detectChanges();
-      },
-      error: (error) => {
-        console.error('Error fetching user recommendations:', error);
       }
     });
 
@@ -47,9 +44,6 @@ export class Home implements OnInit {
       next: (data: GenreGroup[]) => {
         this.forYouFilms = data;
         this.cdr.detectChanges();
-      },
-      error: (error: any) => {
-        console.error('Error fetching films by genre:', error);
       }
     });
   }

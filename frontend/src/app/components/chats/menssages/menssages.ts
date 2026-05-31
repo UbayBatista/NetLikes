@@ -27,7 +27,6 @@ export class Menssages{
             
             setTimeout(() => {
                 this.saveUrl = this.sanitizer.bypassSecurityTrustResourceUrl(ssoUrl);
-                console.log("Cargando chat silenciosamente:", ssoUrl);
                 this.cdr.detectChanges();
             }, 10);
         }else {

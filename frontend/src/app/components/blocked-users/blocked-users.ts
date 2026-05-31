@@ -29,8 +29,7 @@ export class BlockedUsersModalComponent implements OnInit {
         this.isLoading = false;
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('Error cargando usuarios bloqueados', err);
+      error: () => {
         this.isLoading = false;
         this.cdr.detectChanges();
       }
@@ -43,7 +42,6 @@ export class BlockedUsersModalComponent implements OnInit {
         this.blockedUsers = this.blockedUsers.filter(u => u.email !== user.email);
         this.cdr.detectChanges();
       },
-      error: (err) => console.error('Error al desbloquear', err)
     });
   }
 

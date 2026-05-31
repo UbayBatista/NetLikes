@@ -30,7 +30,6 @@
   pointer-events: auto;
 }
 
-/* Ocultar scrollbar */
 .panel::-webkit-scrollbar {
   display: none;
 }

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject, ChangeDetectorRef, SimpleChanges } from "@angular/core";
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
@@ -91,16 +91,13 @@ export class ProfileHeader {
     this.authService.getCurrentUser().subscribe(user => { 
 
       if (!user) return;
-      
-      const myUser = user.userName
-      const userFriend = this.userName;
 
-      this.http.get<number>(`https://api-db.duckdns.org/users/chat/id?myUser=${myUser}&userFriend=${userFriend}`)
+      this.http.get<number>(`https://api-db.duckdns.org/users/chat/id?myUser=${user.userName}&userFriend=${this.userName}`)
         .subscribe({
           next: (chatId) => {
             this.router.navigate(['/social'], { 
               queryParams: { 
-                chatWith: userFriend, 
+                chatWith: this.userName, 
                 chatId: chatId,
                 mode: 'Chats'
               } 
@@ -111,9 +108,7 @@ export class ProfileHeader {
               this.mensajeErrorChat = err.error.error || "¡Os tenéis que seguir mutuamente para poder hablar!";
             } else if (err.status === 404) {
               this.mensajeErrorChat = "Este amigo aún no ha activado su chat en el foro.";
-            } else {
-                console.error("Error desconocido", err);
-            }
+            } 
             
             this.cdr.detectChanges();
 

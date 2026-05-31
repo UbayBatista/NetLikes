@@ -83,8 +83,7 @@ export class Step1 implements OnInit {
             const val = this.form.value;
             this.toNext.emit({ userName: val.userName, email: val.email, birthdate: val.birthdate });
           }
-        },
-        error: (err: any) => console.error('Error al comprobar credenciales', err)
+        }
       });
     } else {
       this.form.markAllAsTouched();

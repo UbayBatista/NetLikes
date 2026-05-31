@@ -17,7 +17,6 @@ type PanelView = 'notifications' | 'requests';
 })
 export class NotificationPanel implements OnInit, OnDestroy, OnChanges {
   @Input() isOpen: boolean = false;
-  
   @Output() closed = new EventEmitter<void>();
   
   view: PanelView = 'notifications';

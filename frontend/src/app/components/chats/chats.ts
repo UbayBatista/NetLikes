@@ -42,8 +42,6 @@ export class Chats{
             this.selectedChat = true;
             
         } else {
-            console.log(`Pidiendo ID a Java para chatear con ${this.userFriend}...`);
-            
             this.authService.getCurrentUser().subscribe(user => { 
                 if (!user) return;
                 
@@ -52,15 +50,11 @@ export class Chats{
                 this.http.get<number>(`https://api-db.duckdns.org/users/chat/id?myUser=${myUser}&userFriend=${this.userFriend}`)
                     .subscribe({
                         next: (nuevoChatId) => {
-                            console.log(`¡ID recibido! Abriendo el chat ${nuevoChatId}`);
                             setTimeout(() => {
                                 this.chatId = nuevoChatId;
                                 this.selectedChat = true;
                                 this.cdr.detectChanges();
                             }, 10);
-                        },
-                        error: (err) => {
-                            console.error("No se pudo iniciar el chat.", err);
                         }
                     });
             });

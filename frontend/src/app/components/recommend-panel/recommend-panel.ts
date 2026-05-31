@@ -162,10 +162,7 @@ export class RecommendPanel implements OnChanges {
       const targetEmails = this.selectedUsers.filter(e => !this.alreadyRecommendedEmails.includes(e)); 
       
       if (targetEmails.length > 0) {
-        this.recService.sendRecommendations(this.filmId, targetEmails).subscribe({
-          next: () => console.log("Recomendaciones enviadas con éxito"),
-          error: (err: any) => console.error("Error al recomendar a seguidos", err)
-        });
+        this.recService.sendRecommendations(this.filmId, targetEmails).subscribe();
       }
     }
     

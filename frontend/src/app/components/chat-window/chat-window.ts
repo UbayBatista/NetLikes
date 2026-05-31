@@ -1,7 +1,6 @@
 import { Component, Output, EventEmitter, Input, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-chat-window',
@@ -45,8 +44,6 @@ export class ChatWindow {
     const targetTopic = `/t/${this.forumId}`;
     const ssoUrl = `https://netlikes.duckdns.org/session/sso?return_path=${encodeURIComponent(targetTopic)}`;
     this.saveUrl = this.sanitizer.bypassSecurityTrustResourceUrl(ssoUrl);
-    
-    console.log("Cargando foro silenciosamente:", ssoUrl);
   }
   
   goBack() {

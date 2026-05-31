@@ -16,6 +16,5 @@ export class BadgesWindow implements OnInit {
     const ssoUrl = `https://netlikes.duckdns.org/session/sso?return_path=${encodeURIComponent(targetPath)}`;
     
     this.badgesUrl = this.sanitizer.bypassSecurityTrustResourceUrl(ssoUrl);
-    console.log("Cargando insignias de Discourse:", ssoUrl);
   }
 }

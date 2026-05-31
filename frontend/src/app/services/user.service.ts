@@ -30,9 +30,7 @@ export class UserService {
 
         currentUserId = user.email; 
         
-      } catch (error) {
-        console.error('Error al parsear el usuario del localStorage', error);
-      }
+      } catch (error) {}
       }
 
     return new HttpHeaders({
@@ -56,8 +54,7 @@ export class UserService {
       return of([]);
     }
     return this.http.get<any[]>(`${this.dbUrl}/search?query=${query}`).pipe(
-      catchError(error => {
-        console.error('Error en la búsqueda', error);
+      catchError(() => {
         return of([]);
       })
     );
@@ -75,8 +72,6 @@ export class UserService {
     return this.http.patch<void>(`${this.dbUrl}/myProfile/${email}/privacy`, { isPrivate });
   }
   
-  
-
   deleteUser(): Observable<void> {
     return this.http.delete<void>(
       `${this.dbUrl}`, 

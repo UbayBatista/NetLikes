@@ -43,8 +43,7 @@ export class SearchUser implements OnInit, OnDestroy {
                 this.currentUserEmail = user ? user.email : ''; 
 
                 this.loadUsers();
-            },
-            error: (err) => console.error('Error obteniendo el usuario actual:', err)
+            }
         });
 
         this.searchSubject.pipe(
@@ -61,8 +60,7 @@ export class SearchUser implements OnInit, OnDestroy {
                 this.isSearching = true;
                 
                 return this.userService.searchBy(query).pipe(
-                    catchError(err => {
-                        console.error('Error buscando usuarios', err);
+                    catchError(() => {
                         return of([]); 
                     })
                 );
@@ -84,9 +82,6 @@ export class SearchUser implements OnInit, OnDestroy {
             next: (data) => {
                 this.initialUsers = data; 
                 this.cdr.detectChanges();
-            },
-            error: (error) => {
-                console.error('Error fetching users:', error);
             }
         });
     }

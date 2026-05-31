@@ -46,7 +46,6 @@ export class ForumList implements OnInit{
         title: selected.title, 
         topicId: selected.forumTopicId
       });
-      console.log('Cambiando al foro de:', selected.title, "con ID: ", selected.forumTopicId);
     }
     
     this.filmsForum.set([...currentForums]);
@@ -58,14 +57,11 @@ export class ForumList implements OnInit{
 
       if (!user || !user.email) return; 
 
-      console.log('Usuario detectado:', user.email, 'Pidiendo foros a Spring Boot...');
-
       this.subscriptionService.getUserSubscriptions(user.email).subscribe({
         next: (data) => {
-          console.log('Datos puros del backend:', data);
 
           try {
-            const mappedForums = data.map((sub, index) => {
+            const mappedForums = data.map((sub) => {
               return {
                 title: sub.forum?.film?.title || 'Foro sin título',      
                 active: false, 
@@ -94,13 +90,7 @@ export class ForumList implements OnInit{
             }
             
             this.cdr.detectChanges();
-            console.log('Foros cargados listos para pantalla:', this.filmsForum());
-          } catch(e) {
-            console.error('Error al mapear el JSON devuelto por Spring:', e);
-          }
-        },
-        error: (err) => {
-          console.error('Error al obtener los foros:', err);
+          } catch(e) {}
         }
       });
     });

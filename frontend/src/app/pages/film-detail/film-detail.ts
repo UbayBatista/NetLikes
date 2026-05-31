@@ -36,9 +36,6 @@ export class FilmDetail implements OnInit {
         next: (realDataFromBackend) => {
           this.filmData = realDataFromBackend;
           this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error('El servidor Java no respondió o dio error. Usando película por defecto.', err);
         }
       });
     }

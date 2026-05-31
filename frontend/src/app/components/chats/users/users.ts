@@ -57,8 +57,7 @@ export class Users{
                             return friendDB;
                         });
                         this.friends.set(listaFusionada);
-                    },
-                    error: (err) => console.error("Error al cargar amigos mutuos", err)
+                    }
                 });
         });
     }
@@ -114,9 +113,6 @@ export class Users{
                 user: realName,
                 chatId: selected.chatId || null
             });
-            console.log(selected);
-            console.log('Cambiando al chat de:', selected.userName, "con ID: ", selected.chatId);
-
         }
         
         this.friends.set([...currentUser]);

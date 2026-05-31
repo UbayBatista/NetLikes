@@ -60,8 +60,7 @@ export class FilmHeader implements OnInit {
           this.isRecommendedProfile = false;
         }
         this.cdr.detectChanges();
-      },
-      error: (err) => console.error('Error al recuperar estado', err)
+      }
     });
   }
 
@@ -121,10 +120,9 @@ export class FilmHeader implements OnInit {
     this.cdr.detectChanges();
 
     this.interactionService.toggleMark(this.film.id, 'SEEN').subscribe({
-      error: (err) => {
+      error: () => {
         this.isWatched = previousState;
         this.cdr.detectChanges();
-        console.error('Error en servidor, revirtiendo cambio visual', err);
       }
     });
   }
@@ -145,10 +143,9 @@ export class FilmHeader implements OnInit {
     this.cdr.detectChanges(); 
 
     this.interactionService.toggleMark(this.film.id, 'WATCHLATER').subscribe({
-      error: (err) => {
+      error: () => {
         this.isWatchLater = previousState;
         this.cdr.detectChanges();
-        console.error('Error', err);
       }
     });
   }
@@ -162,7 +159,7 @@ export class FilmHeader implements OnInit {
     this.cdr.detectChanges(); 
 
     this.interactionService.toggleRate(this.film.id, rating).subscribe({
-        error: (err) => {
+        error: () => {
             this.currentRating = oldRating;
             this.cdr.detectChanges();
         }
@@ -176,8 +173,6 @@ export class FilmHeader implements OnInit {
       return;
     }
 
-    console.log('Botón de suscripción pulsado...');
-
     this.authService.getCurrentUser().subscribe({
       next: (user) => {
         if (!user || !user.email) {
@@ -185,7 +180,6 @@ export class FilmHeader implements OnInit {
         }
 
         const userEmail = user.email;
-        console.log('Usuario detectado:', userEmail, 'Enviando petición a Spring Boot...');
 
         this.isProcessingForum = true;
         this.cdr.detectChanges();
@@ -193,14 +187,12 @@ export class FilmHeader implements OnInit {
         if (!this.isSubscribed) {
           this.subscriptionService.subscribeToFilm(userEmail, this.film.id, this.film.title).subscribe({
             next: () => {
-              console.log('¡Suscripción exitosa en el backend!');
               this.isSubscribed = true; 
               this.isProcessingForum = false; 
               this.cdr.detectChanges();
               this.router.navigate(['/forum'], { queryParams: { filmId: this.film.id } });
             },
             error: (err) => {
-              console.error('Error al suscribirse:', err);
               const errorMsg = err.error ? (typeof err.error === 'string' ? err.error : JSON.stringify(err.error)) : err.message;
               this.isProcessingForum = false; 
               this.cdr.detectChanges();
@@ -209,21 +201,16 @@ export class FilmHeader implements OnInit {
         } else {
           this.subscriptionService.unsubscribeFromFilm(userEmail, this.film.id).subscribe({
             next: () => {
-              console.log('¡Desuscripción exitosa en el backend!');
               this.isSubscribed = false; 
               this.isProcessingForum = false; 
               this.cdr.detectChanges();
             },
-            error: (err) => {
-              console.error('Error al desuscribirse:', err);
+            error: () => {
               this.isProcessingForum = false; 
               this.cdr.detectChanges();
             }
           });
         }
-      },
-      error: (err) => {
-        console.error('Error del AuthService:', err);
       }
     });
   }
@@ -247,35 +234,6 @@ export class FilmHeader implements OnInit {
       this.dominantColor = `rgba(${~~(r/count)}, ${~~(g/count)}, ${~~(b/count)}, 0.35)`;
       this.cdr.detectChanges();
     };
-  }
-
-  forumUrl: string | null = null;
-  
-  suscribeToForum(filmId: number, filmTitle: string) {
-    console.log('Botón pulsado. Enviando petición a Spring Boot...');
-
-    this.authService.getCurrentUser().subscribe(user => { 
-
-        if (!user || !user.email) {
-          return; 
-        }
-      
-      
-      console.log('Usuario detectado:', user.email, 'Enviando petición a Spring Boot...')
-
-      this.forumService.suscribeForum(filmId, filmTitle, user.email).subscribe({
-        next: (response) => {
-          console.log('¡Éxito! El ID del foro en Discourse es:', response.discourseTopicId);
-
-          this.forumUrl = `https://netlikes.duckdns.org/t/${response.discourseTopicId}`;
-        },
-        error: (error) => {
-          console.error('Ha ocurrido un error:', error);
-        }
-      });
-    
-    });
-
   }
 
   shareFilm() { 

@@ -127,8 +127,7 @@ export class ProfileComplete implements OnInit {
                 this.followersCount$.next((profile as any)?.followers || 0);
                 this.followingCount$.next((profile as any)?.following || 0);
               }
-            },
-            error: (err) => console.error('Error al obtener estado de seguimiento', err)
+            }
           });
         }
 
@@ -203,7 +202,6 @@ export class ProfileComplete implements OnInit {
           this.followersCount$.next(currentFollowers + 1);
         }
       },
-      error: (error) => console.error('Error al intentar seguir:', error),
       complete: () => {
         this.actionUser = ''; 
       }
@@ -215,7 +213,6 @@ export class ProfileComplete implements OnInit {
       next: () => {       
         this.followStateSubject.next('NONE');
       },
-      error: (error) => console.error('Error al dejar de seguir:', error),
       complete: () => {
         this.actionUser = ''; 
       }
@@ -265,7 +262,6 @@ export class ProfileComplete implements OnInit {
 
         this.cdr.detectChanges();
       },
-      error: (err) => console.error(`Error al ejecutar ${type}:`, err),
       complete: () => {
         this.actionUser = '';
       }
@@ -285,7 +281,6 @@ export class ProfileComplete implements OnInit {
       const currentProfileEmail = (profile as any)?.email;
 
       if (!currentProfileEmail) {
-        console.error('El perfil actual no tiene email. Revisa la interfaz del perfil.');
         return;
       }
 
@@ -298,8 +293,7 @@ export class ProfileComplete implements OnInit {
               email: u.email
             }));
             this.cdr.detectChanges();
-          },
-          error: (err) => console.error('Error cargando seguidores', err)
+          }
         });
       } else {
         this.followService.getFollowing(currentProfileEmail).subscribe({
@@ -310,8 +304,7 @@ export class ProfileComplete implements OnInit {
               email: u.email
             }));
             this.cdr.detectChanges();
-          },
-          error: (err) => console.error('Error cargando seguidos', err)
+          }
         });
       }
     });
@@ -347,7 +340,6 @@ export class ProfileComplete implements OnInit {
       next: () => {
         this.followStateSubject.next('BLOCKED');
       },
-      error: (error) => console.error('Error al intentar bloquear:', error),
       complete: () => {
         this.actionUser = ''; 
       }
@@ -434,12 +426,8 @@ export class ProfileComplete implements OnInit {
   executeDelete() {
     this.userService.deleteUser().subscribe({
       next: () => {
-        console.log('Cuenta eliminada con éxito en la base de datos.');
         this.authService.logout();
         this.router.navigate(['/']);
-      },
-      error: (err) => {
-        console.error('Error eliminando la cuenta:', err);
       }
     });
   }

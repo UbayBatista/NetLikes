@@ -29,9 +29,7 @@ export class Recommendations {
 
         currentUserId = user.email; 
         
-      } catch (error) {
-        console.error('Error al parsear el usuario del localStorage', error);
-      }
+      } catch (error) {}
       }
 
     return new HttpHeaders({

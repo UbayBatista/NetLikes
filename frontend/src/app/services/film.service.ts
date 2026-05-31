@@ -34,14 +34,13 @@ export class FilmService {
       return of([]);
     }
     return this.http.get<any[]>(`${this.dbUrl}/search?query=${query}`).pipe(
-      catchError(error => {
-        console.error('Error en la búsqueda', error);
+      catchError(() => {
         return of([]);
       })
     );
   }
 
-  private handleError(error: any): Observable<never> {
+  private handleError(): Observable<never> {
     return throwError(() => new Error('Something went wrong; please try again later.'));
   }
 

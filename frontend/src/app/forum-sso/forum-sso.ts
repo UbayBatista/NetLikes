@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-foro-sso',
-  template: '<p style="text-align:center; padding: 20px;">Iniciando sesión en el foro de forma segura...</p>'
+  templateUrl: './forum-sso.html''
 })
 export class ForumSsoComponent implements OnInit {
 
@@ -33,8 +33,7 @@ export class ForumSsoComponent implements OnInit {
           .subscribe({
             next: (response: any) => {
               window.location.href = response.redirectUrl;
-            },
-            error: (err) => console.error("Error en el SSO:", err)
+            }
           });
       }
     });

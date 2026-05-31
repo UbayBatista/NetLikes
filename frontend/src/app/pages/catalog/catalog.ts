@@ -42,9 +42,6 @@ export class Catalog implements OnInit, OnDestroy {
       next: (data) => {
         this.genres = data;
         this.cdr.detectChanges();
-      },
-      error: (error) => {
-        console.error('Error fetching films:', error);
       }
     });
   }
@@ -62,8 +59,7 @@ export class Catalog implements OnInit, OnDestroy {
         this.isSearching = true;
 
         return this.filmService.searchBy(query).pipe(
-          catchError(err => {
-            console.error('Error en la búsqueda del servidor', err);
+          catchError(() => {
             return of([]);
           })
         );

@@ -210,7 +210,6 @@ describe('FilmHeader Component', () => {
         types: ['SEEN', 'RECOMMENDED'] 
       }));
       
-      // Forzamos la carga inicial
       (component as any).loadInitialMarkStatus();
       
       expect(component.isRecommendedProfile).toBe(true);

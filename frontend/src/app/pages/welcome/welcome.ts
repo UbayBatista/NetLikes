@@ -35,16 +35,13 @@ export class Welcome {
     constructor(private router: Router, private authService: AuthService,private http: HttpClient) {}
 
     ngOnInit() {
-    console.log("Iniciando purga de seguridad al entrar al portal de bienvenida...");
 
     this.http.post('https://api-db.duckdns.org/auth/logout', {}, { withCredentials: true })
       .subscribe({
         next: () => {
           this.authService.clearAllData();
-          console.log("Entorno limpiado correctamente. Listo para Login o Registro.");
         },
-        error: (err) => {
-          console.log("No había sesión activa en el servidor, limpiando frontend por seguridad...");
+        error: () => {
           this.authService.clearAllData();
         }
     });
@@ -85,8 +82,7 @@ export class Welcome {
         this.authService.register(this.registrationData).subscribe({
             next: () => {
                 this.router.navigate(['/home']);
-            },
-            error: (err) => console.error('Error al registrar:', err)
+            }
         });
     }
 

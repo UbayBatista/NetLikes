@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CommonModule } from '@angular/common';
-
 import { ConfirmationModalComponent } from './confirmation-modal';
 
 describe('ConfirmationModalComponent', () => {
