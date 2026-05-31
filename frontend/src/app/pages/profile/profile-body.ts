@@ -298,7 +298,7 @@ export class ProfileComplete implements OnInit {
           next: (users) => {
             this.socialData = users.map(u => ({
               name: u.userName,
-              avatar: u.profilePicture || 'assets/ProfilePicture.jpg',
+              profilePicture: u.profilePicture || null,
               email: u.email
             }));
             this.cdr.detectChanges();
