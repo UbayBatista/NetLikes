@@ -43,6 +43,6 @@ public class Notify {
     private Type type;
 
     public enum Type {
-        FOLLOWREQUEST //TO DO: Añadir más tipos para futuras notificaciones
+        FOLLOWREQUEST //TODO: Añadir más tipos para futuras notificaciones
     } 
 }

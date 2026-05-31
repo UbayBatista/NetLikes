@@ -57,33 +57,6 @@ public class MarkService {
         markRepository.save(mark);
     }
 
-    public Mark typeFilm(String email, Integer filmId, Mark.Type type) {
-        MarkId id = new MarkId(email, filmId, type);
-
-        return markRepository.findById(id)
-            .map(relationExists -> {
-                relationExists.setType(type);
-                updateUserVector(relationExists.getUser(), relationExists.getFilm(), type);
-                return markRepository.save(relationExists);
-            })
-            .orElseGet(() -> {
-                User user = userRepository.findById(email)
-                        .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
-                Film film = filmRepository.findById(filmId)
-                        .orElseThrow(() -> new IllegalArgumentException("Película no encontrada"));
-
-                Mark relation = new Mark();
-                relation.setId(id);
-                relation.setUser(user);
-                relation.setFilm(film);
-                relation.setType(type);
-
-                updateUserVector(user, film, type);
-
-                return markRepository.save(relation);
-            });
-    }
-
     private void updateUserVector(User user, Film film, Mark.Type type) {
         try {
             if (user.getVector() == null || film.getVector() == null) {
@@ -109,10 +82,6 @@ public class MarkService {
         } catch (Exception e) {
             log.error("Error matemático al recalcular el vector del usuario", e);
         }
-    }
-
-    public void deletetype(String email, Integer filmId, Mark.Type type) {
-        markRepository.deleteByUserEmailAndFilmIdAndType(email, filmId, type);
     }
 
     public List<Mark.Type> getMarkTypesForFilm(String email, Integer filmId) {

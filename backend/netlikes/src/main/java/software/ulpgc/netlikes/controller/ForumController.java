@@ -23,12 +23,12 @@ public class ForumController {
     }
 
     @GetMapping  
-    public List<Forum> getAll(){
+    public List<Forum> getAllForums(){
         return this.forumService.getAllForums();
     }
     
     @PostMapping("/film/{filmId}")
-    public ResponseEntity<?> subscribeToFilmForum(@PathVariable Integer filmId, @RequestBody Map<String, String> payload) {
+    public ResponseEntity<?> subscribeToForumOf(@PathVariable Integer filmId, @RequestBody Map<String, String> payload) {
         String filmTitle = payload.get("title");
         String email = payload.get("email");
         
@@ -56,7 +56,7 @@ public class ForumController {
     }
     
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Integer id) {
+    public void deleteForum(@PathVariable Integer id) {
         this.forumService.deleteForum(id);
     }
 }

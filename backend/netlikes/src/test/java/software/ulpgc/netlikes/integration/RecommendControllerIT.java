@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -25,7 +26,7 @@ import java.util.Date;
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Transactional
-public class RecommendControllerTest {
+public class RecommendControllerIT {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private UserRepository userRepository;
@@ -61,7 +62,8 @@ public class RecommendControllerTest {
     }
 
     @Test
-    void sendMultiple_ReturnsOk() throws Exception {
+    @DisplayName("Should return Ok and send multiple recommendations when valid payload is provided")
+    void should_ReturnOkandsendMultipleRecommendationsSuccessfully_when_validPayloadIsProvided() throws Exception {
         String requestBody = """
             {
                 "filmId": 1,
@@ -78,7 +80,8 @@ public class RecommendControllerTest {
     }
 
     @Test
-    void getRecent_ReturnsOk() throws Exception {
+    @DisplayName("Should return Ok and a list of recent recommendations when a valid user ID header is provided")
+    void should_ReturnOkandreturnRecentRecommendationsList_when_validUserIdHeaderIsProvided() throws Exception {
         mockMvc.perform(get("/api/recommend/recent")
                 .header("X-User-Id", "sender@test.com"))
                 .andExpect(status().isOk())

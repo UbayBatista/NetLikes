@@ -9,8 +9,6 @@ import java.util.stream.Stream;
 
 public class TmdbModels {
 
-    // MODELOS DE DATOS ESPECÍFICOS
-
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Genre(@JsonProperty("id") int id, @JsonProperty("name") String name) {}
 
@@ -38,8 +36,6 @@ public class TmdbModels {
         @JsonProperty("logo_path") String logoPath
     ) {}
 
-    // MODELOS PARA RESPUESTAS DE DISCOVER Y GÉNEROS
-
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record DiscoverResponse(
         @JsonProperty("page") int page,
@@ -52,8 +48,6 @@ public class TmdbModels {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record GenreListResponse(@JsonProperty("genres") List<Genre> genres) {}
-
-    // CLASES INTERMEDIAS PARA LA CALIFICACIÓN DE EDAD
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     private record ReleaseDatesNode(@JsonProperty("results") List<ReleaseDateCountry> results) {}
@@ -69,8 +63,6 @@ public class TmdbModels {
         @JsonProperty("certification") String certification
     ) {}
 
-    // MODELOS PARA RESPUESTAS INDIVIDUALES
-    
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record FilmCreditsResponse(
         @JsonProperty("id") int id,
@@ -94,8 +86,6 @@ public class TmdbModels {
         }
     }
 
-    // CLASES INTERMEDIAS PARA JACKSON (Solo uso interno)
-    
     @JsonIgnoreProperties(ignoreUnknown = true)
     private record CreditsNode(@JsonProperty("cast") List<CastMember> cast) {}
 
@@ -111,8 +101,6 @@ public class TmdbModels {
         @JsonProperty("rent") List<Provider> rent,
         @JsonProperty("buy") List<Provider> buy
     ) {}
-
-    // EL OBJETO FILM PLANO FINAL
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Film(
@@ -157,12 +145,10 @@ public class TmdbModels {
                     .toList() 
                 : Collections.emptyList();
             
-            // Extracción específica de Providers para España (ES) uniendo las diferentes opciones (flatrate, rent, buy)
             List<Provider> extractedProviders = new ArrayList<>();
             if (providers != null && providers.results() != null && providers.results().containsKey("ES")) {
                 ProviderCountryData esData = providers.results().get("ES");
                 
-                // Combinamos todas las formas de visionado y eliminamos posibles duplicados usando distinct por provider_id
                 extractedProviders = Stream.of(esData.flatrate(), esData.rent(), esData.buy())
                         .filter(Objects::nonNull)
                         .flatMap(Collection::stream)
@@ -171,13 +157,12 @@ public class TmdbModels {
                         .values().stream().toList();
             }
 
-            String extractedAgeRating = "NR"; // Not Rated por defecto
+            String extractedAgeRating = "NR";
             if (releaseDates != null && releaseDates.results() != null) {
                 extractedAgeRating = releaseDates.results().stream()
                     .filter(country -> "ES".equals(country.countryCode()))
                     .findFirst()
                     .flatMap(country -> country.releaseDates().stream()
-                        // Buscamos el primer certificado que contenga información
                         .filter(dateItem -> dateItem.certification() != null && !dateItem.certification().isBlank())
                         .findFirst()
                         .map(ReleaseDateItem::certification))

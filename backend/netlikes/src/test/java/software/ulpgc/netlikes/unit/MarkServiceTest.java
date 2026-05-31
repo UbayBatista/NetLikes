@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -34,28 +35,59 @@ public class MarkServiceTest {
     private String email = "test@test.com";
     private Integer filmId = 1;
 
+    private String prepareMarkTest(Mark.Type mark, boolean action) {
+        User mockUser = new User();
+        mockUser.setEmail(email);
+        mockUser.setVector("[0.0, 1.0, 0.5]");
+        Film mockFilm = new Film();
+        mockFilm.setId(filmId);
+        mockFilm.setVector("[1.0, 0.0, 0.5]");
+
+        when(userRepository.findById(email)).thenReturn(Optional.of(mockUser));
+        when(filmRepository.findById(filmId)).thenReturn(Optional.of(mockFilm));
+        when(markRepository.existsByUserEmailAndFilmIdAndType(email, filmId, mark)).thenReturn(action);
+
+        return markService.toggleMarkLogic(email, filmId, mark);
+    }
+
     @Test
-    void toggleMarkLogic_CambiaDeWatchLaterASeen_Correctamente() {
+    @DisplayName("Should add film to seen list")
+    void should_AddFilmToSeenList_when_ToggledToSeen() {
+        assertEquals("added", prepareMarkTest(Mark.Type.SEEN, false));
+        verify(markRepository, times(1)).save(any(Mark.class));
+    }
+
+    @Test
+    @DisplayName("Should remove film from seen list when toggled off")
+    void should_RemoveFilmFromSeenList_when_ToggledOff() {
+        assertEquals("removed", prepareMarkTest(Mark.Type.SEEN, true));
+        verify(markRepository, times(1)).deleteByUserEmailAndFilmIdAndType(email, filmId, Mark.Type.SEEN);
+        verify(markRepository, never()).save(any(Mark.class));
+    }
+
+    @Test
+    @DisplayName("Should change from watch later to seen")
+    void should_ChangeFromWatchLaterToSeen_when_ToggledToSeen() {
         assertEquals("added", prepareMarkTest(Mark.Type.SEEN, false));
         verify(markRepository, times(1)).deleteByUserEmailAndFilmIdAndType(email, filmId, Mark.Type.WATCHLATER);
         verify(markRepository, times(1)).save(any(Mark.class));
     }
 
     @Test
-    void toggleMarkLogic_AgregaRecomendacion_Correctamente() {
+    void should_AddRecommendation_when_ToggledToRecommended() {
         assertEquals("added", prepareMarkTest(Mark.Type.RECOMMENDED, false));
         verify(markRepository, times(1)).save(any(Mark.class));
     }
 
     @Test
-    void toggleMarkLogic_EliminaRecomendacion_SiYaExiste() {
+    void should_RemoveRecommendation_when_ToggledOff() {
         assertEquals("removed", prepareMarkTest(Mark.Type.RECOMMENDED, true));
         verify(markRepository, times(1)).deleteByUserEmailAndFilmIdAndType(email, filmId, Mark.Type.RECOMMENDED);
         verify(markRepository, never()).save(any(Mark.class));
     }
 
     @Test
-    void testToggleRate_Seen_UpdatesUserVectorCorrectly() throws Exception {
+    void should_UpdateUserVectorCorrectly_when_ToggledToSeen() throws Exception {
         prepareMarkTest(Mark.Type.SEEN, false);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
@@ -71,7 +103,7 @@ public class MarkServiceTest {
     }
 
     @Test
-    void testToggleRate_WatchLater_UpdatesUserVectorCorrectly() throws Exception {
+    void should_UpdateUserVectorCorrectly_when_ToggledToWatchLater() throws Exception {
         prepareMarkTest(Mark.Type.WATCHLATER, false);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
@@ -84,20 +116,5 @@ public class MarkServiceTest {
         double[] expectedVector = {0.05, 0.95, 0.5};
 
         assertArrayEquals(expectedVector, actualVector, 0.0001);
-    }
-
-    private String prepareMarkTest(Mark.Type mark, boolean action) {
-        User mockUser = new User();
-        mockUser.setEmail(email);
-        mockUser.setVector("[0.0, 1.0, 0.5]");
-        Film mockFilm = new Film();
-        mockFilm.setId(filmId);
-        mockFilm.setVector("[1.0, 0.0, 0.5]");
-
-        when(userRepository.findById(email)).thenReturn(Optional.of(mockUser));
-        when(filmRepository.findById(filmId)).thenReturn(Optional.of(mockFilm));
-        when(markRepository.existsByUserEmailAndFilmIdAndType(email, filmId, mark)).thenReturn(action);
-
-        return markService.toggleMarkLogic(email, filmId, mark);
     }
 }

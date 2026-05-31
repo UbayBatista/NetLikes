@@ -45,11 +45,11 @@ public class FilmService {
     }
 
     public ResponseEntity<List<FilmResponseDTO>> getAllFilms(int page, int size) {
-        PageRequest paginacion = PageRequest.of(page, size);
+        PageRequest pagination = PageRequest.of(page, size);
 
-        List<FilmResponseDTO> catalogo = filmRepository.findAll(paginacion).getContent().stream().map(this::toDTO).toList();
+        List<FilmResponseDTO> catalog = filmRepository.findAll(pagination).getContent().stream().map(this::toDTO).toList();
         
-        return ResponseEntity.ok(catalogo);
+        return ResponseEntity.ok(catalog);
     }
 
     public FilmResponseDTO getFilmById(Integer id) {
@@ -61,26 +61,10 @@ public class FilmService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public FilmResponseDTO saveFilm(FilmRequestDTO dto) {
 
-        Film film = new Film();
-        applyDtoToEntity(dto, film);
+        Film film = applyDtoToEntity(dto);
 
         filmRepository.save(film);
         return toDTO(film);
-    }
-
-    public FilmResponseDTO updateFilm(Integer id, FilmRequestDTO dto) {
-
-        Film film = filmRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Film not found"));
-
-        applyDtoToEntity(dto, film);
-
-        filmRepository.save(film);
-        return toDTO(film);
-    }
-
-    public void deleteFilm(Integer id) {
-        filmRepository.deleteById(id);
     }
 
     public ResponseEntity<List<FilmResponseDTO>> searchBy(String query) {
@@ -94,7 +78,8 @@ public class FilmService {
         return ResponseEntity.ok(results);
     }
 
-    private void applyDtoToEntity(FilmRequestDTO dto, Film film) {
+    private Film applyDtoToEntity(FilmRequestDTO dto) {
+        Film film = new Film();
         film.setId(dto.getId());
         film.setTitle(dto.getTitle());
         film.setOverView(dto.getOverView());
@@ -171,6 +156,8 @@ public class FilmService {
         film.setVideos(videos);
 
         film.setVector(dto.getVector());
+
+        return film;
     }
 
 
@@ -203,5 +190,12 @@ public class FilmService {
         dto.setVideos(film.getVideos().stream().map(Video::getKey).toList());
 
         return dto;
+    }
+
+    public void deleteFilm(Integer id) {
+        if (!filmRepository.existsById(id)) {
+            throw new RuntimeException("No se puede borrar: La película con ID " + id + " no existe.");
+        }
+        filmRepository.deleteById(id);
     }
 }

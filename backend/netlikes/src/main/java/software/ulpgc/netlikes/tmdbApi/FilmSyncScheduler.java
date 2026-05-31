@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 public class FilmSyncScheduler {
 
     private final InitialFilmLoadService initialLoadService;
-    // TODO: private final FilmSyncService syncService;  para el incremental diario
+    // TODO: crear un método para sincronizar periódicamente con TMDb y actualizar la base de datos
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
@@ -26,11 +26,4 @@ public class FilmSyncScheduler {
         log.info("Aplicación lista — comprobando si se necesita carga inicial...");
         initialLoadService.loadAll();
     }
-
-    /* TODO: CADA DÍA a las 3:00 AM para sincronizar cambios
-    @Scheduled(cron = "0 0 3 * * *")
-    public void scheduledSync() {
-        log.info("Iniciando sincronización incremental...");
-        syncService.syncChanges();
-    }*/
 }

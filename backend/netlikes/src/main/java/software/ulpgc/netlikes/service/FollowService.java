@@ -99,15 +99,6 @@ public class FollowService {
         return getFollowsOf(userId).size();
     }
 
-    public Follow updateFollow(Follow follow) {
-        return followRepository.findById(new FollowId(follow.getFollower().getEmail(), follow.getFollowed().getEmail()))
-                .map(existingFollow -> {
-                    existingFollow.setState(follow.getState());
-                    return followRepository.save(existingFollow);
-                })
-                .orElse(null);
-    }
-
     public void deleteFollow(String followerId, String followedId) {
         followRepository.deleteById(new FollowId(followerId, followedId));
         notifyService.deleteFollowNotification(followerId, followedId);
@@ -126,6 +117,9 @@ public class FollowService {
     public Follow acceptFollow(String followerId, String followedId) {
         Follow follow = followRepository.findById(new FollowId(followerId, followedId))
             .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+        if(follow.getState() != Follow.State.PENDING) {
+            throw new IllegalStateException("Solo se pueden aceptar solicitudes pendientes.");
+        }
         follow.setState(Follow.State.ACCEPTED);
         return followRepository.save(follow);
     }
@@ -155,8 +149,6 @@ public class FollowService {
             } catch (Exception e) {
                 System.out.println("Aviso: No se pudo bloquear en Discourse. " + e.getMessage());
             }
-        } else {
-            System.out.println("⏭️ Omitiendo bloqueo en Discourse: Al menos uno de los usuarios no tiene cuenta en el foro.");
         }
 
         followRepository.findById(new FollowId(blockerEmail, blockedEmail)).ifPresent(followRepository::delete);
@@ -182,7 +174,7 @@ public class FollowService {
         followRepository.deleteById(new FollowId(blockerEmail, unblockedEmail));
     }
 
-    public List<UserResponseDTO> getBlockedUsers(String userEmail) {
+    public List<UserResponseDTO> getBlockedUsersOf(String userEmail) {
         return followRepository.findByFollower_Email(userEmail).stream()
                 .filter(follow -> follow.getState() == Follow.State.BLOCKED)
                 .map(follow -> {

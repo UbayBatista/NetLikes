@@ -53,13 +53,8 @@ public class FollowController {
     public ResponseEntity<List<UserResponseDTO>> getBlockedUsers(
             @RequestHeader("X-User-Id") String myId) {
         
-        List<UserResponseDTO> blockedUsers = followService.getBlockedUsers(myId);
+        List<UserResponseDTO> blockedUsers = followService.getBlockedUsersOf(myId);
         return ResponseEntity.ok(blockedUsers);
-    }
-    
-    @PutMapping("/{id}")
-    public Follow updateFollow(@PathVariable String id, @RequestBody Follow follow) {
-        return followService.updateFollow(follow);
     }
 
     @DeleteMapping("/{targetId}/unfollow")

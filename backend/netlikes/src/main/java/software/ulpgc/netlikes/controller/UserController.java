@@ -11,7 +11,6 @@ import software.ulpgc.netlikes.dto.AvatarRequestDTO;
 import software.ulpgc.netlikes.dto.BioRequestDTO;
 import software.ulpgc.netlikes.dto.RegisterRequestDTO;
 import software.ulpgc.netlikes.dto.ValidAnswerRequestDTO;
-import software.ulpgc.netlikes.model.User;
 import software.ulpgc.netlikes.service.DiscourseService;
 import software.ulpgc.netlikes.service.FollowService;
 import software.ulpgc.netlikes.service.UserService;
@@ -55,8 +54,8 @@ public class UserController {
     }
 
     @GetMapping("/{email}")
-    public UserResponseDTO getUserById(@NonNull @PathVariable String email) {
-        return userService.getUserById(email);
+    public UserResponseDTO getUserByEmail(@NonNull @PathVariable String email) {
+        return userService.getUserByEmail(email);
     }
 
     @PutMapping("/{email}")
@@ -193,7 +192,7 @@ public class UserController {
 
 
     @PatchMapping("/myProfile/{email}/bio")
-    public ResponseEntity<?> updateBio(
+    public ResponseEntity<?> updateUserBio(
             @NonNull @PathVariable String email,
             @Valid @RequestBody BioRequestDTO request) {
         try {
@@ -205,13 +204,13 @@ public class UserController {
     }
 
     @PatchMapping("/myProfile/{email}/avatar")
-    public ResponseEntity<?> updateAvatar(
+    public ResponseEntity<?> updateUserAvatar(
             @NonNull @PathVariable String email,
             @RequestBody AvatarRequestDTO request) {
         try {
             userService.updateAvatar(email, request.getSeed());
 
-            UserResponseDTO userDto = userService.getUserById(email); 
+            UserResponseDTO userDto = userService.getUserByEmail(email); 
             String username = userDto.getUserName();
 
             String urlavatarDiscourse = "https://api.dicebear.com/9.x/fun-emoji/png?seed=" + request.getSeed();

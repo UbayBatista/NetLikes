@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -63,7 +64,8 @@ public class MarkControllerIT {
     }
 
     @Test
-    void toggleMark_AddSeenList_ReturnsAdded() throws Exception {
+    @DisplayName("Should return 'added' when toggling a mark to add it to the seen list")
+    void should_ReturnAdded_when_TogglingMarkToAddSeenList() throws Exception {
         mockMvc.perform(post("/marks/test@test.com/toggle/1")
             .param("type", "SEEN"))
             .andExpect(status().isOk())
@@ -71,7 +73,8 @@ public class MarkControllerIT {
     }
 
     @Test
-    void toggleMark_AlreadySeen_ReturnsRemoved() throws Exception {
+    @DisplayName("Should return 'removed' when toggling a mark that is already in the seen list")
+    void should_ReturnRemoved_when_TogglingMarkAlreadyInSeenList() throws Exception {
         createAndSaveMark(Mark.Type.SEEN);
 
         mockMvc.perform(post("/marks/test@test.com/toggle/1")
@@ -81,7 +84,8 @@ public class MarkControllerIT {
     }
 
     @Test
-    void toggleMark_AddRecommendedList_ReturnsAdded() throws Exception {
+    @DisplayName("Should return 'added' when toggling a mark to add it to the recommended list")
+    void should_ReturnAdded_when_TogglingMarkToAddRecommendedList() throws Exception {
         mockMvc.perform(post("/marks/test@test.com/toggle/1")
             .param("type", "RECOMMENDED"))
             .andExpect(status().isOk())
@@ -89,7 +93,8 @@ public class MarkControllerIT {
     }
 
     @Test
-    void toggleMark_AlreadyRecommended_ReturnsRemoved() throws Exception {
+    @DisplayName("Should return 'removed' when toggling a mark that is already in the recommended list")
+    void should_ReturnRemoved_when_TogglingMarkAlreadyInRecommendedList() throws Exception {
         createAndSaveMark(Mark.Type.RECOMMENDED);
         mockMvc.perform(post("/marks/test@test.com/toggle/1")
             .param("type", "RECOMMENDED"))

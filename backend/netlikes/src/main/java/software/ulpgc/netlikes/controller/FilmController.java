@@ -7,7 +7,6 @@ import java.util.List;
 
 import software.ulpgc.netlikes.service.FilmService;
 
-import software.ulpgc.netlikes.dto.FilmRequestDTO;
 import software.ulpgc.netlikes.dto.FilmResponseDTO;
 
 
@@ -26,28 +25,21 @@ public class FilmController {
         return filmService.getAllFilms(page, size);
     }
 
-    @PostMapping
-    public FilmResponseDTO saveFilm(@RequestBody FilmRequestDTO dto) {
-        return filmService.saveFilm(dto);
-    }
-
     @GetMapping("/{id}")
     public FilmResponseDTO getFilmById(@PathVariable Integer id) {
         return filmService.getFilmById(id);
     }
 
-    @PutMapping("/{id}")
-    public FilmResponseDTO updateFilm(@PathVariable Integer id, @RequestBody FilmRequestDTO dto) {
-        return filmService.updateFilm(id, dto);
-    }
-
     @DeleteMapping("/{id}")
-    public void deleteFilm(@PathVariable Integer id) {
+    public ResponseEntity<Void> deleteFilm(@PathVariable Integer id) {
         filmService.deleteFilm(id);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/search")
     public ResponseEntity<List<FilmResponseDTO>> searchFilm(@RequestParam String query) {
         return this.filmService.searchBy(query);
     }
+
+
 }

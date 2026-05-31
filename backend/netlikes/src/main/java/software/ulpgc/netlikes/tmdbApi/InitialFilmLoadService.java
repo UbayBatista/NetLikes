@@ -19,7 +19,7 @@ public class InitialFilmLoadService implements LoadService {
     private final FilmService filmService;
     private final HuggingFaceService huggingFaceService;
 
-    @Value("${tmdb.load.max-films:450}")
+    @Value("${tmdb.load.max-films:20}")
     private int maxFilms;
 
     @Override
@@ -39,10 +39,10 @@ public class InitialFilmLoadService implements LoadService {
             try {
                 FilmRequestDTO dto = filmAssembler.toFilmRequestDTO(filmId);
                 
-                String textoParaVectorizar = String.format("Película: %s. Géneros: %s. Sinopsis: %s", 
+                String textToVectorize = String.format("Película: %s. Géneros: %s. Sinopsis: %s", 
                         dto.getTitle(), dto.getGenres(), dto.getOverView());
 
-                String vector = huggingFaceService.generateVector(textoParaVectorizar);
+                String vector = huggingFaceService.generateVector(textToVectorize);
                 
                 if (vector != null) {
                     dto.setVector(vector);

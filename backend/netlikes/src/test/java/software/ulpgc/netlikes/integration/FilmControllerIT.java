@@ -1,5 +1,6 @@
 package software.ulpgc.netlikes.integration;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,6 +11,8 @@ import software.ulpgc.netlikes.tmdbApi.FilmSyncScheduler;
 import software.ulpgc.netlikes.model.Film;
 import software.ulpgc.netlikes.repository.FilmRepository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -51,18 +54,42 @@ public class FilmControllerIT {
     }
 
     @Test
-    void shouldReturnAllFilms() throws Exception {
+    @DisplayName("Should return all films")
+    void should_ReturnAllFilms_when_Requested() throws Exception {
         mockMvc.perform(get("/films"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$").isArray());
     }
 
     @Test
-    void shouldReturnFilmDetailsAndVideos() throws Exception {
+    @DisplayName("Should return film details and videos when requested")
+    void should_ReturnFilmDetailsAndVideos_when_RequestedForId() throws Exception {
         Film savedFilm = createAndSaveFilm();
 
         mockMvc.perform(get("/films/" + savedFilm.getId()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.title").value("Mario"));
+    }
+
+    @Test
+    @DisplayName("Should remove film via API when deleted")
+    void should_RemoveFilmFromDatabase_when_Deleted() throws Exception {
+        Film film = createAndSaveFilm();
+
+        mockMvc.perform(delete("/films/" + film.getId()))
+            .andExpect(status().isOk()); 
+
+        assertThat(filmRepository.existsById(film.getId())).isFalse();
+    }
+
+    @Test
+    @DisplayName("Should return empty video list when no trailers exist")
+    void should_ReturnEmptyVideoList_when_NoTrailersExist() throws Exception {
+        Film film = createAndSaveFilm();
+        
+        mockMvc.perform(get("/films/" + film.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.videos").isArray())
+        .andExpect(jsonPath("$.videos").isEmpty());
     }
 }

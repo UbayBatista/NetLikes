@@ -39,7 +39,7 @@ public class RateBehaviorTest {
         testUser.setBirthdate(java.sql.Date.valueOf("2000-01-01"));
         testUser.setSecurityQuestion("¿Nombre de tu mascota?");
         testUser.setAnswer("Toby");
-        testUser.setVector("");
+        testUser.setVector("[1.0, 0.5, 0.2]");
         userRepository.save(testUser);
 
         testFilm = new Film();
@@ -50,7 +50,7 @@ public class RateBehaviorTest {
         testFilm.setPosterPath("/poster.jpg");
         testFilm.setReleaseDate(java.sql.Date.valueOf("2020-01-01"));
         testFilm.setRuntime(120);
-        testFilm.setVector("");
+        testFilm.setVector("[0.8, 0.6, 0.4]");
         filmRepository.save(testFilm);
     }
 

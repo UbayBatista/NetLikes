@@ -1,6 +1,7 @@
 package software.ulpgc.netlikes.integration;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -74,7 +75,8 @@ public class NotifyControllerIT {
     }
 
     @Test
-    void testGetMyNotifications_ReturnsList() throws Exception {
+    @DisplayName("Should return a list of unread notifications when a valid user email is requested")
+    void should_ReturNotificationsList_when_validUserEmailIsRequested() throws Exception {
         mockMvc.perform(get("/notifications/elena@gmail.com"))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$").isArray())
@@ -83,14 +85,16 @@ public class NotifyControllerIT {
     }
 
     @Test
-    void testGetUnreadCount_ReturnsOk() throws Exception {
+    @DisplayName("Should return Ok and the exact unread count when a valid user email is requested")
+    void should__ReturnOkandUnreadCount_when_validUserEmailIsRequested() throws Exception {
         mockMvc.perform(get("/notifications/elena@gmail.com/unread-count"))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.unreadCount").value(1));
     }
 
     @Test
-    void testMarkAllAsRead_ReturnsOk() throws Exception {
+    @DisplayName("Should return Ok and mark all notifications as read when a valid user email is provided")
+    void should__ReturnOkandMarkAllNotificationsAsRead_when_validUserEmailIsProvided() throws Exception {
         mockMvc.perform(put("/notifications/elena@gmail.com/read-all"))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.status").value("Todas las notificaciones marcadas como leídas"));

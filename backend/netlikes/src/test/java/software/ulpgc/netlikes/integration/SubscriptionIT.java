@@ -4,6 +4,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
+
 import jakarta.persistence.EntityManager;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import software.ulpgc.netlikes.model.*;
@@ -15,7 +17,8 @@ import java.util.stream.Stream;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
-class SubscriptionRepositoryIntegrationTest {
+@ActiveProfiles("test")
+public class SubscriptionIT {
     @Autowired private SubscriptionRepository repository;
     @Autowired private EntityManager entityManager;
     
@@ -81,8 +84,8 @@ class SubscriptionRepositoryIntegrationTest {
     }
 
     @Test
-    @DisplayName("Debe guardar una suscripción con sus dependencias en una BD real")
-    void shouldSaveSubscription() {
+    @DisplayName("Should successfully save a subscription in the database when valid data is provided")
+    void should_SaveSubscriptionSuccessfully_when_validDataIsProvided() {
         Subscription subscription = this.prepareSub(Stream.of("usuario@test.com")).get(0);
         assertThat(subscription).isNotNull();
         assertThat(subscription.getId().getEmail()).isEqualTo("usuario@test.com");
@@ -91,8 +94,8 @@ class SubscriptionRepositoryIntegrationTest {
     }
 
     @Test
-    @DisplayName("Debe eliminar la subscripción indicada a un foro")
-    void shouldRemoveSubscription() {
+    @DisplayName("Should delete only the specified subscription when multiple subscriptions exist")
+    void should_DeleteSpecificSubscription_when_multipleSubscriptionsExist() {
         List<Subscription> subscriptions = this.prepareSub(Stream.of("usuario@test.com", "usuario2@test.com", "usuario3@test.com"));
         repository.delete(subscriptions.get(0));
         assertThat(repository.findAll().isEmpty()).isFalse();
@@ -102,10 +105,10 @@ class SubscriptionRepositoryIntegrationTest {
     }
 
     @Test
-    @DisplayName("Debe eliminar la última subscripción a un foro")
-    void shouldRemoveLastSubscription() {
+    @DisplayName("Should leave the repository empty when the only existing subscription is deleted")
+    void should_LeaveRepositoryEmpty_when_onlyExistingSubscriptionIsDeleted() {
         Subscription subscription = this.prepareSub(Stream.of("usuario@test.com")).get(0);
         repository.delete(subscription);
-        assertThat(repository.findAll().isEmpty());
+        assertThat(repository.findAll().isEmpty()).isTrue();
     }   
 }

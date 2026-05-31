@@ -9,6 +9,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -47,7 +48,8 @@ public class RateServiceTest {
     }
 
     @Test
-    void toggleRate_NuevaValoracion_GuardaCorrectamente() {
+    @DisplayName("Should save a new rating when the user has not rated the film yet")
+    void should_SaveNewRating_when_userHasNotRatedFilmYet() {
         when(rateRepository.findById(any())).thenReturn(Optional.empty());
         when(userRepository.findById("test@test.com")).thenReturn(Optional.of(mockUser));
         when(filmRepository.findById(1)).thenReturn(Optional.of(mockFilm));
@@ -61,7 +63,8 @@ public class RateServiceTest {
     }
 
     @Test
-    void toggleRate_MismaValoracion_EliminaValoracion() {
+    @DisplayName("Should delete the existing rating when the user toggles the same score again")
+    void should_DeleteExistingRating_when_userTogglesSameScoreAgain() {
         Rate existingRate = new Rate(new RateId("test@test.com", 1), mockUser, mockFilm, Rate.Score.LOVE);
         when(rateRepository.findById(any())).thenReturn(Optional.of(existingRate));
 
@@ -72,7 +75,8 @@ public class RateServiceTest {
     }
 
     @Test
-    void testToggleRate_Love_UpdatesUserVectorCorrectly() throws Exception {
+    @DisplayName("Should apply the strong positive weight to the user vector when the rating is LOVE")
+    void should_applyStrongPositiveWeightToVector_when_ratingIsLove() throws Exception {
         prepareToggleRateTestsWith(Rate.Score.LOVE);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
@@ -88,7 +92,8 @@ public class RateServiceTest {
     }
 
     @Test
-    void testToggleRate_Like_UpdatesUserVectorCorrectly() throws Exception {
+    @DisplayName("Should apply the standard positive weight to the user vector when the rating is LIKE")
+    void should_applyStandardPositiveWeightToVector_when_ratingIsLike() throws Exception {
         prepareToggleRateTestsWith(Rate.Score.LIKE);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
@@ -104,7 +109,8 @@ public class RateServiceTest {
     }
 
     @Test
-    void testToggleRate_Dislike_UpdatesUserVectorCorrectly() throws Exception {
+    @DisplayName("Should apply the negative weight to the user vector when the rating is DISLIKE")
+    void should_applyNegativeWeightToVector_when_ratingIsDislike() throws Exception {
         prepareToggleRateTestsWith(Rate.Score.DISLIKE);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
