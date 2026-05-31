@@ -48,7 +48,7 @@ mvn test
 ```
 Y para ejecutar tanto los test de integración como los test unitarios, en primer lugar, se deben ejecutar los siguientes comandos para crear el contenedor que los soportará:
 ```
-docker run --name netlikes-test-db
+docker run --name netlikes-test-db -e POSTGRES_DB=netlikes_test -e POSTGRES_USER=test -e POSTGRES_PASSWORD=test -p 5433:5432 -d pgvector/pgvector:pg16
 docker exec -it netlikes-test-db psql -U test -d netlikes_test -c "CREATE EXTENSION IF NOT EXISTS vector;"
 ```
 Y luego, una vez nos encontremos en el directorio ./NETLIKES/backend/netlikes, se puede ejecutar el comando:
