@@ -70,8 +70,7 @@
 
     <div class="ig-grid">
 
-        <div class="position-relative">
-
+        <div class="position-relative ig-avatar-wrapper">
             <img class="ig-avatar border border-dark border-2 shadow-sm overflow-hidden"
                 [src]="userPicture==null 
                     ? 'assets/ProfilePicture.jpg'
@@ -83,11 +82,28 @@
                     data-bs-toggle="modal"
                     data-bs-target="#avatarModal"
                     (click)="openAvatarModal()">
-
                     <i class="bi bi-pencil-fill"></i>
                 </button>
             }
+        </div>
 
+        <div class="ig-name-container">
+            <h3 class="fw-bold m-0 ig-name"> {{ userName }}</h3>
+        </div>
+
+        <div class="ig-info-area">
+            <div class="ig-button-container">
+                <button class="btn btn-dark shadow-sm ig-action-btn" 
+                        (click)="handleMainAction()">
+                    {{ type }}
+                </button>
+
+                @if(otherUser) {
+                    <button class="btn btn-outline-dark btn-chat-icon" (click)="startChat()">
+                        <i class="bi bi-send"></i>  
+                    </button> 
+                }
+            </div>
         </div>
 
         <div class="ig-stats">
@@ -101,16 +117,11 @@
             </div>
         </div>
 
-        <div class="ig-name-container">
-            <h3 class="fw-bold m-0 ig-name">{{ userName }}</h3>
-        </div>
-
-        <div class="ig-button-container">
-            <button class="btn btn-dark shadow-sm ig-action-btn" 
-                    (click)="handleMainAction()">
-                {{ type }}
-            </button>
-        </div>
-
     </div>
+
+    <div *ngIf="mensajeErrorChat" class="chat-toast-error shadow">
+        <i class="bi bi-exclamation-circle-fill"></i> 
+        {{ mensajeErrorChat }}
+    </div>
+
 </div>

@@ -108,4 +108,25 @@ export class AuthService {
     localStorage.setItem('user', JSON.stringify(updated));
     this.currentUser$.next(updated);
   }
+  clearAllData(): void {
+    localStorage.removeItem('user');
+    if (this.currentUser$) {
+        this.currentUser$.next(null);
+    }
+
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      const eqPos = cookie.indexOf("=");
+      const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
+      
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=duckdns.org"; 
+    }
+  }
+
+
 }

@@ -1,6 +1,8 @@
-import { Component, Input, Output, EventEmitter, inject, SimpleChanges } from "@angular/core";
+import { Component, Input, Output, EventEmitter, inject, ChangeDetectorRef, SimpleChanges } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
+import { AuthService } from "../../services/auth.service";
 
 @Component({
   selector: "app-profile-header",
@@ -10,8 +12,6 @@ import { Router } from "@angular/router";
   styleUrl: "./profile-header.css"
 })
 export class ProfileHeader {
-  private router = inject(Router);
-  
   @Input() userName: string = '';
   @Input() userPicture: string | null = null;
   @Input() isPrivate: boolean = false;
@@ -33,6 +33,14 @@ export class ProfileHeader {
   @Output() changePassword = new EventEmitter<void>();
   
   openMenu: boolean = false;
+  mensajeErrorChat: string | null = null;
+
+  constructor(
+    private http: HttpClient, 
+    private router: Router, 
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   toggleMenu() {
     this.openMenu = !this.openMenu;
@@ -76,6 +84,49 @@ export class ProfileHeader {
   deleteUser() {
     this.delete.emit();
     this.toggleMenu();
+  }
+
+  startChat() {
+    
+    this.authService.getCurrentUser().subscribe(user => { 
+
+      if (!user) return;
+      
+      const myUser = user.userName
+      const userFriend = this.userName;
+
+      this.http.get<number>(`https://api-db.duckdns.org/users/chat/id?myUser=${myUser}&userFriend=${userFriend}`)
+        .subscribe({
+          next: (chatId) => {
+            this.router.navigate(['/social'], { 
+              queryParams: { 
+                chatWith: userFriend, 
+                chatId: chatId,
+                mode: 'Chats'
+              } 
+            });
+          },
+          error: (err) => {
+            if (err.status === 400) {
+              this.mensajeErrorChat = err.error.error || "¡Os tenéis que seguir mutuamente para poder hablar!";
+            } else if (err.status === 404) {
+              this.mensajeErrorChat = "Este amigo aún no ha activado su chat en el foro.";
+            } else {
+                console.error("Error desconocido", err);
+            }
+            
+            this.cdr.detectChanges();
+
+            if (this.mensajeErrorChat) {
+                setTimeout(() => {
+                    this.mensajeErrorChat = null;
+                    this.cdr.detectChanges();
+                }, 3500);
+            }
+
+          }
+        });
+    });
   }
 
   openAvatarModal() {

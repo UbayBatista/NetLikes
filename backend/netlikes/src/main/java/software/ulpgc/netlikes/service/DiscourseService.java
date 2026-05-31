@@ -338,4 +338,82 @@ public class DiscourseService {
         }
     }
 
+    public Integer getPrivateChatId(String user1, String user2) {
+        String url = "https://netlikes.duckdns.org/chat/api/direct-message-channels.json";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Api-Key", apiKey);
+        headers.set("Api-Username", user1); 
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        String body = "{\"target_usernames\": [\"" + user2 + "\"], \"upsert\": true}";
+
+        HttpEntity<String> request = new HttpEntity<>(body, headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
+            Map<String, Object> responseBody = response.getBody();
+            Map<String, Object> channel = (Map<String, Object>) responseBody.get("channel");
+            return (Integer) channel.get("id");
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    public void anonymizeUser(String discourseUserId) {
+        if (discourseUserId == null) return;
+
+        String url = "https://netlikes.duckdns.org/admin/users/" + discourseUserId + "/anonymize.json";
+
+        HttpHeaders headers = setHeaders();
+        HttpEntity<String> request = new HttpEntity<>("", headers);
+
+        try {
+            restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
+            System.out.println("Usuario anonimizado en Discourse con éxito: " + discourseUserId);
+        } catch (Exception e) {
+            System.err.println("Error al anonimizar usuario en Discourse: " + e.getMessage());
+        }
+    }
+
+    public void updateUserAvatarInDiscourse(String username, String imageUrl) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Api-Key", apiKey);
+            headers.set("Api-Username", "system");
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            String uploadUrl = "https://netlikes.duckdns.org/uploads.json";
+            
+            Map<String, Object> uploadBody = new HashMap<>();
+            uploadBody.put("type", "avatar");
+            uploadBody.put("synchronous", true);
+            uploadBody.put("url", imageUrl);
+
+            HttpEntity<Map<String, Object>> uploadRequest = new HttpEntity<>(uploadBody, headers);
+            ResponseEntity<Map> uploadResponse = restTemplate.postForEntity(uploadUrl, uploadRequest, Map.class);
+            
+            Integer uploadId = (Integer) uploadResponse.getBody().get("id");
+
+            if (uploadId != null) {
+                String pickUrl = "https://netlikes.duckdns.org/u/" + username + "/preferences/avatar/pick.json";
+                
+                headers.set("Api-Username", "system");
+                Map<String, Object> pickBody = new HashMap<>();
+                pickBody.put("upload_id", uploadId);
+                pickBody.put("type", "uploaded");
+
+                HttpEntity<Map<String, Object>> pickRequest = new HttpEntity<>(pickBody, headers);
+                
+                restTemplate.exchange(pickUrl, HttpMethod.PUT, pickRequest, Map.class);
+                
+                System.out.println("Éxito: Foto de perfil sincronizada con Discourse para -> " + username);
+            }
+
+        } catch (Exception e) {
+            System.err.println("Aviso: Fallo al sincronizar avatar con Discourse para " + username + ". Motivo: " + e.getMessage());
+        }
+    }
+
 }

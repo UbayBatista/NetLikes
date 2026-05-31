@@ -10,6 +10,7 @@ import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
 import { ForumSsoComponent } from './forum-sso/forum-sso';
 import { Badges } from './pages/badges/badges';
+import { ProfileHeader } from './components/profile-header/profile-header';
 
 export const routes: Routes = [
   { path: 'login', component: Welcome, canActivate: [guestGuard] },
