@@ -191,4 +191,11 @@ public class FilmService {
 
         return dto;
     }
+
+    public void deleteFilm(Integer id) {
+        if (!filmRepository.existsById(id)) {
+            throw new RuntimeException("No se puede borrar: La película con ID " + id + " no existe.");
+        }
+        filmRepository.deleteById(id);
+    }
 }

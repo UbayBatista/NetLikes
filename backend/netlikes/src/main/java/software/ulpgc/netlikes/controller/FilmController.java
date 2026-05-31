@@ -30,8 +30,16 @@ public class FilmController {
         return filmService.getFilmById(id);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteFilm(@PathVariable Integer id) {
+        filmService.deleteFilm(id);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/search")
     public ResponseEntity<List<FilmResponseDTO>> searchFilm(@RequestParam String query) {
         return this.filmService.searchBy(query);
     }
+
+
 }
