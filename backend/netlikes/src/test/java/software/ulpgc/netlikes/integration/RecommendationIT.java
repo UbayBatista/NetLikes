@@ -16,7 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.Disabled;
 
 @SpringBootTest
 @Transactional 
@@ -29,7 +28,6 @@ public class RecommendationIT {
     @Autowired
     private UserRepository userRepository;
 
-    @Disabled("Test ignorado: H2 no soporta el tipo de dato VECTOR ni el operador <-> de PostgreSQL.")
     @Test   
     @DisplayName("Should return top recommendations ordered by closest vector distance when queried with user vector")
     void should_ReturnRecommendationsOrderedByVectorDistance_when_queriedWithUserVector() {
