@@ -35,9 +35,11 @@ export class FollowService {
       try {
         const user: LoggedUser = JSON.parse(userString);
 
-        currentUserId = user.email; 
-        
-      } catch (error) {}
+        currentUserId = user.email;
+
+      } catch (error) {
+        console.error('Error al parsear el usuario del localStorage', error);
+      }
     }
 
     return new HttpHeaders({

@@ -80,8 +80,11 @@ export class SearchUser implements OnInit, OnDestroy {
     loadUsers() {
         this.userService.getUsers(this.currentUserEmail).subscribe({
             next: (data) => {
-                this.initialUsers = data; 
+                this.initialUsers = data;
                 this.cdr.detectChanges();
+            },
+            error: () => {
+                this.initialUsers = [];
             }
         });
     }

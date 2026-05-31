@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-foro-sso',
-  templateUrl: './forum-sso.html''
+  templateUrl: './forum-sso.html'
 })
 export class ForumSsoComponent implements OnInit {
 

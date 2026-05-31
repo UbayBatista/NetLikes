@@ -75,13 +75,16 @@ export class Welcome {
     }
 
     handleEnd(genreIds: number[]) {
-        this.registrationData.favoriteGenres = genreIds.map(idValue => ({ 
-            id: idValue, 
-            genre: '' 
+        this.registrationData.favoriteGenres = genreIds.map(idValue => ({
+            id: idValue,
+            genre: ''
         }));
         this.authService.register(this.registrationData).subscribe({
             next: () => {
                 this.router.navigate(['/home']);
+            },
+            error: (err) => {
+                console.error(err);
             }
         });
     }
