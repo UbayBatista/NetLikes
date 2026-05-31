@@ -3,19 +3,22 @@ import { Welcome } from './welcome';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { of, throwError } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 describe('Welcome Component', () => {
   let component: Welcome;
   let mockRouter: any;
   let mockAuthService: any;
+  let mockHttpClient: any;
 
   beforeEach(() => {
     mockRouter = { navigate: vi.fn() };
     mockAuthService = { 
       register: vi.fn().mockReturnValue(of({ name: 'Test User' })) 
     };
+    mockHttpClient = {};
 
-    component = new Welcome(mockRouter as Router, mockAuthService as AuthService);
+    component = new Welcome(mockRouter as Router, mockAuthService as AuthService, mockHttpClient as HttpClient);
   });
 
   describe('Initialization', () => {

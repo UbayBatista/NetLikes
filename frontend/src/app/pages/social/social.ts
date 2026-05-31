@@ -27,6 +27,4 @@ export class Social{
     changeMode(newMode: string){
         this.selectedMode = newMode;
     }
-
-
 }

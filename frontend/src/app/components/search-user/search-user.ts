@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, Input, OnInit, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
 import { SearchBarComponent } from "../search-bar/search-bar";
 import { Subject, of } from 'rxjs';
@@ -14,7 +14,7 @@ import { AuthService } from '../../services/auth.service';
     templateUrl: "./search-user.html",
     styleUrl: "./search-user.css"
 })
-export class SearchUser implements OnInit {
+export class SearchUser implements OnInit, OnDestroy {
     @Input() usuario: string = "Messi"; 
     
     initialUsers: User[] = []; 
@@ -73,6 +73,10 @@ export class SearchUser implements OnInit {
                 this.cdr.detectChanges();
             }
         });
+    }
+
+    ngOnDestroy() {
+        this.searchSubject.complete();
     }
 
     loadUsers() {

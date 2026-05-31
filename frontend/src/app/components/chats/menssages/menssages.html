@@ -23,38 +23,3 @@
 }
 
 </div>
-
-
-
-
-
-
-
-
-  <!-- <div class="messages-viewport">
-     @for (msg of messageHistory; track msg) {
-
-            <div class="message-row" [class.mine]="msg.itsMe">
-                    <app-message-bubble [text]="msg.text" [user]="msg.user" [isMine]="msg.itsMe" hour="12:45"></app-message-bubble>
-            </div>
-    } @empty {
-      <p class="text-center text-muted p-4">No hay messages aún. ¡Sé el primero!</p>
-    }
-  </div>
-
-  <footer class="chat-footer">
-    <div class="input-wrapper">
-        <textarea 
-            #txtArea
-            placeholder="Escribe un mensaje..."
-            rows="1"
-            (input)="height(txtArea)"
-            (keydown.enter)="$event.preventDefault(); sendMessage(txtArea.value); txtArea.value=''; height(txtArea)"
-        ></textarea>
-
-        <button 
-            type="button" 
-            (click)="sendMessage(txtArea.value); txtArea.value=''; height(txtArea)"
-        >▻</button>
-    </div>
-  </footer> -->

@@ -36,7 +36,7 @@ describe('RecommendationFollowedService', () => {
     it('should send multiple recommendations via POST', () => {
       service.sendRecommendations(100, ['amigo@test.com']).subscribe();
 
-      const req = httpMock.expectOne('http://localhost:8080/api/recommend/bulk');
+      const req = httpMock.expectOne('https://api-db.duckdns.org/api/recommend/bulk');
       expect(req.request.method).toBe('POST');
       expect(req.request.headers.get('X-User-Id')).toBe('test@correo.com');
       expect(req.request.body).toEqual({ filmId: 100, targetEmails: ['amigo@test.com'] });
@@ -46,7 +46,7 @@ describe('RecommendationFollowedService', () => {
     it('should fetch recent recipients via GET', () => {
       service.getRecentRecipients().subscribe();
 
-      const req = httpMock.expectOne('http://localhost:8080/api/recommend/recent');
+      const req = httpMock.expectOne('https://api-db.duckdns.org/api/recommend/recent');
       expect(req.request.method).toBe('GET');
       expect(req.request.headers.get('X-User-Id')).toBe('test@correo.com');
       req.flush([{ email: 'amigo@test.com' }]);
@@ -55,7 +55,7 @@ describe('RecommendationFollowedService', () => {
     it('should fetch already recommended emails for a film via GET', () => {
       service.getRecipientsForFilm(100).subscribe();
 
-      const req = httpMock.expectOne('http://localhost:8080/api/recommend/film/100/recipients');
+      const req = httpMock.expectOne('https://api-db.duckdns.org/api/recommend/film/100/recipients');
       expect(req.request.method).toBe('GET');
       expect(req.request.headers.get('X-User-Id')).toBe('test@correo.com');
       req.flush(['amigo@test.com']);
@@ -66,7 +66,7 @@ describe('RecommendationFollowedService', () => {
     it('should fetch recommended films with their count', () => {
       service.getRecommendedFilmsWithCount().subscribe();
 
-      const req = httpMock.expectOne('http://localhost:8080/api/recommend/stats/test@correo.com');
+      const req = httpMock.expectOne('https://api-db.duckdns.org/api/recommend/stats/test@correo.com');
       expect(req.request.method).toBe('GET');
       req.flush([{ film: { id: 1 }, count: 5 }]);
     });

@@ -1,16 +1,15 @@
-import { Component, Input, Output, OnInit, OnDestroy, ChangeDetectorRef, EventEmitter } from "@angular/core";
-import { MessageBubble } from '../../message-bubble/message-bubble';
+import { Component, Input, Output, ChangeDetectorRef, EventEmitter } from "@angular/core";
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 import { AuthService } from "../../../services/auth.service";
 
 @Component({
     selector: "app-social-chats-menssages",
-    imports: [MessageBubble],
+    imports: [],
     standalone: true,
     templateUrl: "./menssages.html",
     styleUrl: "./menssages.css"
 })
-export class Menssages implements OnInit{
+export class Menssages{
 
     saveUrl: SafeResourceUrl | null = null;
     activeUser = false;
@@ -47,12 +46,7 @@ export class Menssages implements OnInit{
       private authService: AuthService
     ) {}
     
-    ngOnInit() {
-       
-    }
-
     goBack() {
         this.return.emit();
     }
-
 }

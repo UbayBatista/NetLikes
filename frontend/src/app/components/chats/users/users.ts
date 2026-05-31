@@ -122,7 +122,4 @@ export class Users{
         this.friends.set([...currentUser]);
         this.cdr.detectChanges(); 
     }
-
-
-
 }
