@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
-
 import { AuthService } from './auth.service';
 import { User, RegisterData, Credentials } from '../models/user.models';
 import { environment } from '../../environments/environment';

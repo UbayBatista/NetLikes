@@ -10,7 +10,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 describe('RecommendPanel Component', () => {
   let component: RecommendPanel;
   let fixture: ComponentFixture<RecommendPanel>;
-
   let interactionServiceMock: any;
   let authServiceMock: any;
   let followServiceMock: any;
@@ -55,7 +54,7 @@ describe('RecommendPanel Component', () => {
     component.filmId = 123;
   });
 
-  describe('Initialization (US 10.2 & 10.1)', () => {
+  describe('Initialization', () => {
     it('should create the component', () => {
       expect(component).toBeTruthy();
     });
@@ -137,7 +136,7 @@ describe('RecommendPanel Component', () => {
     });
   });
 
-  describe('Submit Logic (US 10.1 & 10.2)', () => {
+  describe('Submit Logic', () => {
     it('should call toggleMark and emit status if addToProfile changed', () => {
       component.initialRecommended = false;
       component.addToProfile = true;
@@ -167,7 +166,7 @@ describe('RecommendPanel Component', () => {
       expect(recFollowedServiceMock.sendRecommendations).toHaveBeenCalledWith(123, ['paco@test.com', 'elena@test.com']);
     });
 
-    it('should NOT send bulk recommendation when modal is cancelled', () => {
+    it('should not send bulk recommendation when modal is cancelled', () => {
       component.selectedUsers = ['paco@test.com'];
       
       component.handleConfirmation(false);

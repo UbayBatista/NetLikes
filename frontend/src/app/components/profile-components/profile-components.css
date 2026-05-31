@@ -84,6 +84,7 @@
     display: inline-block;
     padding: 5px;
 }
+
 .nav-btn.left::after { transform: rotate(135deg); margin-left: 5px; }
 .nav-btn.right::after { transform: rotate(-45deg); margin-right: 5px; }
 

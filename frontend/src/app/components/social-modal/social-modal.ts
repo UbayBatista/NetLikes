@@ -12,6 +12,7 @@ export interface SocialAction {
   user: User;
   type: 'Seguidores' | 'Seguidos';
 }
+
 @Component({
   selector: 'app-social-modal',
   standalone: true,

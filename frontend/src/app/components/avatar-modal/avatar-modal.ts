@@ -2,26 +2,13 @@ import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 const AVATAR_SEEDS = [
-  'CyberPunk',
-  'PopCorn',
-  'NeoTokyo',
-  'GalaxyKid',
-  'PixelHero',
-  'RetroWave',
-  'MoonWalker',
-  'CinemaGhost',
-  'ElectricFox',
-  'AstroCat',
-  'NightDrive',
-  'DragonByte',
-  'GhostFrame',
-  'VelvetStorm',
-  'CosmoDuck',
-  'SolarFlare',
-  'DarkComet',
-  'BubbleVibe',
-  'TurboWolf',
-  'CherryNova'
+  'CyberPunk', 'PopCorn', 'NeoTokyo',
+  'GalaxyKid', 'PixelHero', 'RetroWave',
+  'MoonWalker', 'CinemaGhost', 'ElectricFox',
+  'AstroCat', 'NightDrive', 'DragonByte',
+  'GhostFrame', 'VelvetStorm', 'CosmoDuck',
+  'SolarFlare', 'DarkComet', 'BubbleVibe',
+  'TurboWolf', 'CherryNova'
 ];
 
 @Component({

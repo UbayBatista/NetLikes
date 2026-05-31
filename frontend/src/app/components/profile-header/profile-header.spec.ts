@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CommonModule } from '@angular/common';
-
 import { ProfileHeader } from './profile-header';
 
 describe('ProfileHeader Component', () => {
@@ -156,7 +155,7 @@ describe('ProfileHeader Component', () => {
     });
   });
 
-  describe('Account Privacy Logic (US 6.1)', () => {
+  describe('Account Privacy Logic', () => {
     it('should emit true when privacy is toggled from a public account', () => {
       component.isPrivate = false;
       fixture.detectChanges();

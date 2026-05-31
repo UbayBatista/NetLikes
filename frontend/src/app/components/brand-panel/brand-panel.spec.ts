@@ -15,8 +15,7 @@ describe('BrandPanel', () => {
   fixture = TestBed.createComponent(BrandPanel);
   component = fixture.componentInstance;
   fixture.detectChanges();
-
-});
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

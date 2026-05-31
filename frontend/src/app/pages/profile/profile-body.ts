@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef, inject, De
 import { CommonModule, AsyncPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router'; 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, filter, forkJoin, map, Observable, take, of } from 'rxjs';
+import { BehaviorSubject, filter, forkJoin, map, Observable, take, of, concat } from 'rxjs';
 
 import { ProfileBody } from "../../components/profile-components/profile-components";
 import { ProfileHeader } from "../../components/profile-header/profile-header";
@@ -52,26 +52,33 @@ export class ProfileComplete implements OnInit {
   private readonly followService = inject(FollowService);
   private readonly destroyRef = inject(DestroyRef);
 
-  pendingVisibility: { type: VisibilityType, isVisible: boolean }[] = [];
-  
   profile$: Observable<MyProfile | UserProfile | null> = this.profileService.getProfile();
   itsMe$: Observable<boolean> = this.profileService.isMyProfile();
 
   followersCount$ = new BehaviorSubject<number>(0);
   followingCount$ = new BehaviorSubject<number>(0);
 
-  isEditing = false;
-  isSocialModalOpen = false;
-  isAvatarModalOpen = false;
-  thereIsChanges = false;
+  pendingVisibility: { type: VisibilityType, isVisible: boolean }[] = [];
+  
+  canScrollLeft: boolean = false;
+  canScrollRight: boolean = true;
+  isEditing: boolean = false;
+  isSocialModalOpen: boolean = false;
+  isAvatarModalOpen: boolean = false;
+  isRecoverModalOpen: boolean = false;
+  isBlockedModalOpen: boolean = false;
+  isPasswordModalOpen: boolean = false;
+  isDeleteConfirmModalOpen: boolean = false;
+  showSaveModal: boolean = false;
+  showConfirmModal: boolean = false;
+  thereIsChanges: boolean = false;
+  skipSecurityQuestion: boolean = false;
   socialType: SocialType = 'Seguidores';
   socialData: any[] = [];
-  canScrollLeft = false;
-  canScrollRight = true;
-  isBlockedModalOpen = false;
   pendingBio: string = '';
   pendingAvatar: string = '';
-  showSaveModal: boolean = false;
+  confirmModalMessage: string = '';
+  actionUser: string = '';
 
   sections: {
     title: string;
@@ -93,17 +100,8 @@ export class ProfileComplete implements OnInit {
     })
   );
 
-  showConfirmModal = false;
-  confirmModalMessage = '';
-  actionUser: string = '';
   private actionToConfirm: 'UNFOLLOW' | 'BLOCK' | 'DELETE' | 'REMOVE_FOLLOWER' = 'UNFOLLOW';
-
-  isPasswordModalOpen = false;
-  isDeleteConfirmModalOpen = false;
-
   passwordModalMode: 'DELETE' | 'CHANGE' = 'DELETE';
-  isRecoverModalOpen = false;
-  skipSecurityQuestion = false;
 
   ngOnInit() {
     this.route.params
@@ -316,23 +314,11 @@ export class ProfileComplete implements OnInit {
     } else{
       this.isEditing = !this.isEditing;
     }
-    
-  }
-
-  onPrivacyChange(isPrivate: boolean): void {
-    this.profileService.updatePrivacy(isPrivate);
   }
 
   logout() {
     this.authService.logout();
     this.router.navigate(['/']);
-  }
-
-  onBlockRequest(userMail: string, userName: string){
-    this.actionUser = userMail;
-    this.actionToConfirm = 'BLOCK';
-    this.confirmModalMessage = `¿Estás seguro de que quieres dejar de seguir a @${userName}?`;
-    this.showConfirmModal = true;
   }
 
   executeBlock(targetEmail: string) {
@@ -366,6 +352,17 @@ export class ProfileComplete implements OnInit {
     this.cdr.detectChanges();
   }
 
+  onPrivacyChange(isPrivate: boolean): void {
+    this.profileService.updatePrivacy(isPrivate);
+  }
+
+  onBlockRequest(userMail: string, userName: string){
+    this.actionUser = userMail;
+    this.actionToConfirm = 'BLOCK';
+    this.confirmModalMessage = `¿Estás seguro de que quieres dejar de seguir a @${userName}?`;
+    this.showConfirmModal = true;
+  }
+
   onBioSave(event: { bio: string, hasChanges: boolean }) {
     this.pendingBio = event.bio;
     this.thereIsChanges = event.hasChanges;
@@ -387,40 +384,65 @@ export class ProfileComplete implements OnInit {
     this.thereIsChanges = true;
   }
 
+  onForgotPasswordClicked() {
+    this.isPasswordModalOpen = false;
+    this.skipSecurityQuestion = false;
+    this.isRecoverModalOpen = true;
+  }
+
   handleSaveConfirmation(confirmed: boolean) {
     this.showSaveModal = false;
+
     if (confirmed) {
       this.profile$.pipe(take(1)).subscribe(profile => {
         if (!profile) return;
 
-        const requests: Observable<any>[] = [];
+        const independentRequests: Observable<any>[] = [];
 
         if (this.pendingBio) {
-          requests.push(this.profileService.updateBio(profile.email, this.pendingBio));
+          independentRequests.push(this.profileService.updateBio(profile.email, this.pendingBio));
           this.bioComponent?.updateOriginalBio(this.pendingBio);
         }
         if (this.pendingAvatar) {
-          requests.push(this.profileService.updateAvatar(profile.email, this.pendingAvatar));
+          independentRequests.push(this.profileService.updateAvatar(profile.email, this.pendingAvatar));
           this.authService.updateStoredUser({ profilePicture: this.pendingAvatar });
         }
+
+        const visibilityRequests: Observable<any>[] = [];
         if (this.pendingVisibility.length > 0) {
           this.pendingVisibility.forEach(v =>
-            requests.push(this.profileService.updateListVisibility(profile.email, v.type, v.isVisible))
+            visibilityRequests.push(this.profileService.updateListVisibility(profile.email, v.type, v.isVisible))
           );
         }
 
-        forkJoin(requests.length > 0 ? requests : [of(null)]).subscribe(() => {
-          this.cdr.detectChanges();
+        const independentFlow$ = independentRequests.length > 0 ? forkJoin(independentRequests) : of(null);
+        
+        const visibilityFlow$ = visibilityRequests.length > 0 ? concat(...visibilityRequests) : of(null);
+
+        forkJoin([independentFlow$, visibilityFlow$]).subscribe({
+          next: () => {
+            this.pendingBio = '';
+            this.pendingAvatar = '';
+            this.pendingVisibility = [];
+            this.thereIsChanges = false;
+            this.isEditing = false;
+            
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            console.error('Error al guardar los cambios en el servidor:', err);
+          }
         });
       });
+
     } else {
       this.bioComponent?.discardChanges();
+      this.pendingBio = '';
+      this.pendingAvatar = '';
+      this.pendingVisibility = [];
+      this.thereIsChanges = false;
+      this.isEditing = false;
     }
-    this.pendingBio = '';
-    this.pendingAvatar = '';
-    this.pendingVisibility = [];
-    this.thereIsChanges = false;
-    this.isEditing = false;
   }
 
   executeDelete() {
@@ -430,12 +452,6 @@ export class ProfileComplete implements OnInit {
         this.router.navigate(['/']);
       }
     });
-  }
-
-  onForgotPasswordClicked() {
-    this.isPasswordModalOpen = false;
-    this.skipSecurityQuestion = false;
-    this.isRecoverModalOpen = true;
   }
 
   startChangePasswordProcess() {

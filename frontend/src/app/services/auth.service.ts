@@ -11,9 +11,7 @@ export class AuthService {
   private isLoading$ = new BehaviorSubject<boolean>(true);
   private readonly dbUrl = `${environment.apiUrl}/users`;
 
-  constructor(private http: HttpClient) {
-    this.loadUserFromStorage();
-  }
+  constructor(private http: HttpClient) { this.loadUserFromStorage(); }
 
   login(credentials: Credentials): Observable<User> {
     return this.http.post<User>(`${this.dbUrl}/login`, credentials).pipe(
@@ -49,9 +47,7 @@ export class AuthService {
   }
 
   getSecurityQuestion(email:string): Observable<string> {
-    return this.http.get(`${this.dbUrl}/securityQuestion/${email}`, { 
-      responseType: 'text' 
-    }) as Observable<string>;
+    return this.http.get(`${this.dbUrl}/securityQuestion/${email}`, { responseType: 'text' }) as Observable<string>;
   }
 
   isValidAnswer(email: string, answer: string): Observable<boolean> {
@@ -108,10 +104,11 @@ export class AuthService {
     localStorage.setItem('user', JSON.stringify(updated));
     this.currentUser$.next(updated);
   }
+
   clearAllData(): void {
     localStorage.removeItem('user');
     if (this.currentUser$) {
-        this.currentUser$.next(null);
+      this.currentUser$.next(null);
     }
 
     localStorage.clear();
@@ -127,6 +124,4 @@ export class AuthService {
       document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=duckdns.org"; 
     }
   }
-
-
 }

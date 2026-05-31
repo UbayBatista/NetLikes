@@ -2,8 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ReactiveFormsModule } from '@angular/forms';
 import { SimpleChange } from '@angular/core';
-import { of, throwError } from 'rxjs';
-
+import { of } from 'rxjs';
 import { RecoverPassword } from './recover-password';
 import { AuthService } from '../../services/auth.service';
 
@@ -86,7 +85,7 @@ describe('RecoverPassword', () => {
     });
   });
 
-  describe('Password Validation (HU3.4 Criteria)', () => {
+  describe('Password Validation', () => {
     it('should invalidate passwords shorter than 6 characters', () => {
       component.passwordForm.patchValue({ newPassword: 'Aa1' });
       expect(component.passwordForm.get('newPassword')?.hasError('minlength')).toBe(true);

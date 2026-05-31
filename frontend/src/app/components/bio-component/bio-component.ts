@@ -13,12 +13,13 @@ export class BioComponent implements OnChanges {
   @Input() isEditing: boolean = false;
   @Output() bioSave = new EventEmitter<{ bio: string, hasChanges: boolean }>();
   
-  isEditingBio: boolean = false;
   editableBio: string = '';
   pendingBio: string = '';
+  isEditingBio: boolean = false;
   hasChanges: boolean = false;
 
   toggleBioEdit() {
+
     if (this.isEditingBio) {
       this.pendingBio = this.editableBio;
       this.hasChanges = this.pendingBio !== this.bio;
@@ -28,9 +29,11 @@ export class BioComponent implements OnChanges {
       this.editableBio = this.pendingBio || this.bio;
       this.isEditingBio = true;
     }
+    
   }
 
   ngOnChanges(changes: SimpleChanges) {
+
     if (changes['bio'] && changes['bio'].firstChange) {
       this.editableBio = this.bio;
       this.pendingBio = this.bio;
@@ -42,6 +45,7 @@ export class BioComponent implements OnChanges {
       this.pendingBio = this.bio;
       this.hasChanges = false;
     }
+
   }
 
   discardChanges() {
