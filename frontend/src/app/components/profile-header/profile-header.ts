@@ -1,8 +1,8 @@
-import { Component, Input, Output, EventEmitter, inject, ChangeDetectorRef, SimpleChanges } from "@angular/core";
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
 import { AuthService } from "../../services/auth.service";
+import { ChatService } from "../../services/chat.service";
 
 @Component({
   selector: "app-profile-header",
@@ -12,10 +12,10 @@ import { AuthService } from "../../services/auth.service";
   styleUrl: "./profile-header.css"
 })
 export class ProfileHeader {
-  @Input() userName: string = '';
   @Input() userPicture: string | null = null;
-  @Input() isPrivate: boolean = false;
   @Input() type: string = "Editar Perfil";
+  @Input() userName: string = '';
+  @Input() isPrivate: boolean = false;
   @Input() isEditing: boolean = false;
   @Input() otherUser: boolean = false;
   @Input() followers: number = 0;
@@ -36,7 +36,7 @@ export class ProfileHeader {
   mensajeErrorChat: string | null = null;
 
   constructor(
-    private http: HttpClient, 
+    private chatService: ChatService,
     private router: Router, 
     private authService: AuthService,
     private cdr: ChangeDetectorRef
@@ -87,16 +87,13 @@ export class ProfileHeader {
   }
 
   startChat() {
-    
     this.authService.getCurrentUser().subscribe(user => { 
-
       if (!user) return;
       
       const myUser = user.userName
       const userFriend = this.userName;
 
-      this.http.get<number>(`https://api-db.duckdns.org/users/chat/id?myUser=${myUser}&userFriend=${userFriend}`)
-        .subscribe({
+      this.chatService.getChatId(myUser, userFriend).subscribe({
           next: (chatId) => {
             this.router.navigate(['/social'], { 
               queryParams: { 
@@ -112,15 +109,15 @@ export class ProfileHeader {
             } else if (err.status === 404) {
               this.mensajeErrorChat = "Este amigo aún no ha activado su chat en el foro.";
             } else {
-                console.error("Error desconocido", err);
+              console.error("Error desconocido", err);
             }
             
             this.cdr.detectChanges();
 
             if (this.mensajeErrorChat) {
                 setTimeout(() => {
-                    this.mensajeErrorChat = null;
-                    this.cdr.detectChanges();
+                  this.mensajeErrorChat = null;
+                  this.cdr.detectChanges();
                 }, 3500);
             }
 
